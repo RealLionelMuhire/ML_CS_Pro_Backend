@@ -35,20 +35,18 @@ These instructions will help you set up and run the Django backend for the ML Co
 
    On Windows:
 
-   ```bash
-   venv\Scripts\activate
+   `venv\Scripts\activate`
 
    On macOS/Linux:
 
-   ```bash
-   source venv/bin/activate
+   `source venv/bin/activate`
 
 5. Install project dependencies:
 
    ```bash
    pip install -r requirements.txt
 
-6. Configure the database settings:
+### Configure the database settings:
 
    Open ML_CS_Pro_Backend/settings.py and update the DATABASES section with your MySQL database details.
 
@@ -58,17 +56,17 @@ These instructions will help you set up and run the Django backend for the ML Co
    python manage.py makemigrations
    python manage.py migrate
 
-7. Create a superuser:
+### Create a superuser:
 
    ```bash
    python manage.py createsuperuser
 
-8. Start the development server:
+### Start the development server:
 
    ```bash
    python manage.py runserver
 
-9. Visit http://127.0.0.1:8000/ in your browser to access the Django welcome page.
+   Visit http://127.0.0.1:8000/ in your browser to access the Django welcome page.
 
 ### Features
 Client Data Management
