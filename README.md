@@ -37,7 +37,7 @@ These instructions will help you set up and run the Django backend for the ML Co
 
    ```bash
    venv\Scripts\activate
-   
+
    On macOS/Linux:
 
    ```bash
