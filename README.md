@@ -8,6 +8,8 @@ This Django project serves as the backend for the ML Corporate Services Software
 
 These instructions will help you set up and run the Django backend for the ML Corporate Services Software Application.
 
+Or download and run `setup_project.sh`
+
 ### Prerequisites
 
 - Python 3.x
