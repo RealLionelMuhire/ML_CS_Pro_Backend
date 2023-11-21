@@ -33,18 +33,20 @@ These instructions will help you set up and run the Django backend for the ML Co
 
 4. Activate the virtual environment:
 
-   On Windows:
+On Windows:
 
-   `venv\Scripts\activate`
+   ```bash
+   venv\Scripts\activate
 
-   On macOS/Linux:
+On macOS/Linux:
 
-   `source venv/bin/activate`
+   ```bash
+   source venv/bin/activate`
 
 5. Install project dependencies:
 
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirements.txt```bash
 
 
 
