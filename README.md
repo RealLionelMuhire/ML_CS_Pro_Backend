@@ -46,6 +46,8 @@ These instructions will help you set up and run the Django backend for the ML Co
    ```bash
    pip install -r requirements.txt
 
+
+
 ### Configure the database settings:
 
    Open ML_CS_Pro_Backend/settings.py and update the DATABASES section with your MySQL database details.
