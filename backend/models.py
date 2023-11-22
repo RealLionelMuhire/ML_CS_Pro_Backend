@@ -1,8 +1,6 @@
-#!/usr/bin/bash
 # backend/models.py
-
-from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.db import models
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
@@ -36,6 +34,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
+    groups = models.ManyToManyField('auth.Group', related_name='custom_user_set', blank=True)
+    user_permissions = models.ManyToManyField('auth.Permission', related_name='custom_user_set', blank=True)
+
     def __str__(self):
         return self.email
-
