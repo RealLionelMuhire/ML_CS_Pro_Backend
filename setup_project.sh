@@ -1,7 +1,7 @@
 #!/env/bin/bash
 
 # Clone the repository
-git clone https://github.com/your-username/ML_CS_Pro_Backend.git
+git clone https://github.com/RealLionelMuhire/ML_CS_Pro_Backend.git
 
 # Navigate to the project directory
 cd ML_CS_Pro_Backend
