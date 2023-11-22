@@ -77,7 +77,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'ML_DEMO_DB',
-        'USER': 'root',
+        'USER': 'm',
         'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '3306',
