@@ -1,6 +1,6 @@
 # backend/urls.py
 from django.urls import path
-from .views import home, register_admin, register_client, AdminLoginView, ClientLoginView
+from .views import home, register_admin, register_client, AdminLoginView, ClientLoginView, hello_world
 
 urlpatterns = [
     # Add a home page URL if needed
