@@ -1,3 +1,5 @@
 Django
 mysqlclient
 django-crispy-forms
+django-cors-headers
+djangorestframework
