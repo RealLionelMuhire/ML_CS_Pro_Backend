@@ -2,7 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render
-
+from django.http import JsonResponse
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 from .forms import AdminRegistrationForm, ClientRegistrationForm
 
@@ -42,3 +45,9 @@ class AdminLoginView(LoginView):
 
 class ClientLoginView(LoginView):
     template_name = 'registration/client_login.html'
+
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def hello_world(request):
+    return JsonResponse({'message': 'Hello, World!'})

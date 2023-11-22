@@ -13,6 +13,7 @@ urlpatterns = [
     # Login URLs
     path('login/admin/', AdminLoginView.as_view(), name='login_admin'),
     path('login/client/', ClientLoginView.as_view(), name='login_client'),
+    path('api/hello/', hello_world, name='hello_world'),
 
     # Add other URLs as needed
 ]

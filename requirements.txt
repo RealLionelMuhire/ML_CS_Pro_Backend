@@ -3,3 +3,4 @@ mysqlclient
 django-crispy-forms
 django-cors-headers
 djangorestframework
+djangorestframework-simplejwt
