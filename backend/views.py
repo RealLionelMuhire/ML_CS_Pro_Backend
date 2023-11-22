@@ -1,8 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib.auth.views import LoginView
+from django.shortcuts import render
+
 
 from .forms import AdminRegistrationForm, ClientRegistrationForm
+
+def home(request):
+    return render(request, 'home.html')
 
 def register_admin(request):
     if request.method == 'POST':
