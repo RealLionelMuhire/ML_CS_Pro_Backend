@@ -31,6 +31,14 @@ def register_client(request):
         form = ClientRegistrationForm()
 
     return render(request, 'registration/client_register.html', {'form': form})
+from django.shortcuts import render
+
+def home(request):
+    return render(request, 'home.html')
 
 class AdminLoginView(LoginView):
     template_name = 'registration/admin_login.html'
+
+
+class ClientLoginView(LoginView):
+    template_name = 'registration/client_login.html'

@@ -21,8 +21,8 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     UserID = models.AutoField(primary_key=True)
     UserType = models.CharField(max_length=20)
-    Username = models.CharField(max_length=50, unique=True)
-    Email = models.EmailField(unique=True)
+    username = models.CharField(max_length=50, unique=True)  # Change to 'username'
+    email = models.EmailField(unique=True)  # Add this line
     FullName = models.CharField(max_length=255)
     NationalID = models.CharField(max_length=25)
     Location = models.CharField(max_length=100)
