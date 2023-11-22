@@ -64,8 +64,7 @@ Or download and run [`setup_project.sh`](./setup_project.sh)
 
     ```bash
     python manage.py makemigrations
-    python manage.py migrate
-    ```
+    python manage.py migrate```
 
 ### Create a superuser:
 
