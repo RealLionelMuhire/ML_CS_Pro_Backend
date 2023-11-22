@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from .forms import AdminRegistrationForm, ClientRegistrationForm
 
 from .forms import AdminRegistrationForm, ClientRegistrationForm
 
@@ -41,7 +42,6 @@ def home(request):
 
 class AdminLoginView(LoginView):
     template_name = 'registration/admin_login.html'
-
 
 class ClientLoginView(LoginView):
     template_name = 'registration/client_login.html'
