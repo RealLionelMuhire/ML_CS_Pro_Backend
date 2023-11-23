@@ -4,6 +4,8 @@ from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate, login
 from .serializers import UserSerializer
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import redirect
+from django.urls import reverse
 
 class HelloWorldView(APIView):
     def get(self, request):
@@ -17,9 +19,12 @@ class RegistrationView(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response({'message': 'Registration successful'})
+
+            # Redirect to the login page after successful registration
+            login_url = reverse('login')  # Assuming 'login' is the name of your login URL
+            return redirect(login_url)
         else:
-            print("serializers Errors are:")
+            print(serializer.errors)
             return Response({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
 
 class LoginView(APIView):
@@ -33,7 +38,7 @@ class LoginView(APIView):
         # Perform authentication
         user = authenticate(request, username=username, password=password)
         print('User:', user)
-        
+
         if user is not None:
             # Log in the user
             login(request, user)
