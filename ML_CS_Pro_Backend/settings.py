@@ -74,6 +74,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "ML_CS_Pro_Backend.wsgi.application"
 
+AUTHENTICATION_BACKENDS = ['backend.backends.CustomUserBackend']
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases

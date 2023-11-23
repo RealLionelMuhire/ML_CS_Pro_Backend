@@ -15,13 +15,11 @@ class RegistrationView(APIView):
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
-        print(request.data)
         if serializer.is_valid():
             user = serializer.save()
             return Response({'message': 'Registration successful'})
         else:
             print("serializers Errors are:")
-            print(serializer.errors)
             return Response({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
 
 class LoginView(APIView):
@@ -29,12 +27,13 @@ class LoginView(APIView):
 
     def post(self, request):
         # Extract username and password from the request data
-        username = request.data.get('username')
+        username = request.data.get('identifier')
         password = request.data.get('password')
-
+        print(request.data)
         # Perform authentication
         user = authenticate(request, username=username, password=password)
-
+        print('User:', user)
+        
         if user is not None:
             # Log in the user
             login(request, user)
