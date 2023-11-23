@@ -11,14 +11,18 @@ class HelloWorldView(APIView):
         return Response(content)
 
 class RegistrationView(APIView):
-    permission_classes = [AllowAny]  # Allow any user (authenticated or not) to register
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
+        print(request.data)
         if serializer.is_valid():
             user = serializer.save()
             return Response({'message': 'Registration successful'})
-        return Response({'message': 'Registration failed'}, status=400)
+        else:
+            print("serializers Errors are:")
+            print(serializer.errors)
+            return Response({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
 
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow any user (authenticated or not) to log in
