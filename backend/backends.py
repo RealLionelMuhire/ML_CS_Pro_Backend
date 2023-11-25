@@ -1,23 +1,25 @@
 # backend/backends.py
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
-import logging
-
-logger = logging.getLogger(__name__)
 
 class CustomUserBackend(ModelBackend):
-    def authenticate(self, request, username=None, password=None, **kwargs):
+    def authenticate(self, request, email=None, password=None, **kwargs):
+        print(f"Checking if user with email {email} exists.")
         UserModel = get_user_model()
+
+        # Print all users in the system
+        all_users = UserModel.objects.all()
+        print(f"All users: {[user.email for user in all_users]}")
+
         try:
-            user = UserModel.objects.get(email=username)
-        except UserModel.DoesNotExist:
-            logger.error(f"User with email {username} does not exist.")
+            user = UserModel.objects.get(email__iexact=email)
+        except UserModel.DoesNotExist as e:
+            print(f"User with email {email} does not exist. Error: {e}")
             return None
 
-        if user.check_password(password) and self.user_can_authenticate(user):
-            logger.info(f"User {user} authenticated successfully.")
+        if user.check_password(password):
+            print(f"User {user} authenticated successfully.")
             return user
-        else:
-            logger.warning(f"Authentication failed for user {user}.")
-
+        
+        print("Authentication error: Password does not match.")
         return None
