@@ -6,6 +6,8 @@ from .serializers import UserSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.db import IntegrityError
+from rest_framework import status
 from django.http import JsonResponse
 
 class HelloWorldView(APIView):
@@ -18,17 +20,20 @@ class RegistrationView(APIView):
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            print("Registration is testUser1*succesfull, now login")
+        try:
+            if serializer.is_valid():
+                user = serializer.save()
 
-            # Redirect to the login page after successful registration
-            login_url = reverse('login')  # Assuming 'login' is the name of your login URL
-            return redirect(login_url)
-        else:
-            print("serialization errors are:")
-            print(serializer.errors)
-            return Response({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
+                # Redirect to the login page after successful registration
+                login_url = reverse('login')  # Assuming 'login' is the name of your login URL
+                return redirect(login_url)
+            else:
+                print("serialization errors are:")
+                print(serializer.errors)
+                return Response({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
+        except IntegrityError as e:
+            print(f"IntegrityError: {e}")
+            return Response({'message': 'Registration failed. Duplicate user.'}, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
