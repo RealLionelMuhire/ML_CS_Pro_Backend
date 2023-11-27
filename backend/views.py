@@ -6,7 +6,11 @@ from django.urls import reverse
 from django.db import IntegrityError
 from rest_framework import status
 from django.http import JsonResponse
+from rest_framework.authtoken.models import Token  # Add this line
 from .serializers import UserSerializer
+from rest_framework.decorators import api_view, permission_classes
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
 class HelloWorldView(APIView):
     permission_classes = [IsAuthenticated]
@@ -30,19 +34,22 @@ class RegistrationView(APIView):
             print(f"IntegrityError: {e}")
             return Response({'message': 'Registration failed. Duplicate user.'}, status=status.HTTP_400_BAD_REQUEST)
 
-class LoginView(APIView):
-    permission_classes = [AllowAny]
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_view(request):
+    # Extract username (email) and password from the request data
+    email = request.data.get('email').strip()
+    password = request.data.get('password').strip()
 
-    def post(self, request):
-        # Extract username (email) and password from the request data
-        email = request.data.get('email').strip()
-        password = request.data.get('password').strip()
+    # Perform authentication using the email
+    user = authenticate(request, email=email, password=password)
+    if user is not None:
+        # Log in the user
+        login(request, user)
 
-        # Perform authentication using the email
-        user = authenticate(request, email=email, password=password)
-        if user is not None:
-            # Log in the user
-            login(request, user)
-            return JsonResponse({'message': 'Login successful', 'user_id': user.UserID})  # Use user.UserID
-        else:
-            return JsonResponse({'message': 'Login failed'}, status=400)
+        # Generate a new token
+        token, created = Token.objects.get_or_create(user=user)
+
+        return Response({'message': 'Login successful', 'user_id': user.UserID, 'token': token.key})
+    else:
+        return Response({'message': 'Login failed'}, status=400)
