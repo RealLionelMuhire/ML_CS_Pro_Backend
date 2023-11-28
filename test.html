@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="robots" content="NONE,NOARCHIVE">
-  <title>AttributeError
+  <title>KeyError
           at /api/login/</title>
   <style type="text/css">
     html * { padding:0; margin:0; }
@@ -98,9 +98,9 @@
 </head>
 <body>
 <div id="summary">
-  <h1>AttributeError
+  <h1>KeyError
        at /api/login/</h1>
-  <pre class="exception_value">type object &#x27;Token&#x27; has no attribute &#x27;objects&#x27;</pre>
+  <pre class="exception_value">&#x27;UserId&#x27;</pre>
   <table class="meta">
 
     <tr>
@@ -119,25 +119,25 @@
 
     <tr>
       <th>Exception Type:</th>
-      <td>AttributeError</td>
+      <td>KeyError</td>
     </tr>
 
 
     <tr>
       <th>Exception Value:</th>
-      <td><pre>type object &#x27;Token&#x27; has no attribute &#x27;objects&#x27;</pre></td>
+      <td><pre>&#x27;UserId&#x27;</pre></td>
     </tr>
 
 
     <tr>
       <th>Exception Location:</th>
-      <td><span class="fname">/home/m/Documents/ML_Corporates/ML_CS_Pro_Backend/backend/views.py</span>, line 51, in post</td>
+      <td><span class="fname">/home/m/Documents/ML_Corporates/ML_CS_Pro_Backend/backend/views.py</span>, line 62, in login_view</td>
     </tr>
 
 
     <tr>
       <th>Raised during:</th>
-      <td>backend.views.LoginView</td>
+      <td>backend.views.login_view</td>
     </tr>
 
     <tr>
@@ -158,7 +158,7 @@
     </tr>
     <tr>
       <th>Server time:</th>
-      <td>Mon, 27 Nov 2023 15:13:43 +0000</td>
+      <td>Tue, 28 Nov 2023 14:51:49 +0000</td>
     </tr>
   </table>
 </div>
@@ -180,43 +180,43 @@
           
 
           
-            <div class="context" id="c140204907963456">
+            <div class="context" id="c140110406590656">
               
-                <ol start="48" class="pre-context" id="pre140204907963456">
+                <ol start="48" class="pre-context" id="pre140110406590656">
                 
-                  <li onclick="toggle('pre140204907963456', 'post140204907963456')"><pre></pre></li>
+                  <li onclick="toggle('pre140110406590656', 'post140110406590656')"><pre></pre></li>
                 
-                  <li onclick="toggle('pre140204907963456', 'post140204907963456')"><pre>        return inner</pre></li>
+                  <li onclick="toggle('pre140110406590656', 'post140110406590656')"><pre>        return inner</pre></li>
                 
-                  <li onclick="toggle('pre140204907963456', 'post140204907963456')"><pre>    else:</pre></li>
+                  <li onclick="toggle('pre140110406590656', 'post140110406590656')"><pre>    else:</pre></li>
                 
-                  <li onclick="toggle('pre140204907963456', 'post140204907963456')"><pre></pre></li>
+                  <li onclick="toggle('pre140110406590656', 'post140110406590656')"><pre></pre></li>
                 
-                  <li onclick="toggle('pre140204907963456', 'post140204907963456')"><pre>        @wraps(get_response)</pre></li>
+                  <li onclick="toggle('pre140110406590656', 'post140110406590656')"><pre>        @wraps(get_response)</pre></li>
                 
-                  <li onclick="toggle('pre140204907963456', 'post140204907963456')"><pre>        def inner(request):</pre></li>
+                  <li onclick="toggle('pre140110406590656', 'post140110406590656')"><pre>        def inner(request):</pre></li>
                 
-                  <li onclick="toggle('pre140204907963456', 'post140204907963456')"><pre>            try:</pre></li>
+                  <li onclick="toggle('pre140110406590656', 'post140110406590656')"><pre>            try:</pre></li>
                 
                 </ol>
               
               <ol start="55" class="context-line">
-                <li onclick="toggle('pre140204907963456', 'post140204907963456')"><pre>                response = get_response(request)</pre> <span>…</span></li>
+                <li onclick="toggle('pre140110406590656', 'post140110406590656')"><pre>                response = get_response(request)</pre> <span>…</span></li>
               </ol>
               
-                <ol start='56' class="post-context" id="post140204907963456">
+                <ol start='56' class="post-context" id="post140110406590656">
                   
-                  <li onclick="toggle('pre140204907963456', 'post140204907963456')"><pre>            except Exception as exc:</pre></li>
+                  <li onclick="toggle('pre140110406590656', 'post140110406590656')"><pre>            except Exception as exc:</pre></li>
                   
-                  <li onclick="toggle('pre140204907963456', 'post140204907963456')"><pre>                response = response_for_exception(request, exc)</pre></li>
+                  <li onclick="toggle('pre140110406590656', 'post140110406590656')"><pre>                response = response_for_exception(request, exc)</pre></li>
                   
-                  <li onclick="toggle('pre140204907963456', 'post140204907963456')"><pre>            return response</pre></li>
+                  <li onclick="toggle('pre140110406590656', 'post140110406590656')"><pre>            return response</pre></li>
                   
-                  <li onclick="toggle('pre140204907963456', 'post140204907963456')"><pre></pre></li>
+                  <li onclick="toggle('pre140110406590656', 'post140110406590656')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre140204907963456', 'post140204907963456')"><pre>        return inner</pre></li>
+                  <li onclick="toggle('pre140110406590656', 'post140110406590656')"><pre>        return inner</pre></li>
                   
-                  <li onclick="toggle('pre140204907963456', 'post140204907963456')"><pre></pre></li>
+                  <li onclick="toggle('pre140110406590656', 'post140110406590656')"><pre></pre></li>
                   
               </ol>
               
@@ -228,7 +228,7 @@
               <details>
                 <summary class="commands">Local vars</summary>
             
-            <table class="vars" id="v140204907963456">
+            <table class="vars" id="v140110406590656">
               <thead>
                 <tr>
                   <th>Variable</th>
@@ -239,12 +239,12 @@
                 
                   <tr>
                     <td>exc</td>
-                    <td class="code"><pre>AttributeError(&quot;type object &#x27;Token&#x27; has no attribute &#x27;objects&#x27;&quot;)</pre></td>
+                    <td class="code"><pre>KeyError(&#x27;UserId&#x27;)</pre></td>
                   </tr>
                 
                   <tr>
                     <td>get_response</td>
-                    <td class="code"><pre>&lt;bound method BaseHandler._get_response of &lt;django.core.handlers.wsgi.WSGIHandler object at 0x7f8405c09100&gt;&gt;</pre></td>
+                    <td class="code"><pre>&lt;bound method BaseHandler._get_response of &lt;django.core.handlers.wsgi.WSGIHandler object at 0x7f6e018ed0a0&gt;&gt;</pre></td>
                   </tr>
                 
                   <tr>
@@ -265,43 +265,43 @@
           
 
           
-            <div class="context" id="c140204907962816">
+            <div class="context" id="c140110406591488">
               
-                <ol start="190" class="pre-context" id="pre140204907962816">
+                <ol start="190" class="pre-context" id="pre140110406591488">
                 
-                  <li onclick="toggle('pre140204907962816', 'post140204907962816')"><pre></pre></li>
+                  <li onclick="toggle('pre140110406591488', 'post140110406591488')"><pre></pre></li>
                 
-                  <li onclick="toggle('pre140204907962816', 'post140204907962816')"><pre>        if response is None:</pre></li>
+                  <li onclick="toggle('pre140110406591488', 'post140110406591488')"><pre>        if response is None:</pre></li>
                 
-                  <li onclick="toggle('pre140204907962816', 'post140204907962816')"><pre>            wrapped_callback = self.make_view_atomic(callback)</pre></li>
+                  <li onclick="toggle('pre140110406591488', 'post140110406591488')"><pre>            wrapped_callback = self.make_view_atomic(callback)</pre></li>
                 
-                  <li onclick="toggle('pre140204907962816', 'post140204907962816')"><pre>            # If it is an asynchronous view, run it in a subthread.</pre></li>
+                  <li onclick="toggle('pre140110406591488', 'post140110406591488')"><pre>            # If it is an asynchronous view, run it in a subthread.</pre></li>
                 
-                  <li onclick="toggle('pre140204907962816', 'post140204907962816')"><pre>            if iscoroutinefunction(wrapped_callback):</pre></li>
+                  <li onclick="toggle('pre140110406591488', 'post140110406591488')"><pre>            if iscoroutinefunction(wrapped_callback):</pre></li>
                 
-                  <li onclick="toggle('pre140204907962816', 'post140204907962816')"><pre>                wrapped_callback = async_to_sync(wrapped_callback)</pre></li>
+                  <li onclick="toggle('pre140110406591488', 'post140110406591488')"><pre>                wrapped_callback = async_to_sync(wrapped_callback)</pre></li>
                 
-                  <li onclick="toggle('pre140204907962816', 'post140204907962816')"><pre>            try:</pre></li>
+                  <li onclick="toggle('pre140110406591488', 'post140110406591488')"><pre>            try:</pre></li>
                 
                 </ol>
               
               <ol start="197" class="context-line">
-                <li onclick="toggle('pre140204907962816', 'post140204907962816')"><pre>                response = wrapped_callback(request, *callback_args, **callback_kwargs)</pre> <span>…</span></li>
+                <li onclick="toggle('pre140110406591488', 'post140110406591488')"><pre>                response = wrapped_callback(request, *callback_args, **callback_kwargs)</pre> <span>…</span></li>
               </ol>
               
-                <ol start='198' class="post-context" id="post140204907962816">
+                <ol start='198' class="post-context" id="post140110406591488">
                   
-                  <li onclick="toggle('pre140204907962816', 'post140204907962816')"><pre>            except Exception as e:</pre></li>
+                  <li onclick="toggle('pre140110406591488', 'post140110406591488')"><pre>            except Exception as e:</pre></li>
                   
-                  <li onclick="toggle('pre140204907962816', 'post140204907962816')"><pre>                response = self.process_exception_by_middleware(e, request)</pre></li>
+                  <li onclick="toggle('pre140110406591488', 'post140110406591488')"><pre>                response = self.process_exception_by_middleware(e, request)</pre></li>
                   
-                  <li onclick="toggle('pre140204907962816', 'post140204907962816')"><pre>                if response is None:</pre></li>
+                  <li onclick="toggle('pre140110406591488', 'post140110406591488')"><pre>                if response is None:</pre></li>
                   
-                  <li onclick="toggle('pre140204907962816', 'post140204907962816')"><pre>                    raise</pre></li>
+                  <li onclick="toggle('pre140110406591488', 'post140110406591488')"><pre>                    raise</pre></li>
                   
-                  <li onclick="toggle('pre140204907962816', 'post140204907962816')"><pre></pre></li>
+                  <li onclick="toggle('pre140110406591488', 'post140110406591488')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre140204907962816', 'post140204907962816')"><pre>        # Complain if the view returned None (a common error).</pre></li>
+                  <li onclick="toggle('pre140110406591488', 'post140110406591488')"><pre>        # Complain if the view returned None (a common error).</pre></li>
                   
               </ol>
               
@@ -313,7 +313,7 @@
               <details>
                 <summary class="commands">Local vars</summary>
             
-            <table class="vars" id="v140204907962816">
+            <table class="vars" id="v140110406591488">
               <thead>
                 <tr>
                   <th>Variable</th>
@@ -324,7 +324,7 @@
                 
                   <tr>
                     <td>callback</td>
-                    <td class="code"><pre>&lt;function View.as_view.&lt;locals&gt;.view at 0x7f83ffdac8b0&gt;</pre></td>
+                    <td class="code"><pre>&lt;function View.as_view.&lt;locals&gt;.view at 0x7f6dffaaed30&gt;</pre></td>
                   </tr>
                 
                   <tr>
@@ -354,12 +354,12 @@
                 
                   <tr>
                     <td>self</td>
-                    <td class="code"><pre>&lt;django.core.handlers.wsgi.WSGIHandler object at 0x7f8405c09100&gt;</pre></td>
+                    <td class="code"><pre>&lt;django.core.handlers.wsgi.WSGIHandler object at 0x7f6e018ed0a0&gt;</pre></td>
                   </tr>
                 
                   <tr>
                     <td>wrapped_callback</td>
-                    <td class="code"><pre>&lt;function View.as_view.&lt;locals&gt;.view at 0x7f83ffdac8b0&gt;</pre></td>
+                    <td class="code"><pre>&lt;function View.as_view.&lt;locals&gt;.view at 0x7f6dffaaed30&gt;</pre></td>
                   </tr>
                 
               </tbody>
@@ -375,37 +375,37 @@
           
 
           
-            <div class="context" id="c140204907963712">
+            <div class="context" id="c140110406591872">
               
-                <ol start="49" class="pre-context" id="pre140204907963712">
+                <ol start="49" class="pre-context" id="pre140110406591872">
                 
-                  <li onclick="toggle('pre140204907963712', 'post140204907963712')"><pre>def csrf_exempt(view_func):</pre></li>
+                  <li onclick="toggle('pre140110406591872', 'post140110406591872')"><pre>def csrf_exempt(view_func):</pre></li>
                 
-                  <li onclick="toggle('pre140204907963712', 'post140204907963712')"><pre>    &quot;&quot;&quot;Mark a view function as being exempt from the CSRF view protection.&quot;&quot;&quot;</pre></li>
+                  <li onclick="toggle('pre140110406591872', 'post140110406591872')"><pre>    &quot;&quot;&quot;Mark a view function as being exempt from the CSRF view protection.&quot;&quot;&quot;</pre></li>
                 
-                  <li onclick="toggle('pre140204907963712', 'post140204907963712')"><pre></pre></li>
+                  <li onclick="toggle('pre140110406591872', 'post140110406591872')"><pre></pre></li>
                 
-                  <li onclick="toggle('pre140204907963712', 'post140204907963712')"><pre>    # view_func.csrf_exempt = True would also work, but decorators are nicer</pre></li>
+                  <li onclick="toggle('pre140110406591872', 'post140110406591872')"><pre>    # view_func.csrf_exempt = True would also work, but decorators are nicer</pre></li>
                 
-                  <li onclick="toggle('pre140204907963712', 'post140204907963712')"><pre>    # if they don&#x27;t have side effects, so return a new function.</pre></li>
+                  <li onclick="toggle('pre140110406591872', 'post140110406591872')"><pre>    # if they don&#x27;t have side effects, so return a new function.</pre></li>
                 
-                  <li onclick="toggle('pre140204907963712', 'post140204907963712')"><pre>    @wraps(view_func)</pre></li>
+                  <li onclick="toggle('pre140110406591872', 'post140110406591872')"><pre>    @wraps(view_func)</pre></li>
                 
-                  <li onclick="toggle('pre140204907963712', 'post140204907963712')"><pre>    def wrapper_view(*args, **kwargs):</pre></li>
+                  <li onclick="toggle('pre140110406591872', 'post140110406591872')"><pre>    def wrapper_view(*args, **kwargs):</pre></li>
                 
                 </ol>
               
               <ol start="56" class="context-line">
-                <li onclick="toggle('pre140204907963712', 'post140204907963712')"><pre>        return view_func(*args, **kwargs)</pre> <span>…</span></li>
+                <li onclick="toggle('pre140110406591872', 'post140110406591872')"><pre>        return view_func(*args, **kwargs)</pre> <span>…</span></li>
               </ol>
               
-                <ol start='57' class="post-context" id="post140204907963712">
+                <ol start='57' class="post-context" id="post140110406591872">
                   
-                  <li onclick="toggle('pre140204907963712', 'post140204907963712')"><pre></pre></li>
+                  <li onclick="toggle('pre140110406591872', 'post140110406591872')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre140204907963712', 'post140204907963712')"><pre>    wrapper_view.csrf_exempt = True</pre></li>
+                  <li onclick="toggle('pre140110406591872', 'post140110406591872')"><pre>    wrapper_view.csrf_exempt = True</pre></li>
                   
-                  <li onclick="toggle('pre140204907963712', 'post140204907963712')"><pre>    return wrapper_view</pre></li>
+                  <li onclick="toggle('pre140110406591872', 'post140110406591872')"><pre>    return wrapper_view</pre></li>
                   
               </ol>
               
@@ -417,7 +417,7 @@
               <details>
                 <summary class="commands">Local vars</summary>
             
-            <table class="vars" id="v140204907963712">
+            <table class="vars" id="v140110406591872">
               <thead>
                 <tr>
                   <th>Variable</th>
@@ -438,7 +438,7 @@
                 
                   <tr>
                     <td>view_func</td>
-                    <td class="code"><pre>&lt;function View.as_view.&lt;locals&gt;.view at 0x7f83ffdac820&gt;</pre></td>
+                    <td class="code"><pre>&lt;function View.as_view.&lt;locals&gt;.view at 0x7f6dffaaeca0&gt;</pre></td>
                   </tr>
                 
               </tbody>
@@ -454,43 +454,43 @@
           
 
           
-            <div class="context" id="c140204899496448">
+            <div class="context" id="c140110415752512">
               
-                <ol start="97" class="pre-context" id="pre140204899496448">
+                <ol start="97" class="pre-context" id="pre140110415752512">
                 
-                  <li onclick="toggle('pre140204899496448', 'post140204899496448')"><pre>            self = cls(**initkwargs)</pre></li>
+                  <li onclick="toggle('pre140110415752512', 'post140110415752512')"><pre>            self = cls(**initkwargs)</pre></li>
                 
-                  <li onclick="toggle('pre140204899496448', 'post140204899496448')"><pre>            self.setup(request, *args, **kwargs)</pre></li>
+                  <li onclick="toggle('pre140110415752512', 'post140110415752512')"><pre>            self.setup(request, *args, **kwargs)</pre></li>
                 
-                  <li onclick="toggle('pre140204899496448', 'post140204899496448')"><pre>            if not hasattr(self, &quot;request&quot;):</pre></li>
+                  <li onclick="toggle('pre140110415752512', 'post140110415752512')"><pre>            if not hasattr(self, &quot;request&quot;):</pre></li>
                 
-                  <li onclick="toggle('pre140204899496448', 'post140204899496448')"><pre>                raise AttributeError(</pre></li>
+                  <li onclick="toggle('pre140110415752512', 'post140110415752512')"><pre>                raise AttributeError(</pre></li>
                 
-                  <li onclick="toggle('pre140204899496448', 'post140204899496448')"><pre>                    &quot;%s instance has no &#x27;request&#x27; attribute. Did you override &quot;</pre></li>
+                  <li onclick="toggle('pre140110415752512', 'post140110415752512')"><pre>                    &quot;%s instance has no &#x27;request&#x27; attribute. Did you override &quot;</pre></li>
                 
-                  <li onclick="toggle('pre140204899496448', 'post140204899496448')"><pre>                    &quot;setup() and forget to call super()?&quot; % cls.__name__</pre></li>
+                  <li onclick="toggle('pre140110415752512', 'post140110415752512')"><pre>                    &quot;setup() and forget to call super()?&quot; % cls.__name__</pre></li>
                 
-                  <li onclick="toggle('pre140204899496448', 'post140204899496448')"><pre>                )</pre></li>
+                  <li onclick="toggle('pre140110415752512', 'post140110415752512')"><pre>                )</pre></li>
                 
                 </ol>
               
               <ol start="104" class="context-line">
-                <li onclick="toggle('pre140204899496448', 'post140204899496448')"><pre>            return self.dispatch(request, *args, **kwargs)</pre> <span>…</span></li>
+                <li onclick="toggle('pre140110415752512', 'post140110415752512')"><pre>            return self.dispatch(request, *args, **kwargs)</pre> <span>…</span></li>
               </ol>
               
-                <ol start='105' class="post-context" id="post140204899496448">
+                <ol start='105' class="post-context" id="post140110415752512">
                   
-                  <li onclick="toggle('pre140204899496448', 'post140204899496448')"><pre></pre></li>
+                  <li onclick="toggle('pre140110415752512', 'post140110415752512')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre140204899496448', 'post140204899496448')"><pre>        view.view_class = cls</pre></li>
+                  <li onclick="toggle('pre140110415752512', 'post140110415752512')"><pre>        view.view_class = cls</pre></li>
                   
-                  <li onclick="toggle('pre140204899496448', 'post140204899496448')"><pre>        view.view_initkwargs = initkwargs</pre></li>
+                  <li onclick="toggle('pre140110415752512', 'post140110415752512')"><pre>        view.view_initkwargs = initkwargs</pre></li>
                   
-                  <li onclick="toggle('pre140204899496448', 'post140204899496448')"><pre></pre></li>
+                  <li onclick="toggle('pre140110415752512', 'post140110415752512')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre140204899496448', 'post140204899496448')"><pre>        # __name__ and __qualname__ are intentionally left unchanged as</pre></li>
+                  <li onclick="toggle('pre140110415752512', 'post140110415752512')"><pre>        # __name__ and __qualname__ are intentionally left unchanged as</pre></li>
                   
-                  <li onclick="toggle('pre140204899496448', 'post140204899496448')"><pre>        # view_class should be used to robustly determine the name of the view</pre></li>
+                  <li onclick="toggle('pre140110415752512', 'post140110415752512')"><pre>        # view_class should be used to robustly determine the name of the view</pre></li>
                   
               </ol>
               
@@ -502,7 +502,7 @@
               <details>
                 <summary class="commands">Local vars</summary>
             
-            <table class="vars" id="v140204899496448">
+            <table class="vars" id="v140110415752512">
               <thead>
                 <tr>
                   <th>Variable</th>
@@ -518,7 +518,7 @@
                 
                   <tr>
                     <td>cls</td>
-                    <td class="code"><pre>&lt;class &#x27;backend.views.LoginView&#x27;&gt;</pre></td>
+                    <td class="code"><pre>&lt;class &#x27;backend.views.WrappedAPIView&#x27;&gt;</pre></td>
                   </tr>
                 
                   <tr>
@@ -538,7 +538,7 @@
                 
                   <tr>
                     <td>self</td>
-                    <td class="code"><pre>&lt;backend.views.LoginView object at 0x7f83ff393ca0&gt;</pre></td>
+                    <td class="code"><pre>&lt;backend.views.WrappedAPIView object at 0x7f6dff980490&gt;</pre></td>
                   </tr>
                 
               </tbody>
@@ -554,43 +554,43 @@
           
 
           
-            <div class="context" id="c140204907962752">
+            <div class="context" id="c140110415559296">
               
-                <ol start="502" class="pre-context" id="pre140204907962752">
+                <ol start="502" class="pre-context" id="pre140110415559296">
                 
-                  <li onclick="toggle('pre140204907962752', 'post140204907962752')"><pre>                                  self.http_method_not_allowed)</pre></li>
+                  <li onclick="toggle('pre140110415559296', 'post140110415559296')"><pre>                                  self.http_method_not_allowed)</pre></li>
                 
-                  <li onclick="toggle('pre140204907962752', 'post140204907962752')"><pre>            else:</pre></li>
+                  <li onclick="toggle('pre140110415559296', 'post140110415559296')"><pre>            else:</pre></li>
                 
-                  <li onclick="toggle('pre140204907962752', 'post140204907962752')"><pre>                handler = self.http_method_not_allowed</pre></li>
+                  <li onclick="toggle('pre140110415559296', 'post140110415559296')"><pre>                handler = self.http_method_not_allowed</pre></li>
                 
-                  <li onclick="toggle('pre140204907962752', 'post140204907962752')"><pre></pre></li>
+                  <li onclick="toggle('pre140110415559296', 'post140110415559296')"><pre></pre></li>
                 
-                  <li onclick="toggle('pre140204907962752', 'post140204907962752')"><pre>            response = handler(request, *args, **kwargs)</pre></li>
+                  <li onclick="toggle('pre140110415559296', 'post140110415559296')"><pre>            response = handler(request, *args, **kwargs)</pre></li>
                 
-                  <li onclick="toggle('pre140204907962752', 'post140204907962752')"><pre></pre></li>
+                  <li onclick="toggle('pre140110415559296', 'post140110415559296')"><pre></pre></li>
                 
-                  <li onclick="toggle('pre140204907962752', 'post140204907962752')"><pre>        except Exception as exc:</pre></li>
+                  <li onclick="toggle('pre140110415559296', 'post140110415559296')"><pre>        except Exception as exc:</pre></li>
                 
                 </ol>
               
               <ol start="509" class="context-line">
-                <li onclick="toggle('pre140204907962752', 'post140204907962752')"><pre>            response = self.handle_exception(exc)</pre> <span>…</span></li>
+                <li onclick="toggle('pre140110415559296', 'post140110415559296')"><pre>            response = self.handle_exception(exc)</pre> <span>…</span></li>
               </ol>
               
-                <ol start='510' class="post-context" id="post140204907962752">
+                <ol start='510' class="post-context" id="post140110415559296">
                   
-                  <li onclick="toggle('pre140204907962752', 'post140204907962752')"><pre></pre></li>
+                  <li onclick="toggle('pre140110415559296', 'post140110415559296')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre140204907962752', 'post140204907962752')"><pre>        self.response = self.finalize_response(request, response, *args, **kwargs)</pre></li>
+                  <li onclick="toggle('pre140110415559296', 'post140110415559296')"><pre>        self.response = self.finalize_response(request, response, *args, **kwargs)</pre></li>
                   
-                  <li onclick="toggle('pre140204907962752', 'post140204907962752')"><pre>        return self.response</pre></li>
+                  <li onclick="toggle('pre140110415559296', 'post140110415559296')"><pre>        return self.response</pre></li>
                   
-                  <li onclick="toggle('pre140204907962752', 'post140204907962752')"><pre></pre></li>
+                  <li onclick="toggle('pre140110415559296', 'post140110415559296')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre140204907962752', 'post140204907962752')"><pre>    def options(self, request, *args, **kwargs):</pre></li>
+                  <li onclick="toggle('pre140110415559296', 'post140110415559296')"><pre>    def options(self, request, *args, **kwargs):</pre></li>
                   
-                  <li onclick="toggle('pre140204907962752', 'post140204907962752')"><pre>        &quot;&quot;&quot;</pre></li>
+                  <li onclick="toggle('pre140110415559296', 'post140110415559296')"><pre>        &quot;&quot;&quot;</pre></li>
                   
               </ol>
               
@@ -602,7 +602,7 @@
               <details>
                 <summary class="commands">Local vars</summary>
             
-            <table class="vars" id="v140204907962752">
+            <table class="vars" id="v140110415559296">
               <thead>
                 <tr>
                   <th>Variable</th>
@@ -618,7 +618,7 @@
                 
                   <tr>
                     <td>handler</td>
-                    <td class="code"><pre>&lt;bound method LoginView.post of &lt;backend.views.LoginView object at 0x7f83ff393ca0&gt;&gt;</pre></td>
+                    <td class="code"><pre>&lt;bound method api_view.&lt;locals&gt;.decorator.&lt;locals&gt;.handler of &lt;backend.views.WrappedAPIView object at 0x7f6dff980490&gt;&gt;</pre></td>
                   </tr>
                 
                   <tr>
@@ -633,7 +633,7 @@
                 
                   <tr>
                     <td>self</td>
-                    <td class="code"><pre>&lt;backend.views.LoginView object at 0x7f83ff393ca0&gt;</pre></td>
+                    <td class="code"><pre>&lt;backend.views.WrappedAPIView object at 0x7f6dff980490&gt;</pre></td>
                   </tr>
                 
               </tbody>
@@ -649,43 +649,43 @@
           
 
           
-            <div class="context" id="c140204899496000">
+            <div class="context" id="c140110415558976">
               
-                <ol start="462" class="pre-context" id="pre140204899496000">
+                <ol start="462" class="pre-context" id="pre140110415558976">
                 
-                  <li onclick="toggle('pre140204899496000', 'post140204899496000')"><pre></pre></li>
+                  <li onclick="toggle('pre140110415558976', 'post140110415558976')"><pre></pre></li>
                 
-                  <li onclick="toggle('pre140204899496000', 'post140204899496000')"><pre>        exception_handler = self.get_exception_handler()</pre></li>
+                  <li onclick="toggle('pre140110415558976', 'post140110415558976')"><pre>        exception_handler = self.get_exception_handler()</pre></li>
                 
-                  <li onclick="toggle('pre140204899496000', 'post140204899496000')"><pre></pre></li>
+                  <li onclick="toggle('pre140110415558976', 'post140110415558976')"><pre></pre></li>
                 
-                  <li onclick="toggle('pre140204899496000', 'post140204899496000')"><pre>        context = self.get_exception_handler_context()</pre></li>
+                  <li onclick="toggle('pre140110415558976', 'post140110415558976')"><pre>        context = self.get_exception_handler_context()</pre></li>
                 
-                  <li onclick="toggle('pre140204899496000', 'post140204899496000')"><pre>        response = exception_handler(exc, context)</pre></li>
+                  <li onclick="toggle('pre140110415558976', 'post140110415558976')"><pre>        response = exception_handler(exc, context)</pre></li>
                 
-                  <li onclick="toggle('pre140204899496000', 'post140204899496000')"><pre></pre></li>
+                  <li onclick="toggle('pre140110415558976', 'post140110415558976')"><pre></pre></li>
                 
-                  <li onclick="toggle('pre140204899496000', 'post140204899496000')"><pre>        if response is None:</pre></li>
+                  <li onclick="toggle('pre140110415558976', 'post140110415558976')"><pre>        if response is None:</pre></li>
                 
                 </ol>
               
               <ol start="469" class="context-line">
-                <li onclick="toggle('pre140204899496000', 'post140204899496000')"><pre>            self.raise_uncaught_exception(exc)</pre> <span>…</span></li>
+                <li onclick="toggle('pre140110415558976', 'post140110415558976')"><pre>            self.raise_uncaught_exception(exc)</pre> <span>…</span></li>
               </ol>
               
-                <ol start='470' class="post-context" id="post140204899496000">
+                <ol start='470' class="post-context" id="post140110415558976">
                   
-                  <li onclick="toggle('pre140204899496000', 'post140204899496000')"><pre></pre></li>
+                  <li onclick="toggle('pre140110415558976', 'post140110415558976')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre140204899496000', 'post140204899496000')"><pre>        response.exception = True</pre></li>
+                  <li onclick="toggle('pre140110415558976', 'post140110415558976')"><pre>        response.exception = True</pre></li>
                   
-                  <li onclick="toggle('pre140204899496000', 'post140204899496000')"><pre>        return response</pre></li>
+                  <li onclick="toggle('pre140110415558976', 'post140110415558976')"><pre>        return response</pre></li>
                   
-                  <li onclick="toggle('pre140204899496000', 'post140204899496000')"><pre></pre></li>
+                  <li onclick="toggle('pre140110415558976', 'post140110415558976')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre140204899496000', 'post140204899496000')"><pre>    def raise_uncaught_exception(self, exc):</pre></li>
+                  <li onclick="toggle('pre140110415558976', 'post140110415558976')"><pre>    def raise_uncaught_exception(self, exc):</pre></li>
                   
-                  <li onclick="toggle('pre140204899496000', 'post140204899496000')"><pre>        if settings.DEBUG:</pre></li>
+                  <li onclick="toggle('pre140110415558976', 'post140110415558976')"><pre>        if settings.DEBUG:</pre></li>
                   
               </ol>
               
@@ -697,7 +697,7 @@
               <details>
                 <summary class="commands">Local vars</summary>
             
-            <table class="vars" id="v140204899496000">
+            <table class="vars" id="v140110415558976">
               <thead>
                 <tr>
                   <th>Variable</th>
@@ -711,17 +711,17 @@
                     <td class="code"><pre>{&#x27;args&#x27;: (),
  &#x27;kwargs&#x27;: {},
  &#x27;request&#x27;: &lt;rest_framework.request.Request: POST &#x27;/api/login/&#x27;&gt;,
- &#x27;view&#x27;: &lt;backend.views.LoginView object at 0x7f83ff393ca0&gt;}</pre></td>
+ &#x27;view&#x27;: &lt;backend.views.WrappedAPIView object at 0x7f6dff980490&gt;}</pre></td>
                   </tr>
                 
                   <tr>
                     <td>exc</td>
-                    <td class="code"><pre>AttributeError(&quot;type object &#x27;Token&#x27; has no attribute &#x27;objects&#x27;&quot;)</pre></td>
+                    <td class="code"><pre>KeyError(&#x27;UserId&#x27;)</pre></td>
                   </tr>
                 
                   <tr>
                     <td>exception_handler</td>
-                    <td class="code"><pre>&lt;function exception_handler at 0x7f83ffd895e0&gt;</pre></td>
+                    <td class="code"><pre>&lt;function exception_handler at 0x7f6dffa78670&gt;</pre></td>
                   </tr>
                 
                   <tr>
@@ -731,7 +731,7 @@
                 
                   <tr>
                     <td>self</td>
-                    <td class="code"><pre>&lt;backend.views.LoginView object at 0x7f83ff393ca0&gt;</pre></td>
+                    <td class="code"><pre>&lt;backend.views.WrappedAPIView object at 0x7f6dff980490&gt;</pre></td>
                   </tr>
                 
               </tbody>
@@ -747,43 +747,43 @@
           
 
           
-            <div class="context" id="c140204908332736">
+            <div class="context" id="c140110415614592">
               
-                <ol start="473" class="pre-context" id="pre140204908332736">
+                <ol start="473" class="pre-context" id="pre140110415614592">
                 
-                  <li onclick="toggle('pre140204908332736', 'post140204908332736')"><pre></pre></li>
+                  <li onclick="toggle('pre140110415614592', 'post140110415614592')"><pre></pre></li>
                 
-                  <li onclick="toggle('pre140204908332736', 'post140204908332736')"><pre>    def raise_uncaught_exception(self, exc):</pre></li>
+                  <li onclick="toggle('pre140110415614592', 'post140110415614592')"><pre>    def raise_uncaught_exception(self, exc):</pre></li>
                 
-                  <li onclick="toggle('pre140204908332736', 'post140204908332736')"><pre>        if settings.DEBUG:</pre></li>
+                  <li onclick="toggle('pre140110415614592', 'post140110415614592')"><pre>        if settings.DEBUG:</pre></li>
                 
-                  <li onclick="toggle('pre140204908332736', 'post140204908332736')"><pre>            request = self.request</pre></li>
+                  <li onclick="toggle('pre140110415614592', 'post140110415614592')"><pre>            request = self.request</pre></li>
                 
-                  <li onclick="toggle('pre140204908332736', 'post140204908332736')"><pre>            renderer_format = getattr(request.accepted_renderer, &#x27;format&#x27;)</pre></li>
+                  <li onclick="toggle('pre140110415614592', 'post140110415614592')"><pre>            renderer_format = getattr(request.accepted_renderer, &#x27;format&#x27;)</pre></li>
                 
-                  <li onclick="toggle('pre140204908332736', 'post140204908332736')"><pre>            use_plaintext_traceback = renderer_format not in (&#x27;html&#x27;, &#x27;api&#x27;, &#x27;admin&#x27;)</pre></li>
+                  <li onclick="toggle('pre140110415614592', 'post140110415614592')"><pre>            use_plaintext_traceback = renderer_format not in (&#x27;html&#x27;, &#x27;api&#x27;, &#x27;admin&#x27;)</pre></li>
                 
-                  <li onclick="toggle('pre140204908332736', 'post140204908332736')"><pre>            request.force_plaintext_errors(use_plaintext_traceback)</pre></li>
+                  <li onclick="toggle('pre140110415614592', 'post140110415614592')"><pre>            request.force_plaintext_errors(use_plaintext_traceback)</pre></li>
                 
                 </ol>
               
               <ol start="480" class="context-line">
-                <li onclick="toggle('pre140204908332736', 'post140204908332736')"><pre>        raise exc</pre> <span>…</span></li>
+                <li onclick="toggle('pre140110415614592', 'post140110415614592')"><pre>        raise exc</pre> <span>…</span></li>
               </ol>
               
-                <ol start='481' class="post-context" id="post140204908332736">
+                <ol start='481' class="post-context" id="post140110415614592">
                   
-                  <li onclick="toggle('pre140204908332736', 'post140204908332736')"><pre></pre></li>
+                  <li onclick="toggle('pre140110415614592', 'post140110415614592')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre140204908332736', 'post140204908332736')"><pre>    # Note: Views are made CSRF exempt from within `as_view` as to prevent</pre></li>
+                  <li onclick="toggle('pre140110415614592', 'post140110415614592')"><pre>    # Note: Views are made CSRF exempt from within `as_view` as to prevent</pre></li>
                   
-                  <li onclick="toggle('pre140204908332736', 'post140204908332736')"><pre>    # accidental removal of this exemption in cases where `dispatch` needs to</pre></li>
+                  <li onclick="toggle('pre140110415614592', 'post140110415614592')"><pre>    # accidental removal of this exemption in cases where `dispatch` needs to</pre></li>
                   
-                  <li onclick="toggle('pre140204908332736', 'post140204908332736')"><pre>    # be overridden.</pre></li>
+                  <li onclick="toggle('pre140110415614592', 'post140110415614592')"><pre>    # be overridden.</pre></li>
                   
-                  <li onclick="toggle('pre140204908332736', 'post140204908332736')"><pre>    def dispatch(self, request, *args, **kwargs):</pre></li>
+                  <li onclick="toggle('pre140110415614592', 'post140110415614592')"><pre>    def dispatch(self, request, *args, **kwargs):</pre></li>
                   
-                  <li onclick="toggle('pre140204908332736', 'post140204908332736')"><pre>        &quot;&quot;&quot;</pre></li>
+                  <li onclick="toggle('pre140110415614592', 'post140110415614592')"><pre>        &quot;&quot;&quot;</pre></li>
                   
               </ol>
               
@@ -795,7 +795,7 @@
               <details>
                 <summary class="commands">Local vars</summary>
             
-            <table class="vars" id="v140204908332736">
+            <table class="vars" id="v140110415614592">
               <thead>
                 <tr>
                   <th>Variable</th>
@@ -806,7 +806,7 @@
                 
                   <tr>
                     <td>exc</td>
-                    <td class="code"><pre>AttributeError(&quot;type object &#x27;Token&#x27; has no attribute &#x27;objects&#x27;&quot;)</pre></td>
+                    <td class="code"><pre>KeyError(&#x27;UserId&#x27;)</pre></td>
                   </tr>
                 
                   <tr>
@@ -821,7 +821,7 @@
                 
                   <tr>
                     <td>self</td>
-                    <td class="code"><pre>&lt;backend.views.LoginView object at 0x7f83ff393ca0&gt;</pre></td>
+                    <td class="code"><pre>&lt;backend.views.WrappedAPIView object at 0x7f6dff980490&gt;</pre></td>
                   </tr>
                 
                   <tr>
@@ -842,43 +842,43 @@
           
 
           
-            <div class="context" id="c140204908256640">
+            <div class="context" id="c140110406959744">
               
-                <ol start="499" class="pre-context" id="pre140204908256640">
+                <ol start="499" class="pre-context" id="pre140110406959744">
                 
-                  <li onclick="toggle('pre140204908256640', 'post140204908256640')"><pre>            # Get the appropriate handler method</pre></li>
+                  <li onclick="toggle('pre140110406959744', 'post140110406959744')"><pre>            # Get the appropriate handler method</pre></li>
                 
-                  <li onclick="toggle('pre140204908256640', 'post140204908256640')"><pre>            if request.method.lower() in self.http_method_names:</pre></li>
+                  <li onclick="toggle('pre140110406959744', 'post140110406959744')"><pre>            if request.method.lower() in self.http_method_names:</pre></li>
                 
-                  <li onclick="toggle('pre140204908256640', 'post140204908256640')"><pre>                handler = getattr(self, request.method.lower(),</pre></li>
+                  <li onclick="toggle('pre140110406959744', 'post140110406959744')"><pre>                handler = getattr(self, request.method.lower(),</pre></li>
                 
-                  <li onclick="toggle('pre140204908256640', 'post140204908256640')"><pre>                                  self.http_method_not_allowed)</pre></li>
+                  <li onclick="toggle('pre140110406959744', 'post140110406959744')"><pre>                                  self.http_method_not_allowed)</pre></li>
                 
-                  <li onclick="toggle('pre140204908256640', 'post140204908256640')"><pre>            else:</pre></li>
+                  <li onclick="toggle('pre140110406959744', 'post140110406959744')"><pre>            else:</pre></li>
                 
-                  <li onclick="toggle('pre140204908256640', 'post140204908256640')"><pre>                handler = self.http_method_not_allowed</pre></li>
+                  <li onclick="toggle('pre140110406959744', 'post140110406959744')"><pre>                handler = self.http_method_not_allowed</pre></li>
                 
-                  <li onclick="toggle('pre140204908256640', 'post140204908256640')"><pre></pre></li>
+                  <li onclick="toggle('pre140110406959744', 'post140110406959744')"><pre></pre></li>
                 
                 </ol>
               
               <ol start="506" class="context-line">
-                <li onclick="toggle('pre140204908256640', 'post140204908256640')"><pre>            response = handler(request, *args, **kwargs)</pre> <span>…</span></li>
+                <li onclick="toggle('pre140110406959744', 'post140110406959744')"><pre>            response = handler(request, *args, **kwargs)</pre> <span>…</span></li>
               </ol>
               
-                <ol start='507' class="post-context" id="post140204908256640">
+                <ol start='507' class="post-context" id="post140110406959744">
                   
-                  <li onclick="toggle('pre140204908256640', 'post140204908256640')"><pre></pre></li>
+                  <li onclick="toggle('pre140110406959744', 'post140110406959744')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre140204908256640', 'post140204908256640')"><pre>        except Exception as exc:</pre></li>
+                  <li onclick="toggle('pre140110406959744', 'post140110406959744')"><pre>        except Exception as exc:</pre></li>
                   
-                  <li onclick="toggle('pre140204908256640', 'post140204908256640')"><pre>            response = self.handle_exception(exc)</pre></li>
+                  <li onclick="toggle('pre140110406959744', 'post140110406959744')"><pre>            response = self.handle_exception(exc)</pre></li>
                   
-                  <li onclick="toggle('pre140204908256640', 'post140204908256640')"><pre></pre></li>
+                  <li onclick="toggle('pre140110406959744', 'post140110406959744')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre140204908256640', 'post140204908256640')"><pre>        self.response = self.finalize_response(request, response, *args, **kwargs)</pre></li>
+                  <li onclick="toggle('pre140110406959744', 'post140110406959744')"><pre>        self.response = self.finalize_response(request, response, *args, **kwargs)</pre></li>
                   
-                  <li onclick="toggle('pre140204908256640', 'post140204908256640')"><pre>        return self.response</pre></li>
+                  <li onclick="toggle('pre140110406959744', 'post140110406959744')"><pre>        return self.response</pre></li>
                   
               </ol>
               
@@ -890,7 +890,7 @@
               <details>
                 <summary class="commands">Local vars</summary>
             
-            <table class="vars" id="v140204908256640">
+            <table class="vars" id="v140110406959744">
               <thead>
                 <tr>
                   <th>Variable</th>
@@ -906,7 +906,7 @@
                 
                   <tr>
                     <td>handler</td>
-                    <td class="code"><pre>&lt;bound method LoginView.post of &lt;backend.views.LoginView object at 0x7f83ff393ca0&gt;&gt;</pre></td>
+                    <td class="code"><pre>&lt;bound method api_view.&lt;locals&gt;.decorator.&lt;locals&gt;.handler of &lt;backend.views.WrappedAPIView object at 0x7f6dff980490&gt;&gt;</pre></td>
                   </tr>
                 
                   <tr>
@@ -921,7 +921,7 @@
                 
                   <tr>
                     <td>self</td>
-                    <td class="code"><pre>&lt;backend.views.LoginView object at 0x7f83ff393ca0&gt;</pre></td>
+                    <td class="code"><pre>&lt;backend.views.WrappedAPIView object at 0x7f6dff980490&gt;</pre></td>
                   </tr>
                 
               </tbody>
@@ -933,43 +933,47 @@
         
         <li class="frame user">
           
-            <code class="fname">/home/m/Documents/ML_Corporates/ML_CS_Pro_Backend/backend/views.py</code>, line 51, in post
+            <code class="fname">/home/m/myenv/lib/python3.9/site-packages/rest_framework/decorators.py</code>, line 50, in handler
           
 
           
-            <div class="context" id="c140204908256000">
+            <div class="context" id="c140110406960320">
               
-                <ol start="44" class="pre-context" id="pre140204908256000">
+                <ol start="43" class="pre-context" id="pre140110406960320">
                 
-                  <li onclick="toggle('pre140204908256000', 'post140204908256000')"><pre>        # Perform authentication using the email</pre></li>
+                  <li onclick="toggle('pre140110406960320', 'post140110406960320')"><pre>        assert isinstance(http_method_names, (list, tuple)), \</pre></li>
                 
-                  <li onclick="toggle('pre140204908256000', 'post140204908256000')"><pre>        user = authenticate(request, email=email, password=password)</pre></li>
+                  <li onclick="toggle('pre140110406960320', 'post140110406960320')"><pre>            &#x27;@api_view expected a list of strings, received %s&#x27; % type(http_method_names).__name__</pre></li>
                 
-                  <li onclick="toggle('pre140204908256000', 'post140204908256000')"><pre>        if user is not None:</pre></li>
+                  <li onclick="toggle('pre140110406960320', 'post140110406960320')"><pre></pre></li>
                 
-                  <li onclick="toggle('pre140204908256000', 'post140204908256000')"><pre>            # Log in the user</pre></li>
+                  <li onclick="toggle('pre140110406960320', 'post140110406960320')"><pre>        allowed_methods = set(http_method_names) | {&#x27;options&#x27;}</pre></li>
                 
-                  <li onclick="toggle('pre140204908256000', 'post140204908256000')"><pre>            login(request, user)</pre></li>
+                  <li onclick="toggle('pre140110406960320', 'post140110406960320')"><pre>        WrappedAPIView.http_method_names = [method.lower() for method in allowed_methods]</pre></li>
                 
-                  <li onclick="toggle('pre140204908256000', 'post140204908256000')"><pre></pre></li>
+                  <li onclick="toggle('pre140110406960320', 'post140110406960320')"><pre></pre></li>
                 
-                  <li onclick="toggle('pre140204908256000', 'post140204908256000')"><pre>            # Generate a new token</pre></li>
+                  <li onclick="toggle('pre140110406960320', 'post140110406960320')"><pre>        def handler(self, *args, **kwargs):</pre></li>
                 
                 </ol>
               
-              <ol start="51" class="context-line">
-                <li onclick="toggle('pre140204908256000', 'post140204908256000')"><pre>            token, created = Token.objects.get_or_create(user=user)</pre> <span>…</span></li>
+              <ol start="50" class="context-line">
+                <li onclick="toggle('pre140110406960320', 'post140110406960320')"><pre>            return func(*args, **kwargs)</pre> <span>…</span></li>
               </ol>
               
-                <ol start='52' class="post-context" id="post140204908256000">
+                <ol start='51' class="post-context" id="post140110406960320">
                   
-                  <li onclick="toggle('pre140204908256000', 'post140204908256000')"><pre></pre></li>
+                  <li onclick="toggle('pre140110406960320', 'post140110406960320')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre140204908256000', 'post140204908256000')"><pre>            return JsonResponse({&#x27;message&#x27;: &#x27;Login successful&#x27;, &#x27;user_id&#x27;: user.UserID, &#x27;token&#x27;: token.key})</pre></li>
+                  <li onclick="toggle('pre140110406960320', 'post140110406960320')"><pre>        for method in http_method_names:</pre></li>
                   
-                  <li onclick="toggle('pre140204908256000', 'post140204908256000')"><pre>        else:</pre></li>
+                  <li onclick="toggle('pre140110406960320', 'post140110406960320')"><pre>            setattr(WrappedAPIView, method.lower(), handler)</pre></li>
                   
-                  <li onclick="toggle('pre140204908256000', 'post140204908256000')"><pre>            return JsonResponse({&#x27;message&#x27;: &#x27;Login failed&#x27;}, status=400)</pre></li>
+                  <li onclick="toggle('pre140110406960320', 'post140110406960320')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre140110406960320', 'post140110406960320')"><pre>        WrappedAPIView.__name__ = func.__name__</pre></li>
+                  
+                  <li onclick="toggle('pre140110406960320', 'post140110406960320')"><pre>        WrappedAPIView.__module__ = func.__module__</pre></li>
                   
               </ol>
               
@@ -981,7 +985,7 @@
               <details>
                 <summary class="commands">Local vars</summary>
             
-            <table class="vars" id="v140204908256000">
+            <table class="vars" id="v140110406960320">
               <thead>
                 <tr>
                   <th>Variable</th>
@@ -989,6 +993,101 @@
                 </tr>
               </thead>
               <tbody>
+                
+                  <tr>
+                    <td>args</td>
+                    <td class="code"><pre>(&lt;rest_framework.request.Request: POST &#x27;/api/login/&#x27;&gt;,)</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>func</td>
+                    <td class="code"><pre>&lt;function login_view at 0x7f6dffaaeb80&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>kwargs</td>
+                    <td class="code"><pre>{}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>&lt;backend.views.WrappedAPIView object at 0x7f6dff980490&gt;</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">/home/m/Documents/ML_Corporates/ML_CS_Pro_Backend/backend/views.py</code>, line 62, in login_view
+          
+
+          
+            <div class="context" id="c140110416939392">
+              
+                <ol start="55" class="pre-context" id="pre140110416939392">
+                
+                  <li onclick="toggle('pre140110416939392', 'post140110416939392')"><pre>        token.expires = token.created + timedelta(minutes=45)</pre></li>
+                
+                  <li onclick="toggle('pre140110416939392', 'post140110416939392')"><pre>        token.save()</pre></li>
+                
+                  <li onclick="toggle('pre140110416939392', 'post140110416939392')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre140110416939392', 'post140110416939392')"><pre>        # Serialize the user data</pre></li>
+                
+                  <li onclick="toggle('pre140110416939392', 'post140110416939392')"><pre>        serializer = UserSerializer(user)</pre></li>
+                
+                  <li onclick="toggle('pre140110416939392', 'post140110416939392')"><pre>        user_data = serializer.data</pre></li>
+                
+                  <li onclick="toggle('pre140110416939392', 'post140110416939392')"><pre></pre></li>
+                
+                </ol>
+              
+              <ol start="62" class="context-line">
+                <li onclick="toggle('pre140110416939392', 'post140110416939392')"><pre>        return Response({&#x27;message&#x27;: &#x27;Login successful&#x27;, &#x27;user_id&#x27;: user_data[&#x27;UserId&#x27;], &#x27;token&#x27;: token.key})</pre> <span>…</span></li>
+              </ol>
+              
+                <ol start='63' class="post-context" id="post140110416939392">
+                  
+                  <li onclick="toggle('pre140110416939392', 'post140110416939392')"><pre>    else:</pre></li>
+                  
+                  <li onclick="toggle('pre140110416939392', 'post140110416939392')"><pre>        return Response({&#x27;message&#x27;: &#x27;Login failed&#x27;}, status=400)</pre></li>
+                  
+                  <li onclick="toggle('pre140110416939392', 'post140110416939392')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre140110416939392', 'post140110416939392')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre140110416939392', 'post140110416939392')"><pre>@api_view([&#x27;POST&#x27;])</pre></li>
+                  
+                  <li onclick="toggle('pre140110416939392', 'post140110416939392')"><pre>@permission_classes([IsAuthenticated])</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v140110416939392">
+              <thead>
+                <tr>
+                  <th>Variable</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>created</td>
+                    <td class="code"><pre>True</pre></td>
+                  </tr>
                 
                   <tr>
                     <td>email</td>
@@ -1006,13 +1105,49 @@
                   </tr>
                 
                   <tr>
-                    <td>self</td>
-                    <td class="code"><pre>&lt;backend.views.LoginView object at 0x7f83ff393ca0&gt;</pre></td>
+                    <td>serializer</td>
+                    <td class="code"><pre>UserSerializer(&lt;CustomUser: muhirelionel@gmail.com&gt;):
+    UserID = IntegerField(label=&#x27;UserID&#x27;, read_only=True)
+    password = CharField(max_length=128, write_only=True)
+    last_login = DateTimeField(allow_null=True, required=False)
+    is_superuser = BooleanField(help_text=&#x27;Designates that this user has all permissions without explicitly assigning them.&#x27;, label=&#x27;Superuser status&#x27;, required=False)
+    UserType = CharField(label=&#x27;UserType&#x27;, max_length=20)
+    username = CharField(max_length=50, validators=[&lt;UniqueValidator(queryset=CustomUser.objects.all())&gt;])
+    email = EmailField(max_length=254, validators=[&lt;UniqueValidator(queryset=CustomUser.objects.all())&gt;])
+    FullName = CharField(label=&#x27;FullName&#x27;, max_length=255)
+    NationalID = CharField(label=&#x27;NationalID&#x27;, max_length=25)
+    Location = CharField(max_length=100)
+    is_active = BooleanField(required=False)
+    is_staff = BooleanField(required=False)
+    groups = PrimaryKeyRelatedField(many=True, queryset=Group.objects.all(), required=False)
+    user_permissions = PrimaryKeyRelatedField(many=True, queryset=Permission.objects.all(), required=False)</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>token</td>
+                    <td class="code"><pre>&lt;Token: 7a0e7dde87961dafa82c460c810f2dfbd7470c92&gt;</pre></td>
                   </tr>
                 
                   <tr>
                     <td>user</td>
                     <td class="code"><pre>&lt;CustomUser: muhirelionel@gmail.com&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>user_data</td>
+                    <td class="code"><pre>{&#x27;FullName&#x27;: &#x27;Mr Li&#x27;,
+ &#x27;Location&#x27;: &#x27;Kigali&#x27;,
+ &#x27;NationalID&#x27;: &#x27;11997&#x27;,
+ &#x27;UserID&#x27;: 1,
+ &#x27;UserType&#x27;: &#x27;Level 1 Admin&#x27;,
+ &#x27;email&#x27;: &#x27;muhirelionel@gmail.com&#x27;,
+ &#x27;groups&#x27;: [],
+ &#x27;is_active&#x27;: True,
+ &#x27;is_staff&#x27;: False,
+ &#x27;is_superuser&#x27;: False,
+ &#x27;last_login&#x27;: &#x27;2023-11-28T14:51:48.522676Z&#x27;,
+ &#x27;user_permissions&#x27;: [],
+ &#x27;username&#x27;: &#x27;Li&#x27;}</pre></td>
                   </tr>
                 
               </tbody>
@@ -1028,7 +1163,7 @@
   <div id="pastebinTraceback" class="pastebin">
     <input type="hidden" name="language" value="PythonConsole">
     <input type="hidden" name="title"
-      value="AttributeError at /api/login/">
+      value="KeyError at /api/login/">
     <input type="hidden" name="source" value="Django Dpaste Agent">
     <input type="hidden" name="poster" value="Django">
     <textarea name="content" id="traceback_area" cols="140" rows="25">
@@ -1050,7 +1185,8 @@ Installed Applications:
  &#x27;backend&#x27;,
  &#x27;corsheaders&#x27;,
  &#x27;rest_framework&#x27;,
- &#x27;rest_framework_simplejwt&#x27;]
+ &#x27;rest_framework_simplejwt&#x27;,
+ &#x27;rest_framework.authtoken&#x27;]
 Installed Middleware:
 [&#x27;django.middleware.security.SecurityMiddleware&#x27;,
  &#x27;django.contrib.sessions.middleware.SessionMiddleware&#x27;,
@@ -1080,11 +1216,13 @@ Traceback (most recent call last):
     raise exc
   File "/home/m/myenv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
     response = handler(request, *args, **kwargs)
-  File "/home/m/Documents/ML_Corporates/ML_CS_Pro_Backend/backend/views.py", line 51, in post
-    token, created = Token.objects.get_or_create(user=user)
+  File "/home/m/myenv/lib/python3.9/site-packages/rest_framework/decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+  File "/home/m/Documents/ML_Corporates/ML_CS_Pro_Backend/backend/views.py", line 62, in login_view
+    return Response({&#x27;message&#x27;: &#x27;Login successful&#x27;, &#x27;user_id&#x27;: user_data[&#x27;UserId&#x27;], &#x27;token&#x27;: token.key})
 
-Exception Type: AttributeError at /api/login/
-Exception Value: type object &#x27;Token&#x27; has no attribute &#x27;objects&#x27;
+Exception Type: KeyError at /api/login/
+Exception Value: &#x27;UserId&#x27;
 </textarea>
   <br><br>
   <input type="submit" value="Share this traceback on a public website">
@@ -1150,7 +1288,7 @@ Exception Value: type object &#x27;Token&#x27; has no attribute &#x27;objects&#x
       
         <tr>
           <td>CSRF_COOKIE</td>
-          <td class="code"><pre>&#x27;rkxQMOu4cPqwETtnngCemznrhZirQV7y&#x27;</pre></td>
+          <td class="code"><pre>&#x27;JWfhnGDO0SigmRiaDeO5dwK8pGHqXaDY&#x27;</pre></td>
         </tr>
       
         <tr>
@@ -1189,16 +1327,6 @@ Exception Value: type object &#x27;Token&#x27; has no attribute &#x27;objects&#x
         </tr>
       
         <tr>
-          <td>GJS_DEBUG_OUTPUT</td>
-          <td class="code"><pre>&#x27;stderr&#x27;</pre></td>
-        </tr>
-      
-        <tr>
-          <td>GJS_DEBUG_TOPICS</td>
-          <td class="code"><pre>&#x27;JS ERROR;JS LOG&#x27;</pre></td>
-        </tr>
-      
-        <tr>
           <td>GNOME_DESKTOP_SESSION_ID</td>
           <td class="code"><pre>&#x27;this-is-deprecated&#x27;</pre></td>
         </tr>
@@ -1210,12 +1338,12 @@ Exception Value: type object &#x27;Token&#x27; has no attribute &#x27;objects&#x
       
         <tr>
           <td>GNOME_TERMINAL_SCREEN</td>
-          <td class="code"><pre>&#x27;/org/gnome/Terminal/screen/faba78cf_315d_46bf_97b6_b7f7f6496002&#x27;</pre></td>
+          <td class="code"><pre>&#x27;/org/gnome/Terminal/screen/fa288575_587b_411c_9e4c_6f6b69f595e6&#x27;</pre></td>
         </tr>
       
         <tr>
           <td>GNOME_TERMINAL_SERVICE</td>
-          <td class="code"><pre>&#x27;:1.97&#x27;</pre></td>
+          <td class="code"><pre>&#x27;:1.92&#x27;</pre></td>
         </tr>
       
         <tr>
@@ -1255,12 +1383,12 @@ Exception Value: type object &#x27;Token&#x27; has no attribute &#x27;objects&#x
       
         <tr>
           <td>INVOCATION_ID</td>
-          <td class="code"><pre>&#x27;01e44c0d94e4415fb66ddf11cd9c25bb&#x27;</pre></td>
+          <td class="code"><pre>&#x27;252f9457308f40a794b3bb7d4f267a9e&#x27;</pre></td>
         </tr>
       
         <tr>
           <td>JOURNAL_STREAM</td>
-          <td class="code"><pre>&#x27;8:40923&#x27;</pre></td>
+          <td class="code"><pre>&#x27;8:42709&#x27;</pre></td>
         </tr>
       
         <tr>
@@ -1335,7 +1463,7 @@ Exception Value: type object &#x27;Token&#x27; has no attribute &#x27;objects&#x
       
         <tr>
           <td>MANAGERPID</td>
-          <td class="code"><pre>&#x27;1017&#x27;</pre></td>
+          <td class="code"><pre>&#x27;1019&#x27;</pre></td>
         </tr>
       
         <tr>
@@ -1431,7 +1559,7 @@ Exception Value: type object &#x27;Token&#x27; has no attribute &#x27;objects&#x
       
         <tr>
           <td>SESSION_MANAGER</td>
-          <td class="code"><pre>&#x27;local/m-14CLE:@/tmp/.ICE-unix/1376,unix/m-14CLE:/tmp/.ICE-unix/1376&#x27;</pre></td>
+          <td class="code"><pre>&#x27;local/m-14CLE:@/tmp/.ICE-unix/1349,unix/m-14CLE:/tmp/.ICE-unix/1349&#x27;</pre></td>
         </tr>
       
         <tr>
@@ -1446,7 +1574,7 @@ Exception Value: type object &#x27;Token&#x27; has no attribute &#x27;objects&#x
       
         <tr>
           <td>SSH_AGENT_PID</td>
-          <td class="code"><pre>&#x27;1311&#x27;</pre></td>
+          <td class="code"><pre>&#x27;1306&#x27;</pre></td>
         </tr>
       
         <tr>
@@ -1556,7 +1684,7 @@ Exception Value: type object &#x27;Token&#x27; has no attribute &#x27;objects&#x
       
         <tr>
           <td>wsgi.input</td>
-          <td class="code"><pre>&lt;django.core.handlers.wsgi.LimitedStream object at 0x7f83ff393460&gt;</pre></td>
+          <td class="code"><pre>&lt;django.core.handlers.wsgi.LimitedStream object at 0x7f6dff9d5d90&gt;</pre></td>
         </tr>
       
         <tr>
@@ -1995,7 +2123,8 @@ Exception Value: type object &#x27;Token&#x27; has no attribute &#x27;objects&#x
  &#x27;backend&#x27;,
  &#x27;corsheaders&#x27;,
  &#x27;rest_framework&#x27;,
- &#x27;rest_framework_simplejwt&#x27;]</pre></td>
+ &#x27;rest_framework_simplejwt&#x27;,
+ &#x27;rest_framework.authtoken&#x27;]</pre></td>
         </tr>
       
         <tr>

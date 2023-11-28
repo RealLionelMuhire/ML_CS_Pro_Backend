@@ -1,16 +1,18 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.db import IntegrityError
 from rest_framework import status
 from django.http import JsonResponse
-from rest_framework.authtoken.models import Token  # Add this line
-from .serializers import UserSerializer
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from .serializers import UserSerializer
+from rest_framework.authtoken.views import obtain_auth_token
+from datetime import timedelta  # Import timedelta for token expiration
 
 class HelloWorldView(APIView):
     permission_classes = [IsAuthenticated]
@@ -38,6 +40,7 @@ class RegistrationView(APIView):
 @permission_classes([AllowAny])
 def login_view(request):
     # Extract username (email) and password from the request data
+    print("testing login")
     email = request.data.get('email').strip()
     password = request.data.get('password').strip()
 
@@ -46,10 +49,27 @@ def login_view(request):
     if user is not None:
         # Log in the user
         login(request, user)
-
-        # Generate a new token
+        print("==after-login==>", Token)
+        # Generate a new token with a 45-minute expiration time
         token, created = Token.objects.get_or_create(user=user)
+        token.expires = token.created + timedelta(minutes=1)
+        token.save()
 
-        return Response({'message': 'Login successful', 'user_id': user.UserID, 'token': token.key})
+        # Serialize the user data
+        serializer = UserSerializer(user)
+        user_data = serializer.data
+        print(user_data)
+
+        return Response({'message': 'Login successful', 'user_id': user_data['UserID'], 'token': token.key})
     else:
         return Response({'message': 'Login failed'}, status=400)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout_view(request):
+    # Log out the user and invalidate the token
+    logout(request)
+    request.auth.delete()
+
+    return Response({'message': 'Logout successful'})
