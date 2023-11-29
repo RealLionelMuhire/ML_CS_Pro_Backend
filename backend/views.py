@@ -13,6 +13,7 @@ from django.shortcuts import render
 from .serializers import UserSerializer
 from rest_framework.authtoken.views import obtain_auth_token
 from datetime import timedelta  # Import timedelta for token expiration
+from django.utils import timezone
 
 class HelloWorldView(APIView):
     permission_classes = [IsAuthenticated]
@@ -49,16 +50,16 @@ def login_view(request):
     if user is not None:
         # Log in the user
         login(request, user)
-        print("==after-login==>", Token)
+
         # Generate a new token with a 45-minute expiration time
         token, created = Token.objects.get_or_create(user=user)
-        token.expires = token.created + timedelta(minutes=1)
+        expiration_time = timezone.now() + timedelta(minutes=1)  # Adjust as needed
+        token.created = timezone.now()
         token.save()
 
         # Serialize the user data
         serializer = UserSerializer(user)
         user_data = serializer.data
-        print(user_data)
 
         return Response({'message': 'Login successful', 'user_id': user_data['UserID'], 'token': token.key})
     else:
