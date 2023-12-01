@@ -15,6 +15,8 @@ from rest_framework.authtoken.views import obtain_auth_token
 from datetime import timedelta
 from django.utils import timezone
 from .serializers import ClientSerializer
+from .models import Client
+from rest_framework import generics
 
 class HelloWorldView(APIView):
     permission_classes = [IsAuthenticated]
@@ -100,3 +102,34 @@ class ClientRegistrationView(APIView):
         except IntegrityError as e:
             print(f"IntegrityError: {e}")
             return Response({'message': 'Client registration failed. Duplicate client.'}, status=status.HTTP_400_BAD_REQUEST)
+
+class ClientDeleteView(generics.DestroyAPIView):
+    queryset = Client.objects.all()
+    serializer_class = ClientSerializer
+    permission_classes = [IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            client = self.get_object()
+            # Check if the authenticated user is the owner of the client
+            if request.user != client.user:
+                return Response({'message': 'You do not have permission to delete this client.'}, status=status.HTTP_403_FORBIDDEN)
+            
+            client.delete()
+            return Response({'message': 'Client deleted successfully'})
+        except Client.DoesNotExist:
+            return Response({'message': 'Client not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def search_clients(request):
+    # Get query parameters from the request
+    search_query = request.query_params.get('q', '')
+
+    # Perform the search
+    clients = Client.objects.filter(full_name__icontains=search_query)
+
+    # Serialize the results
+    serializer = ClientSerializer(clients, many=True)
+
+    return Response(serializer.data)
