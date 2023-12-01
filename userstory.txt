@@ -1,0 +1,77 @@
+User Story: CEO of ML Corporate Services Software Application
+
+As the CEO of ML Corporate Services, I need a comprehensive software application that provides streamlined client management, secure data handling, efficient collaboration, and user-friendly interfaces to enhance our services and compliance. The application should offer the following features:
+
+I. Client Data Management:
+
+Centralized Repository: The application should serve as a centralized repository for storing client data, including demographics and related files, ensuring data is organized and easily accessible.
+
+Admission Process: It should support the admission (acceptance) process for clients who will be served by the company.
+
+Permission Management: Allow administrators to set granular permissions based on user roles, ensuring that each user can perform specific tasks.
+
+Client Documentation: Admins should be able to create structured and organized documentation for each client file, including time tracking for document creation.
+
+Collaboration: Enable secure collaboration among administrators, facilitating the sharing of client data, notes, alerts, and payment plans within the system.
+
+Alarming and Alerts: Provide alarms and alerts for due deadlines, such as passport expiration, subscription deadlines, and other client-related events.
+
+Data Extraction: Allow data extraction for further analysis, promoting data-driven decision-making.
+
+Security and Privacy: Incorporate robust security measures, including user authentication, access controls, and data encryption, to protect client information and maintain regulatory compliance.
+
+Audit Trail: Implement an audit trail feature to log and save user and admin activities for security measures and audit purposes.
+
+Work Done Tracker: Enable admins to track and log their work for client accounts, ensuring transparency and accountability in service delivery.
+
+II. Administrator Accounts:
+
+All administrators must prioritize data security by implementing authentication, encryption, and access controls to protect client data.
+Level 1 Administrator (Data Collector):
+
+Communicate with other administrators via Direct Email and In-App Messaging.
+Manage client data before admission and view-only access afterward.
+Read, add, delete, and update client KYC input data.
+Communicate directly with clients via Direct Email and In-App Messaging.
+Level 2 Administrator (Accountant):
+
+Perform all Level 1 administrator tasks.
+View activities performed by Level 1 administrators.
+Perform actions, billings, and services after client admission.
+Communicate with other administrators via Direct Email and In-App Messaging.
+Level 3 Administrator (Human Resources or Managing Director):
+
+View all activities of Level 2 and Level 1 administrators.
+Perform all tasks of Level 2 and Level 1 administrators.
+Manage user accounts, roles, and permissions.
+Admit clients.
+Set up data backup and recovery processes.
+Set audit trails for other admin activities.
+III. Client Accounts:
+
+Clients can create accounts by providing required KYC details and can access various features:
+Appointment scheduling.
+Personal records.
+View results and track activities on their accounts.
+IV. Client Account Interface:
+
+Features available to clients:
+Login/logout.
+Profile containing client data.
+View activity history.
+Request appointments.
+In-app direct email.
+Video calls.
+View activities on a shared calendar.
+V. Administrator Accounts (Type 1, Type 2, Type 3):
+
+Features available to administrators:
+Login/logout.
+Profile information and role details.
+In-app messaging and email.
+Set reminders and alerts.
+Add activities and appointments to calendars.
+Permission control for client files.
+Track client activities.
+Activate work-done tracker.
+View shared calendar plans
