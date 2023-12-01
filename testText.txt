@@ -2,5 +2,31 @@ curl -X POST -H "Content-Type: application/json" -d '{"email": "muhirelionel@gma
 
 
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Token <your_token>" http://127.0.0.1:8000/api/logout/
-curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 64572fbd863bfa8007d7f7a330abb3037d4851ec" http://127.0.0.1:8000/api/logout/
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 3a1c9648cecba5d6e50ea01854f0fc325c9fc655" http://127.0.0.1:8000/api/logout/
+
+curl -X POST -H "Content-Type: application/json" -d '{
+  "username": "Muh",
+  "password": "Muhire07*",
+  "email": "muhirelionel@gmail.com",
+  "FullName": "Mr Li",
+  "NationalID": "11997",
+  "Location": "Kigali",
+  "UserType": "Level 2 Admin"
+}' http://localhost:8000/api/register/
+
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" -d '{
+  "full_name": "Test1 Customer1",
+  "tax_residency": "Country XYZ",
+  "tin": "123456789",
+  "citizenship": "Country ABC",
+  "date_of_birth": "1990-01-01",
+  "place_of_birth": "City ABC",
+  "passport_id_number": "ABC123",
+  "country_of_issue": "Country XYZ",
+  "expiry_date": "2030-01-01",
+  "occupation": "Software Developer",
+  "client_contact_phone": "+1234567890",
+  "client_email": "testcustomer@example.com",
+  "preferred_language": "English"
+}' http://localhost:8000/api/register-client/
 

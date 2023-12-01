@@ -12,8 +12,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from .serializers import UserSerializer
 from rest_framework.authtoken.views import obtain_auth_token
-from datetime import timedelta  # Import timedelta for token expiration
+from datetime import timedelta
 from django.utils import timezone
+from .serializers import ClientSerializer
 
 class HelloWorldView(APIView):
     permission_classes = [IsAuthenticated]
@@ -30,7 +31,7 @@ class RegistrationView(APIView):
         try:
             if serializer.is_valid():
                 user = serializer.save()
-                return JsonResponse({'message': 'Registration successful', 'user_id': user.id})
+                return JsonResponse({'message': 'Registration successful', 'user_id': user.UserID})
             else:
                 return Response({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
         except IntegrityError as e:
@@ -74,3 +75,28 @@ def logout_view(request):
     request.auth.delete()
 
     return Response({'message': 'Logout successful'})
+
+class ClientRegistrationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # Retrieve the user from the authenticated request
+        user = request.user
+
+        # Combine the user data with the client data
+        request_data = request.data
+        request_data['user'] = user.UserID  # Replace 'id' with the actual field in your CustomUser model
+
+        # Create the serializer
+        serializer = ClientSerializer(data=request_data)
+
+        try:
+            if serializer.is_valid():
+                # Save the client with the associated user
+                client = serializer.save()
+                return Response({'message': 'Client registration successful', 'client_id': client.id})
+            else:
+                return Response({'message': 'Client registration failed', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError as e:
+            print(f"IntegrityError: {e}")
+            return Response({'message': 'Client registration failed. Duplicate client.'}, status=status.HTTP_400_BAD_REQUEST)
