@@ -1,0 +1,6 @@
+curl -X POST -H "Content-Type: application/json" -d '{"email": "muhirelionel@gmail.com", "password": "Muhire07*"}' http://127.0.0.1:8000/api/login/
+
+
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token <your_token>" http://127.0.0.1:8000/api/logout/
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 64572fbd863bfa8007d7f7a330abb3037d4851ec" http://127.0.0.1:8000/api/logout/
+
