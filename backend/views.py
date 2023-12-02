@@ -10,12 +10,11 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from .serializers import UserSerializer
+from .serializers import UserSerializer, ActionSerializer, ClientSerializer
 from rest_framework.authtoken.views import obtain_auth_token
 from datetime import timedelta
 from django.utils import timezone
-from .serializers import ClientSerializer
-from .models import Client
+from .models import Client, Action
 from rest_framework import generics
 
 class HelloWorldView(APIView):
@@ -144,3 +143,66 @@ class ListClientsView(APIView):
         serializer = ClientSerializer(clients, many=True)
 
         return Response(serializer.data)
+
+class AddFieldToClientView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, client_id):
+        # Get the client instance
+        try:
+            client = Client.objects.get(id=client_id)
+        except Client.DoesNotExist:
+            return Response({'message': 'Client not found'}, status=404)
+
+        # Check if the user has permission to modify this client
+        if request.user != client.user:
+            return Response({'message': 'Permission denied'}, status=403)
+
+        # Get the field value from the request data
+        field_value = request.data.get('new_field', None)
+
+        # Add the new field to the client
+        if field_value is not None:
+            client.new_field = field_value
+            client.save()
+            return Response({'message': 'Field added successfully'})
+        else:
+            return Response({'message': 'Invalid field value'}, status=400)
+
+class InitiateActionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, client_id):
+        user = request.user
+        client = Client.objects.get(id=client_id)  # Replace with your actual query
+
+        data = {
+            'user': user.id,
+            'client': client.id,
+            'title': request.data.get('title'),
+            'objective': request.data.get('objective'),
+        }
+
+        serializer = ActionSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Action initiated successfully'})
+        else:
+            return Response({'message': 'Failed to initiate action', 'errors': serializer.errors}, status=400)
+
+class CloseActionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, action_id):
+        action = Action.objects.get(id=action_id)
+
+        # Check if the user initiating the action is the same as the user who initiated it
+        if request.user == action.user:
+            action.end_time = timezone.now()
+            action.description = request.data.get('description', None)
+            action.save()
+
+            serializer = ActionSerializer(action)
+            return Response({'message': 'Action closed successfully', 'action': serializer.data})
+        else:
+            return Response({'message': 'You do not have permission to close this action'}, status=403)

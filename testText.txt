@@ -32,6 +32,13 @@ curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 322aa1
 
 curl -X DELETE -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" http://localhost:8000/api/delete-client/{2}/
 
-curl -X GET -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" "http://localhost:8000/api/search-clients/?q=Kanyarwanda"
+curl -X GET -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" "http://localhost:8000/api/search-clients/?q=2"
+
+curl -X GET -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" "http://localhost:8000/api/list-clients/"
+
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" -d '{"Entreprise Naame": "Rwandan Entreprise"}' "http://localhost:8000/api/add-field-to-client/2/"
+
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" -d '{"new_field": "RwandanEntreprise"}' "http://localhost:8000/api/add-field-to-client/3/"
+
 
 

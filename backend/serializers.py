@@ -1,6 +1,6 @@
 # backend/serializers.py
 from rest_framework import serializers
-from .models import CustomUser, Client
+from .models import CustomUser, Client, Action
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,3 +16,16 @@ class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
         fields = '__all__'
+
+class ActionSerializer(serializers.ModelSerializer):
+    elapsed_time = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Action
+        fields = '__all__'
+
+    def get_elapsed_time(self, obj):
+        if obj.start_time and obj.end_time:
+            elapsed_time = obj.end_time - obj.start_time
+            return elapsed_time.total_seconds()  # Return elapsed time in seconds
+        return None
