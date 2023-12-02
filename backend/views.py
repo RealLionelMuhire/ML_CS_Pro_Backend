@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.db import IntegrityError
 from rest_framework import status
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.decorators import login_required
@@ -176,8 +176,20 @@ class InitiateActionView(APIView):
         user = request.user
         client = Client.objects.get(id=client_id)  # Replace with your actual query
 
+        title = request.data.get('title')
+
+        # Check for an existing unclosed action with the same title
+        existing_action = Action.objects.filter(
+            client=client,
+            title=title,
+            end_time__isnull=True  # Unclosed actions
+        ).first()
+
+        if existing_action:
+            return Response({'message': 'An unclosed action with the same title already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
         data = {
-            'user': user.id,
+            'user': user.UserID,
             'client': client.id,
             'title': request.data.get('title'),
             'objective': request.data.get('objective'),
@@ -194,12 +206,22 @@ class CloseActionView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, action_id):
-        action = Action.objects.get(id=action_id)
+        try:
+            action = Action.objects.get(id=action_id, is_active=True)
+        except Action.DoesNotExist:
+            raise Http404("Action does not exist or is not active.")
+
+        if action.start_time is None:
+            return Response({'message': 'Cannot close uninitiated action.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if action.is_active == False:
+            return Response({'message': 'action already closed'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Check if the user initiating the action is the same as the user who initiated it
         if request.user == action.user:
             action.end_time = timezone.now()
             action.description = request.data.get('description', None)
+            action.is_active = False  # Set is_active to False when closing the action
             action.save()
 
             serializer = ActionSerializer(action)
