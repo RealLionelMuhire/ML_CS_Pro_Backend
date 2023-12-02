@@ -133,3 +133,14 @@ def search_clients(request):
     serializer = ClientSerializer(clients, many=True)
 
     return Response(serializer.data)
+
+class ListClientsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        clients = Client.objects.all()
+
+        # Serialize the results
+        serializer = ClientSerializer(clients, many=True)
+
+        return Response(serializer.data)
