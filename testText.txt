@@ -1,8 +1,14 @@
+# Login
+
 curl -X POST -H "Content-Type: application/json" -d '{"email": "muhirelionel@gmail.com", "password": "Muhire07*"}' http://127.0.0.1:8000/api/login/
 
+# Logout
 
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Token <your_token>" http://127.0.0.1:8000/api/logout/
-curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 3a1c9648cecba5d6e50ea01854f0fc325c9fc655" http://127.0.0.1:8000/api/logout/
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 747dc77e5b340a116fdc0cdc1c9fc2b8404603b3" http://127.0.0.1:8000/api/logout/
+
+
+# Admin Register
 
 curl -X POST -H "Content-Type: application/json" -d '{
   "username": "Muh",
@@ -13,6 +19,8 @@ curl -X POST -H "Content-Type: application/json" -d '{
   "Location": "Kigali",
   "UserType": "Level 2 Admin"
 }' http://localhost:8000/api/register/
+
+# Client register
 
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" -d '{
   "full_name": "Rick Ross",
@@ -30,15 +38,36 @@ curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 322aa1
   "preferred_language": "English"
 }' http://localhost:8000/api/register-client/
 
+## client delete
+
 curl -X DELETE -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" http://localhost:8000/api/delete-client/{2}/
+
+## Search client
 
 curl -X GET -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" "http://localhost:8000/api/search-clients/?q=2"
 
+## List Clients
+
 curl -X GET -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" "http://localhost:8000/api/list-clients/"
+
+## Add field to client(Under test)
 
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" -d '{"Entreprise Naame": "Rwandan Entreprise"}' "http://localhost:8000/api/add-field-to-client/2/"
 
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" -d '{"new_field": "RwandanEntreprise"}' "http://localhost:8000/api/add-field-to-client/3/"
+
+## Testing Action to client
+
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" -d '{"title": "Log out test Sample action", "objective": "Testing log out"}' "http://localhost:8000/api/initiate-action/3/"
+
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 747dc77e5b340a116fdc0cdc1c9fc2b8404603b3" -d '{"title": "Sample Test Action", "objective": "Sample Objective"}' "http://localhost:8000/api/initiate-action/3/"
+
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 747dc77e5b340a116fdc0cdc1c9fc2b8404603b3" -d '{"description": "Closing action with description"}' "http://localhost:8000/api/close-action/1/"
+
+
+
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" -d '{"description": "Test New Desc"}' "http://localhost:8000/api/close-action/1/"
+
 
 
 

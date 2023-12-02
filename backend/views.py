@@ -72,8 +72,17 @@ def login_view(request):
 @permission_classes([IsAuthenticated])
 def logout_view(request):
     # Log out the user and invalidate the token
+    user = request.user
     logout(request)
     request.auth.delete()
+
+    # Close all active actions initiated by the user
+    active_actions = Action.objects.filter(user=user, is_active=True)
+    for action in active_actions:
+        action.end_time = timezone.now()
+        action.is_active = False
+        action.save()
+        print("Closing actions done")
 
     return Response({'message': 'Logout successful'})
 
@@ -174,7 +183,10 @@ class InitiateActionView(APIView):
 
     def post(self, request, client_id):
         user = request.user
-        client = Client.objects.get(id=client_id)  # Replace with your actual query
+        try:
+            client = Client.objects.get(id=client_id)  # Replace with your actual query
+        except Client.DoesNotExist:
+            raise Http404("Client does not exist 404 or not registered")
 
         title = request.data.get('title')
 
