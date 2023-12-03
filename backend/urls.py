@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import HelloWorldView, RegistrationView, login_view, logout_view,  ClientRegistrationView, ClientDeleteView, search_clients
-from .views import ListClientsView, AddFieldToClientView, InitiateActionView, CloseActionView
+from .views import ListClientsView, AddFieldToClientView, InitiateActionView, CloseActionView, ActionListView
 
 urlpatterns = [
     path('api/hello/', HelloWorldView.as_view(), name='hello_world'),
@@ -14,4 +14,5 @@ urlpatterns = [
     path('api/add-field-to-client/<int:client_id>/', AddFieldToClientView.as_view(), name='add-field-to-client'),
     path('api/initiate-action/<int:client_id>/', InitiateActionView.as_view(), name='initiate-action'),
     path('api/close-action/<int:action_id>/', CloseActionView.as_view(), name='close-action'),
+    path('api/list-actions/', ActionListView.as_view(), name='list-actions'),
 ]

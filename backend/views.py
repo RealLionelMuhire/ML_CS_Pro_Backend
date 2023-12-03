@@ -17,6 +17,7 @@ from django.utils import timezone
 from .models import Client, Action
 from rest_framework import generics
 from decimal import Decimal
+from rest_framework.generics import ListAPIView
 
 class HelloWorldView(APIView):
     permission_classes = [IsAuthenticated]
@@ -246,3 +247,26 @@ class CloseActionView(APIView):
             return Response({'message': 'Action closed successfully', 'action': serializer.data})
         else:
             return Response({'message': 'You do not have permission to close this action'}, status=403)
+
+class ActionListView(ListAPIView):
+    serializer_class = ActionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Action.objects.filter(user=user)
+
+        # Get sorting field from query parameters
+        sort_field = self.request.query_params.get('sort', '-start_time')  # Default: newest to oldest
+
+        # Handle errors if the sorting field is invalid
+        valid_sort_fields = [field.name for field in Action._meta.get_fields()]
+        if sort_field not in valid_sort_fields:
+            return Response({'error': f'Invalid sorting field: {sort_field}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Add sorting to the queryset
+        queryset = queryset.order_by(sort_field)
+
+        # You can add more filters based on other query parameters or model fields
+
+        return queryset
