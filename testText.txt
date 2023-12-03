@@ -1,11 +1,12 @@
 # Login
 
 curl -X POST -H "Content-Type: application/json" -d '{"email": "muhirelionel@gmail.com", "password": "Muhire07*"}' http://127.0.0.1:8000/api/login/
+curl -X POST -H "Content-Type: application/json" -d '{"email": "testUser9@example.com", "password": "testUser9*#"}' http://127.0.0.1:8000/api/login/
 
 # Logout
 
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Token <your_token>" http://127.0.0.1:8000/api/logout/
-curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 747dc77e5b340a116fdc0cdc1c9fc2b8404603b3" http://127.0.0.1:8000/api/logout/
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 62fe1ffbbb5a001c6045221380a3d15fde68bf29" http://127.0.0.1:8000/api/logout/
 
 
 # Admin Register
@@ -18,6 +19,16 @@ curl -X POST -H "Content-Type: application/json" -d '{
   "NationalID": "11997",
   "Location": "Kigali",
   "UserType": "Level 2 Admin"
+}' http://localhost:8000/api/register/
+
+curl -X POST -H "Content-Type: application/json" -d '{
+    "username": "testUser9",
+    "password": "testUser9*#",
+    "email": "testUser9@example.com",
+    "FullName": "test User",
+    "NationalID": "120001",
+    "Location": "Nairobi",
+    "UserType": "Level 1 Admin"
 }' http://localhost:8000/api/register/
 
 # Client register
@@ -58,15 +69,15 @@ curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 322aa1
 
 ## Testing Action to client
 
-curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" -d '{"title": "Log out test Sample action", "objective": "Testing log out"}' "http://localhost:8000/api/initiate-action/3/"
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token e87f76cfff4bee7c6438b26a9afff5370efc3e92" -d '{"title": "Testinng the encoding time", "objective": "Testing log out"}' "http://localhost:8000/api/initiate-action/3/"
 
-curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 747dc77e5b340a116fdc0cdc1c9fc2b8404603b3" -d '{"title": "Sample Test Action", "objective": "Sample Objective"}' "http://localhost:8000/api/initiate-action/3/"
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token d02c402e23ce5d4a532eae8629c6d980da95a842" -d '{"title": "TITLE A", "objective": "Sample Objective"}' "http://localhost:8000/api/initiate-action/3/"
 
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 747dc77e5b340a116fdc0cdc1c9fc2b8404603b3" -d '{"description": "Closing action with description"}' "http://localhost:8000/api/close-action/1/"
 
 
 
-curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 322aa117eee545f5b384895298a7f9d7367e7a60" -d '{"description": "Test New Desc"}' "http://localhost:8000/api/close-action/1/"
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token e87f76cfff4bee7c6438b26a9afff5370efc3e92" -d '{"description": "CLOSING TITLE WHILE TESTING MINUTES COUNT"}' "http://localhost:8000/api/close-action/10/"
 
 
 

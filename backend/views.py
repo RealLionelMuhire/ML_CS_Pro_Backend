@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.db import IntegrityError
-from rest_framework import status
+from rest_framework import status, filters
 from django.http import JsonResponse, Http404
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
@@ -18,6 +18,7 @@ from .models import Client, Action
 from rest_framework import generics
 from decimal import Decimal
 from rest_framework.generics import ListAPIView
+from django_filters.rest_framework import DjangoFilterBackend
 
 class HelloWorldView(APIView):
     permission_classes = [IsAuthenticated]
@@ -251,10 +252,22 @@ class CloseActionView(APIView):
 class ActionListView(ListAPIView):
     serializer_class = ActionSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
 
     def get_queryset(self):
         user = self.request.user
         queryset = Action.objects.filter(user=user)
+
+        # Apply filters based on query parameters
+        filterset_fields = ['client__full_name', 'title', 'objective', 'start_time', 'end_time', 'is_active', 'total_elapsed_time']
+        for field in filterset_fields:
+            value = self.request.query_params.get(field)
+            if value:
+                # Special case for datetime fields
+                if field in ['start_time', 'end_time']:
+                    queryset = queryset.filter(**{f'{field}__contains': value})
+                else:
+                    queryset = queryset.filter(**{field: value})
 
         # Get sorting field from query parameters
         sort_field = self.request.query_params.get('sort', '-start_time')  # Default: newest to oldest
@@ -266,7 +279,5 @@ class ActionListView(ListAPIView):
 
         # Add sorting to the queryset
         queryset = queryset.order_by(sort_field)
-
-        # You can add more filters based on other query parameters or model fields
 
         return queryset
