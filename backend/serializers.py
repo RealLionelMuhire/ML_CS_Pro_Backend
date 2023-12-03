@@ -27,5 +27,6 @@ class ActionSerializer(serializers.ModelSerializer):
     def get_elapsed_time(self, obj):
         if obj.start_time and obj.end_time:
             elapsed_time = obj.end_time - obj.start_time
-            return elapsed_time.total_seconds()  # Return elapsed time in seconds
+            elapsed_time_minutes = elapsed_time.total_seconds() / 60  # Convert seconds to minutes
+            return elapsed_time_minutes
         return None

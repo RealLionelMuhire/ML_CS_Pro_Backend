@@ -16,6 +16,7 @@ from datetime import timedelta
 from django.utils import timezone
 from .models import Client, Action
 from rest_framework import generics
+from decimal import Decimal
 
 class HelloWorldView(APIView):
     permission_classes = [IsAuthenticated]
@@ -221,7 +222,7 @@ class CloseActionView(APIView):
         try:
             action = Action.objects.get(id=action_id, is_active=True)
         except Action.DoesNotExist:
-            raise Http404("Action does not exist or is not active.")
+            return Response("Action does not exist or is not active.")
 
         if action.start_time is None:
             return Response({'message': 'Cannot close uninitiated action.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -232,7 +233,11 @@ class CloseActionView(APIView):
          # Check if the user initiating the action is the same as the user who initiated it   
         if request.user == action.user:
             action.end_time = timezone.now()
-            elapsed_time_minutes = (action.end_time - action.start_time).total_seconds() / 60.0
+            action.description = request.data.get('description', None)
+
+            elapsed_time_seconds = (action.end_time - action.start_time).total_seconds()
+            elapsed_time_minutes = Decimal(elapsed_time_seconds) / Decimal(60)  # Convert seconds to minutes
+
             action.total_elapsed_time += elapsed_time_minutes
             action.is_active = False
             action.save()
