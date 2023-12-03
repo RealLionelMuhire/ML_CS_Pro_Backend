@@ -184,7 +184,7 @@ class InitiateActionView(APIView):
     def post(self, request, client_id):
         user = request.user
         try:
-            client = Client.objects.get(id=client_id)  # Replace with your actual query
+            client = Client.objects.get(id=client_id)
         except Client.DoesNotExist:
             raise Http404("Client does not exist 404 or not registered")
 
@@ -229,11 +229,12 @@ class CloseActionView(APIView):
         if action.is_active == False:
             return Response({'message': 'action already closed'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if the user initiating the action is the same as the user who initiated it
+         # Check if the user initiating the action is the same as the user who initiated it   
         if request.user == action.user:
             action.end_time = timezone.now()
-            action.description = request.data.get('description', None)
-            action.is_active = False  # Set is_active to False when closing the action
+            elapsed_time_minutes = (action.end_time - action.start_time).total_seconds() / 60.0
+            action.total_elapsed_time += elapsed_time_minutes
+            action.is_active = False
             action.save()
 
             serializer = ActionSerializer(action)

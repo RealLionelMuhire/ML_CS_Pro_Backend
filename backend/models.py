@@ -68,6 +68,7 @@ class Action(models.Model):
     end_time = models.DateTimeField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    total_elapsed_time = models.DecimalField(default=0, max_digits=10, decimal_places=2)
 
     def __str__(self):
         return self.title
