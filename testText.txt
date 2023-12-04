@@ -79,6 +79,11 @@ curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 747dc7
 
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Token e87f76cfff4bee7c6438b26a9afff5370efc3e92" -d '{"description": "CLOSING TITLE WHILE TESTING MINUTES COUNT"}' "http://localhost:8000/api/close-action/10/"
 
+### Testing list of actions
+
+curl -X GET -H "Authorization: Token e87f76cfff4bee7c6438b26a9afff5370efc3e92" http://localhost:8000/api/list-actions/
+
+
 
 
 

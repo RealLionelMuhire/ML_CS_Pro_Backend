@@ -22,11 +22,14 @@ class ActionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Action
-        fields = '__all__'
+        fields = ['title', 'objective', 'start_time', 'end_time', 'description', 'is_active', 'elapsed_time', 'sum_elapsed_time']
 
     def get_elapsed_time(self, obj):
-        if obj.start_time and obj.end_time:
-            elapsed_time = obj.end_time - obj.start_time
-            elapsed_time_minutes = elapsed_time.total_seconds() / 60  # Convert seconds to minutes
+        start_time = obj.start_time
+        end_time = obj.end_time
+
+        if start_time and end_time:
+            elapsed_time = end_time - start_time
+            elapsed_time_minutes = elapsed_time.total_seconds() / 60
             return elapsed_time_minutes
         return None

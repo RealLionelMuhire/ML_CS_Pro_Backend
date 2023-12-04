@@ -17,8 +17,7 @@ from django.utils import timezone
 from .models import Client, Action
 from rest_framework import generics
 from decimal import Decimal
-from rest_framework.generics import ListAPIView
-from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Sum, F
 
 class HelloWorldView(APIView):
     permission_classes = [IsAuthenticated]
@@ -249,35 +248,28 @@ class CloseActionView(APIView):
         else:
             return Response({'message': 'You do not have permission to close this action'}, status=403)
 
-class ActionListView(ListAPIView):
-    serializer_class = ActionSerializer
+class ActionListView(APIView):
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
 
-    def get_queryset(self):
-        user = self.request.user
-        queryset = Action.objects.filter(user=user)
+    def get(self, request, *args, **kwargs):
+        user = request.user
 
-        # Apply filters based on query parameters
-        filterset_fields = ['client__full_name', 'title', 'objective', 'start_time', 'end_time', 'is_active', 'total_elapsed_time']
-        for field in filterset_fields:
-            value = self.request.query_params.get(field)
-            if value:
-                # Special case for datetime fields
-                if field in ['start_time', 'end_time']:
-                    queryset = queryset.filter(**{f'{field}__contains': value})
-                else:
-                    queryset = queryset.filter(**{field: value})
+        # Get sorting field and order from query parameters
+        sort_field = request.query_params.get('sort', '-start_time')  # Default: newest to oldest
+        sort_order = '' if sort_field.startswith('-') else '-'
 
-        # Get sorting field from query parameters
-        sort_field = self.request.query_params.get('sort', '-start_time')  # Default: newest to oldest
-
-        # Handle errors if the sorting field is invalid
-        valid_sort_fields = [field.name for field in Action._meta.get_fields()]
-        if sort_field not in valid_sort_fields:
+        # Validate sorting field
+        valid_sort_fields = ['title', 'start_time', 'end_time', 'client__full_name', 'user__username', 'is_active']
+        if sort_field.lstrip('-') not in valid_sort_fields:
             return Response({'error': f'Invalid sorting field: {sort_field}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Add sorting to the queryset
-        queryset = queryset.order_by(sort_field)
+        # Annotate the queryset to calculate the total_elapsed_time and include individual elapsed_time
+        queryset = Action.objects.filter(user=user).annotate(
+            total_elapsed_time=Sum(F('elapsed_time')),
+        ).order_by(sort_order + sort_field)
 
-        return queryset
+        # Serialize the queryset
+        serializer = ActionSerializer(queryset, many=True)
+        serialized_data = serializer.data
+
+        return Response(serialized_data, status=status.HTTP_200_OK)
