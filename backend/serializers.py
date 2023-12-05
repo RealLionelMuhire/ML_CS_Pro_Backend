@@ -19,17 +19,20 @@ class ClientSerializer(serializers.ModelSerializer):
 
 class ActionSerializer(serializers.ModelSerializer):
     elapsed_time = serializers.SerializerMethodField()
+    sum_elapsed_time = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
         model = Action
         fields = ['title', 'objective', 'start_time', 'end_time', 'description', 'is_active', 'elapsed_time', 'sum_elapsed_time']
+        extra_kwargs = {
+            'sum_elapsed_time': {'write_only': True},
+        }
 
     def get_elapsed_time(self, obj):
         start_time = obj.start_time
         end_time = obj.end_time
 
         if start_time and end_time:
-            elapsed_time = end_time - start_time
-            elapsed_time_minutes = elapsed_time.total_seconds() / 60
+            elapsed_time_minutes = (end_time - start_time).total_seconds() / 60
             return elapsed_time_minutes
         return None

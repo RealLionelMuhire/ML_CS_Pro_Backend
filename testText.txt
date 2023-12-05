@@ -2,11 +2,13 @@
 
 curl -X POST -H "Content-Type: application/json" -d '{"email": "muhirelionel@gmail.com", "password": "Muhire07*"}' http://127.0.0.1:8000/api/login/
 curl -X POST -H "Content-Type: application/json" -d '{"email": "testUser9@example.com", "password": "testUser9*#"}' http://127.0.0.1:8000/api/login/
+curl -X POST -H "Content-Type: application/json" -d '{"email": "sylv@gmail.com", "password": "Password08*"}' http://127.0.0.1:8000/api/login/
 
 # Logout
 
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Token <your_token>" http://127.0.0.1:8000/api/logout/
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 62fe1ffbbb5a001c6045221380a3d15fde68bf29" http://127.0.0.1:8000/api/logout/
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 8235636a39e62ff2fb73dd34c7a57bc906ccdfa7" http://127.0.0.1:8000/api/logout/
 
 
 # Admin Register
@@ -19,6 +21,16 @@ curl -X POST -H "Content-Type: application/json" -d '{
   "NationalID": "11997",
   "Location": "Kigali",
   "UserType": "Level 2 Admin"
+}' http://localhost:8000/api/register/
+
+curl -X POST -H "Content-Type: application/json" -d '{
+  "username": "SY",
+  "password": "Password08*",
+  "email": "sylv@gmail.com",
+  "FullName": "Mrs Sylvie",
+  "NationalID": "120000",
+  "Location": "Rukoma",
+  "UserType": "Level 3 Admin"
 }' http://localhost:8000/api/register/
 
 curl -X POST -H "Content-Type: application/json" -d '{
@@ -81,9 +93,25 @@ curl -X POST -H "Content-Type: application/json" -H "Authorization: Token e87f76
 
 ### Testing list of actions
 
-curl -X GET -H "Authorization: Token e87f76cfff4bee7c6438b26a9afff5370efc3e92" http://localhost:8000/api/list-actions/
+curl -X GET -H "Authorization: Token e87f76cfff4bee7c6438b26a9afff5370efc3e92" http://localhost:8000/api/list-actions/?title=ABC
 
+### List Actions with Default Sorting (newest to oldest):
 
+curl -X GET http://localhost:8000/api/list-actions/ -H "Authorization: Token e87f76cfff4bee7c6438b26a9afff5370efc3e92"
 
+### List Actions with Sorting by Title (ascending):
 
+curl -X GET http://localhost:8000/api/list-actions/?ordering=title -H "Authorization: Token e87f76cfff4bee7c6438b26a9afff5370efc3e92"
+
+### List Actions with Sorting by Start Time (descending):
+
+curl -X GET http://localhost:8000/api/list-actions/?ordering=-start_time -H "Authorization: Token e87f76cfff4bee7c6438b26a9afff5370efc3e92"
+
+### List Actions with Filtering by Active Status:
+
+curl -X GET http://localhost:8000/api/list-actions/?client=3 -H "Authorization: Token e87f76cfff4bee7c6438b26a9afff5370efc3e92"
+
+### List Actions with Sorting by End Time (ascending) and Filtering by Client ID:
+
+curl -X GET 'http://localhost:8000/api/list-actions/?client=3 -H 'Authorization: Token e87f76cfff4bee7c6438b26a9afff5370efc3e92'
 
