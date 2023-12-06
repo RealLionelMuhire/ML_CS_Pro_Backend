@@ -10,11 +10,11 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from .serializers import UserSerializer, ActionSerializer, ClientSerializer
+from .serializers import UserSerializer, ActionSerializer, ClientSerializer, RegistrationRequestSerializer
 from rest_framework.authtoken.views import obtain_auth_token
 from datetime import timedelta
 from django.utils import timezone
-from .models import Client, Action
+from .models import Client, Action,  RegistrationRequest, CustomUser
 from rest_framework import generics
 from decimal import Decimal
 from django.shortcuts import get_object_or_404
@@ -71,6 +71,37 @@ def login_view(request):
     else:
         return Response({'message': 'Login failed'}, status=400)
 
+class RegistrationRequestView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = RegistrationRequestSerializer(data=request.data)
+
+        if serializer.is_valid():
+            # Check if the user is already in the list of requesters
+            existing_request = RegistrationRequest.objects.filter(email=request.data['email']).first()
+
+            if existing_request:
+                # User is already in the list of requesters
+                return Response({'message': f"Dear {existing_request.full_name}, wait for admin response or contact support."},
+                                status=status.HTTP_200_OK)
+
+            # User is not in the list, create a new registration request
+            registration_request = serializer.save()
+
+            return Response({'message': f"Thank you {registration_request.full_name} for requesting to join our team. Wait for admin response or contact support."},
+                            status=status.HTTP_201_CREATED)
+
+        return Response({'message': 'Registration request failed.', 'errors': serializer.errors},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+class RegistrationRequestList(generics.ListCreateAPIView):
+    queryset = RegistrationRequest.objects.all()
+    serializer_class = RegistrationRequestSerializer
+
+class RegistrationRequestDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = RegistrationRequest.objects.all()
+    serializer_class = RegistrationRequestSerializer
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

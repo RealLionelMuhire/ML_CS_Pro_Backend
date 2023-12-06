@@ -1,6 +1,6 @@
 # backend/serializers.py
 from rest_framework import serializers
-from .models import CustomUser, Client, Action
+from .models import CustomUser, Client, Action, RegistrationRequest
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,3 +36,8 @@ class ActionSerializer(serializers.ModelSerializer):
             elapsed_time_minutes = (end_time - start_time).total_seconds() / 60
             return elapsed_time_minutes
         return None
+
+class RegistrationRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RegistrationRequest
+        exclude = ['id']
