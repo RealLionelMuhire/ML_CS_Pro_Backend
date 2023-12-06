@@ -263,18 +263,16 @@ class ActionListView(APIView):
 
         # Filter by client ID
         if client_id:
-            client = get_object_or_404(Client, id=client_id)
-            queryset = queryset.filter(client=client)
+            queryset = queryset.filter(client_id=client_id)
 
         # Filter by title
         if title:
             queryset = queryset.filter(title=title)
 
         # Filter by is_active
-        if is_active is not None:
-            is_active = is_active.lower() == 'true'
-            queryset = queryset.filter(is_active=is_active)
-        
+        if is_active:
+            queryset = queryset.filter(is_active=is_active.lower() == 'true')
+
         # Calculate total elapsed time
         queryset = queryset.annotate(sum_elapsed_time=Sum('total_elapsed_time'))
 
