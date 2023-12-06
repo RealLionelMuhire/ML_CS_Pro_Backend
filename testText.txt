@@ -8,7 +8,7 @@ curl -X POST -H "Content-Type: application/json" -d '{"email": "sylv@gmail.com",
 
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Token <your_token>" http://127.0.0.1:8000/api/logout/
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 62fe1ffbbb5a001c6045221380a3d15fde68bf29" http://127.0.0.1:8000/api/logout/
-curl -X POST -H "Content-Type: application/json" -H "Authorization: Token 8235636a39e62ff2fb73dd34c7a57bc906ccdfa7" http://127.0.0.1:8000/api/logout/
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Token e87f76cfff4bee7c6438b26a9afff5370efc3e92" http://127.0.0.1:8000/api/logout/
 
 
 # Admin Register

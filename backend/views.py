@@ -258,6 +258,7 @@ class ActionListView(APIView):
         client_id = self.request.query_params.get('client')
         title = self.request.query_params.get('title')
         is_active = self.request.query_params.get('is_active')
+        user_id = self.request.query_params.get('user')
 
         queryset = Action.objects.filter(user=user)
 
@@ -272,6 +273,10 @@ class ActionListView(APIView):
         # Filter by is_active
         if is_active:
             queryset = queryset.filter(is_active=is_active.lower() == 'true')
+        
+        # filter by user
+        if user_id:
+            queryset = Action.objects.filter(user_id=user_id)
 
         # Calculate total elapsed time
         queryset = queryset.annotate(sum_elapsed_time=Sum('total_elapsed_time'))
