@@ -2,6 +2,8 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth import get_user_model
+from django.conf import settings
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
@@ -22,8 +24,8 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     UserID = models.AutoField(primary_key=True)
     UserType = models.CharField(max_length=20)
-    username = models.CharField(max_length=50, unique=True)  # Change to 'username'
-    email = models.EmailField(unique=True)  # Add this line
+    username = models.CharField(max_length=50, unique=True)
+    email = models.EmailField(unique=True)
     FullName = models.CharField(max_length=255)
     NationalID = models.CharField(max_length=25, unique=True)
     Location = models.CharField(max_length=100)
@@ -47,6 +49,8 @@ class RegistrationRequest(models.Model):
     role = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
     is_admitted = models.BooleanField(default=False)
+    admitted_email = models.EmailField(blank=True, null=True)
+    admitted_full_name = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"Registration Request for {self.full_name}"

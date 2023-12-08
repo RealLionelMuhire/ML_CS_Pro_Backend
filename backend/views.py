@@ -20,6 +20,7 @@ from decimal import Decimal
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from django.db.models import Sum, F
+from rest_framework.generics import CreateAPIView
 
 class HelloWorldView(APIView):
     permission_classes = [IsAuthenticated]
@@ -76,6 +77,13 @@ class RegistrationRequestView(APIView):
 
     def post(self, request):
         serializer = RegistrationRequestSerializer(data=request.data)
+
+        # Check if the user has been granted admission
+        # admission = Admission.objects.filter(grantee_email=request.data['email']).first()
+
+        # if admission:
+        #     # User has been granted admission, process the registration
+        #     serializer = RegistrationRequestSerializer(data=request.data)
 
         if serializer.is_valid():
             # Check if the user is already in the list of requesters

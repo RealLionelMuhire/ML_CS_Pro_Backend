@@ -115,3 +115,9 @@ curl -X GET http://localhost:8000/api/list-actions/?client=3 -H "Authorization: 
 
 curl -X GET 'http://localhost:8000/api/list-actions/?client=3 -H 'Authorization: Token e87f76cfff4bee7c6438b26a9afff5370efc3e92'
 
+### testing admission
+
+curl -X POST http://localhost:8000/api/admissions/ -H "Content-Type: application/json" -H "Authorization: Token d02c402e23ce5d4a532eae8629c6d980da95a842" -d '{
+  "registration_request": 1
+}'
+

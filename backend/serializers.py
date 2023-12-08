@@ -40,4 +40,4 @@ class ActionSerializer(serializers.ModelSerializer):
 class RegistrationRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = RegistrationRequest
-        exclude = ['id']
+        fields = '__all__'
