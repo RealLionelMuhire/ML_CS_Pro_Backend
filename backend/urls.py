@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import HelloWorldView, RegistrationView, login_view, logout_view,  ClientRegistrationView, ClientDeleteView, search_clients, RegistrationRequestView
 from .views import ListClientsView, AddFieldToClientView, InitiateActionView, CloseActionView, ActionListView, RegistrationRequestList, RegistrationRequestDetail
-
+from .views import ForgotPasswordView, ResetPasswordView
 
 urlpatterns = [
     path('api/hello/', HelloWorldView.as_view(), name='hello_world'),
@@ -19,4 +19,6 @@ urlpatterns = [
     path('api/user-registration-request/', RegistrationRequestView.as_view(), name='user_registration_request'),
     path('registration-requests/', RegistrationRequestList.as_view(), name='registration-request-list'),
     path('registration-requests/<int:pk>/', RegistrationRequestDetail.as_view(), name='registration-request-detail'),
+    path('api/forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
+    path('api/reset-password/<str:uidb64>/<str:token>/', ResetPasswordView.as_view(), name='reset-password'),
 ]

@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.urls import reverse
 from django.db import IntegrityError
 from rest_framework import status, filters
@@ -14,13 +14,25 @@ from .serializers import UserSerializer, ActionSerializer, ClientSerializer, Reg
 from rest_framework.authtoken.views import obtain_auth_token
 from datetime import timedelta
 from django.utils import timezone
-from .models import Client, Action,  RegistrationRequest, CustomUser
+from .models import Client, Action,  RegistrationRequest, CustomUser, PasswordResetToken
 from rest_framework import generics
 from decimal import Decimal
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from django.db.models import Sum, F
 from rest_framework.generics import CreateAPIView
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.views import View
+from django.urls import reverse
+from django.middleware.csrf import get_token
+from django.views.decorators.csrf import csrf_exempt
+
 
 class HelloWorldView(APIView):
     permission_classes = [IsAuthenticated]
@@ -328,3 +340,62 @@ class ActionListView(APIView):
         serialized_data = serializer.data
 
         return Response(serialized_data, status=status.HTTP_200_OK)
+
+def send_password_reset_email(user_email, reset_link):
+    subject = 'Password Reset'
+    message = f'Click the following link to reset your password: {reset_link}'
+    from_email = 'muhirelionel@gmail.com'  # replace with your email
+    recipient_list = [user_email]
+
+    send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+
+class ForgotPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        print('==> Start Trying Forgot PWD ==>')
+        # Get user email from request.data
+        email = request.data.get('email')
+
+        try:
+            # Find the user with the provided email
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            return Response({'message': 'User with this email does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Generate token for the user
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        print('==> User Found ==>')
+
+        # Construct the reset link
+        reset_link = reverse('reset-password', kwargs={'uidb64': uid, 'token': token})
+
+        # For localhost testing, prepend the link with http://localhost:8000
+        reset_link = 'http://localhost:8000' + reset_link
+
+        # Send the email with the reset link
+        send_password_reset_email(email, reset_link)
+
+        return Response({'message': 'Password reset email sent'})
+
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, token):
+        # Ensure CSRF token is included in the response
+        csrf_token = get_token(request)
+
+        # Your existing code to handle password reset
+        token_data = get_object_or_404(PasswordResetToken, token=token, expiration_time__gt=timezone.now())
+        user = token_data.user
+
+        new_password = request.data.get('new_password')
+        user.password = make_password(new_password)
+        user.save()
+
+        # Delete the used token
+        token_data.delete()
+
+        return Response({'message': 'Password reset successful', 'csrf_token': csrf_token})

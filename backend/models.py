@@ -87,3 +87,8 @@ class Action(models.Model):
 
     def __str__(self):
         return self.title
+
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    token = models.CharField(max_length=255, unique=True)
+    expiration_time = models.DateTimeField()
