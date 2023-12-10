@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.urls import reverse
 from django.db import IntegrityError
 from rest_framework import status, filters
-from django.http import JsonResponse, Http404
+from django.http import JsonResponse, Http404, HttpResponseBadRequest
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.decorators import login_required
@@ -25,8 +25,8 @@ from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.views import View
 from django.urls import reverse
@@ -375,27 +375,74 @@ class ForgotPasswordView(APIView):
         # For localhost testing, prepend the link with http://localhost:8000
         reset_link = 'http://localhost:8000' + reset_link
 
+        # Save the token to the database
+        token_obj = PasswordResetToken.objects.create(user=user, token=token, expiration_time=timezone.now() + timedelta(days=1))
+
         # Send the email with the reset link
         send_password_reset_email(email, reset_link)
 
         return Response({'message': 'Password reset email sent'})
 
+
+User = get_user_model()
 class ResetPasswordView(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request, token):
-        # Ensure CSRF token is included in the response
-        csrf_token = get_token(request)
+    def get(self, request, uidb64, token):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
 
+        # Check if the user and token are valid
+        if user is not None and default_token_generator.check_token(user, token):
+            # Render a password reset form
+            print(f"Rendering password reset form for user: {user}")
+            return render(request, 'password_reset_form.html', {'uidb64': uidb64, 'token': token})
+        else:
+            # Token is not valid
+            print(f"Invalid token or user not found. User: {user}, Token: {token}")
+            return HttpResponseBadRequest('Invalid token or user not found.')
+
+    permission_classes = [AllowAny]
+
+    def post(self, request, uidb64, token):
+        print(f"Received POST request for password reset with token: {token}")
+
+        # Additional print statements for debugging
+        print(f"Received uidb64: {uidb64}")
+        
         # Your existing code to handle password reset
-        token_data = get_object_or_404(PasswordResetToken, token=token, expiration_time__gt=timezone.now())
-        user = token_data.user
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+            print(f"User found: {user.email}")
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
+            print(f"Error finding user: {e}")
+            return HttpResponseBadRequest('Invalid token or user not found.')
 
-        new_password = request.data.get('new_password')
-        user.password = make_password(new_password)
-        user.save()
+        # Print values for debugging
+        print(f"Token: {token}")
+        print(f"User: {user}")
 
-        # Delete the used token
-        token_data.delete()
+        # Check if the token exists in the database
+        if PasswordResetToken.objects.filter(token=token, user=user, expiration_time__gt=timezone.now()).exists():
+            print(f"Token data found for user: {user.email}")
 
-        return Response({'message': 'Password reset successful', 'csrf_token': csrf_token})
+            # Retrieve the token data
+            token_data = PasswordResetToken.objects.get(token=token, user=user, expiration_time__gt=timezone.now())
+            
+            new_password = request.data.get('new_password')
+            user.password = make_password(new_password)
+            user.save()
+
+            print(f"Password reset successful for user: {user.email}")
+
+            # Delete the used token
+            token_data.delete()
+
+            return Response({'message': 'Password reset successful'})
+        else:
+            print(f"Token data not found for user: {user.email}")
+            return HttpResponseBadRequest('Invalid token or user not found.')
