@@ -1,15 +1,39 @@
 # backend/serializers.py
 from rest_framework import serializers
-from .models import CustomUser, Client, Action, RegistrationRequest
+from .models import CustomUser, Client, Action, UserActionLog
+from django.contrib.auth.models import Permission
 
 class UserSerializer(serializers.ModelSerializer):
+    # Your existing serializer fields
+
+    can_create_user = serializers.BooleanField(write_only=True, required=False)
+    can_activate_user = serializers.BooleanField(write_only=True, required=False)
+    can_deactivate_user = serializers.BooleanField(write_only=True, required=False)
+    can_grant_permissions = serializers.BooleanField(write_only=True, required=False)
+    registered_by_id = serializers.IntegerField(required=False)
+    registered_by_fullname = serializers.CharField(max_length=255, required=False)
+
     class Meta:
         model = CustomUser
-        fields = '__all__'
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['UserID', 'UserType', 'username', 'email', 'FullName', 'NationalID', 'Location', 'is_active', 'is_staff', 'can_create_user', 'can_activate_user', 'can_deactivate_user', 'can_grant_permissions', 'registered_by_id', 'registered_by_fullname']
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(**validated_data)
+
+        # Handle custom permissions
+        if validated_data.get('can_create_user'):
+            user.user_permissions.add(Permission.objects.get(codename='can_create_user'))
+            UserActionLog.objects.create(user=user, action_type='Create User', permission=user.user_permissions.last())
+        if validated_data.get('can_activate_user'):
+            user.user_permissions.add(Permission.objects.get(codename='can_activate_user'))
+            UserActionLog.objects.create(user=user, action_type='Activate User', permission=user.user_permissions.last())
+        if validated_data.get('can_deactivate_user'):
+            user.user_permissions.add(Permission.objects.get(codename='can_deactivate_user'))
+            UserActionLog.objects.create(user=user, action_type='Deactivate User', permission=user.user_permissions.last())
+        if validated_data.get('can_grant_permissions'):
+            user.user_permissions.add(Permission.objects.get(codename='can_grant_permissions'))
+            UserActionLog.objects.create(user=user, action_type='Grant Permissions', permission=user.user_permissions.last())
+
         return user
 
 class ClientSerializer(serializers.ModelSerializer):
@@ -37,7 +61,3 @@ class ActionSerializer(serializers.ModelSerializer):
             return elapsed_time_minutes
         return None
 
-class RegistrationRequestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RegistrationRequest
-        fields = '__all__'

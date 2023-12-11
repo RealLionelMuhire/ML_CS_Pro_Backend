@@ -4,6 +4,11 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.contrib.auth.models import Permission, Group
+from django.contrib.contenttypes.models import ContentType
+from django.db.models.signals import post_migrate
+from django.dispatch import receiver
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
@@ -29,8 +34,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     FullName = models.CharField(max_length=255)
     NationalID = models.CharField(max_length=25, unique=True)
     Location = models.CharField(max_length=100)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    registered_by_id = models.IntegerField(null=True, blank=True)
+    registered_by_fullname = models.CharField(max_length=255, null=True, blank=True)
 
     objects = CustomUserManager()
 
@@ -43,17 +50,38 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
-class RegistrationRequest(models.Model):
-    email = models.EmailField()
-    full_name = models.CharField(max_length=255)
-    role = models.CharField(max_length=20)
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_admitted = models.BooleanField(default=False)
-    admitted_email = models.EmailField(blank=True, null=True)
-    admitted_full_name = models.CharField(max_length=255, blank=True, null=True)
+def create_custom_permissions():
+    permissions = [
+        ('can_create_user', 'Can create user'),
+        ('can_activate_user', 'Can activate user'),
+        ('can_deactivate_user', 'Can deactivate user'),
+        ('can_grant_permissions', 'Can grant permissions'),
+        # more permissions if needed
+    ]
 
-    def __str__(self):
-        return f"Registration Request for {self.full_name}"
+    content_type = ContentType.objects.get_for_model(CustomUser)
+
+    for codename, name in permissions:
+        permission, created = Permission.objects.get_or_create(
+            codename=codename,
+            name=name,
+            content_type=content_type,
+        )
+
+        if created:
+            print(f'Permission {name} created successfully')
+        else:
+            print(f'Permission {name} already exists')
+
+@receiver(post_migrate)
+def on_post_migrate(sender, **kwargs):
+    create_custom_permissions()
+
+class UserActionLog(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    action_time = models.DateTimeField(default=timezone.now)
+    action_type = models.CharField(max_length=20)  # e.g., 'Create User', 'Activate User', etc.
+    permission = models.ForeignKey(Permission, on_delete=models.SET_NULL, null=True, blank=True)
 
 class Client(models.Model):
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)

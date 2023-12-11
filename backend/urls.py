@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import HelloWorldView, RegistrationView, login_view, logout_view,  ClientRegistrationView, ClientDeleteView, search_clients, RegistrationRequestView
-from .views import ListClientsView, AddFieldToClientView, InitiateActionView, CloseActionView, ActionListView, RegistrationRequestList, RegistrationRequestDetail
-from .views import ForgotPasswordView, ResetPasswordView
+from .views import HelloWorldView, RegistrationView, login_view, logout_view,  ClientRegistrationView, ClientDeleteView, search_clients
+from .views import ListClientsView, AddFieldToClientView, InitiateActionView, CloseActionView, ActionListView
+from .views import ForgotPasswordView, ResetPasswordView, UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
 
 urlpatterns = [
     path('api/hello/', HelloWorldView.as_view(), name='hello_world'),
@@ -16,9 +16,11 @@ urlpatterns = [
     path('api/initiate-action/<int:client_id>/', InitiateActionView.as_view(), name='initiate-action'),
     path('api/close-action/<int:action_id>/', CloseActionView.as_view(), name='close-action'),
     path('api/list-actions/', ActionListView.as_view(), name='list-actions'),
-    path('api/user-registration-request/', RegistrationRequestView.as_view(), name='user_registration_request'),
-    path('registration-requests/', RegistrationRequestList.as_view(), name='registration-request-list'),
-    path('registration-requests/<int:pk>/', RegistrationRequestDetail.as_view(), name='registration-request-detail'),
     path('api/forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
     path('api/reset-password/<str:uidb64>/<str:token>/', ResetPasswordView.as_view(), name='reset-password'),
+    path('api/user-permissions/', UserPermissionsView.as_view(), name='user_permissions'),
+    path('api/all-permissions/', AllPermissionsView.as_view(), name='all_permissions'),
+    path('api/activate-user/<int:user_id>/', ActivateUserView.as_view(), name='activate_user'),
+    path('api/deactivate-user/<int:user_id>/', DeactivateUserView.as_view(), name='deactivate_user'),
+    path('api/grant-permissions/<int:user_id>/', GrantPermissionsView.as_view(), name='grant_permissions'),
 ]

@@ -128,6 +128,31 @@ class BackendCustomuserUserPermissions(models.Model):
         unique_together = (('customuser', 'permission'),)
 
 
+class BackendPasswordresettoken(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    token = models.CharField(unique=True, max_length=255)
+    expiration_time = models.DateTimeField()
+    user = models.ForeignKey(BackendCustomuser, models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'backend_passwordresettoken'
+
+
+class BackendRegistrationrequest(models.Model):
+    email = models.CharField(max_length=254)
+    full_name = models.CharField(max_length=255)
+    role = models.CharField(max_length=20)
+    created_at = models.DateTimeField()
+    is_admitted = models.IntegerField()
+    admitted_email = models.CharField(max_length=254, blank=True, null=True)
+    admitted_full_name = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'backend_registrationrequest'
+
+
 class DjangoAdminLog(models.Model):
     action_time = models.DateTimeField()
     object_id = models.TextField(blank=True, null=True)

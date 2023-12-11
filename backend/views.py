@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated,IsAdminUser
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.urls import reverse
 from django.db import IntegrityError
@@ -10,11 +10,11 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from .serializers import UserSerializer, ActionSerializer, ClientSerializer, RegistrationRequestSerializer
+from .serializers import UserSerializer, ActionSerializer, ClientSerializer
 from rest_framework.authtoken.views import obtain_auth_token
 from datetime import timedelta
 from django.utils import timezone
-from .models import Client, Action,  RegistrationRequest, CustomUser, PasswordResetToken
+from .models import Client, Action, CustomUser, PasswordResetToken, UserActionLog
 from rest_framework import generics
 from decimal import Decimal
 from django.shortcuts import get_object_or_404
@@ -32,6 +32,8 @@ from django.views import View
 from django.urls import reverse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import Permission
+from django.contrib.auth.decorators import permission_required
 
 
 class HelloWorldView(APIView):
@@ -42,9 +44,19 @@ class HelloWorldView(APIView):
         return Response(content)
 
 class RegistrationView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        if not request.user.has_perm('auth.can_create_user'):
+            return Response({'message': 'Permission denied. You do not have the required permission to create a user.'}, status=status.HTTP_403_FORBIDDEN)
+
+        # Include the registered_by_id and registered_by_fullname in the request data
+        request.data['registered_by_id'] = request.user.UserID
+        print(f"the user who is registering has an id {request.user.UserID}")
+        request.data['registered_by_fullname'] = request.user.FullName
+        print(f"the user who is registering has name {request.user.FullName}")
+
+
         serializer = UserSerializer(data=request.data)
         try:
             if serializer.is_valid():
@@ -55,6 +67,74 @@ class RegistrationView(APIView):
         except IntegrityError as e:
             print(f"IntegrityError: {e}")
             return Response({'message': 'Registration failed. Duplicate user.'}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserPermissionsView(APIView):
+
+    def get(self, request):
+        user_permissions = request.user.user_permissions.all()
+        permission_names = [permission.name for permission in user_permissions]
+        return Response({'user_permissions': permission_names})
+
+class AllPermissionsView(APIView):
+    def get(self, request):
+        all_permissions = Permission.objects.all()
+        permission_names = [permission.name for permission in all_permissions]
+        return Response({'all_permissions': permission_names})
+
+class ActivateUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @permission_required('auth.can_activate_user', raise_exception=True)
+    def post(self, request, user_id):
+        try:
+            user = CustomUser.objects.get(pk=user_id)
+            user.is_active = True
+            user.save()
+            UserActionLog.objects.create(user=user, action_type='Activate User', granted_by=request.user)
+            return Response({'message': 'User activated successfully'})
+        except CustomUser.DoesNotExist:
+            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class DeactivateUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @permission_required('auth.can_deactivate_user', raise_exception=True)
+    def post(self, request, user_id):
+        try:
+            user = CustomUser.objects.get(pk=user_id)
+            user.is_active = False
+            user.save()
+            UserActionLog.objects.create(user=user, action_type='Deactivate User', granted_by=request.user)
+            return Response({'message': 'User deactivated successfully'})
+        except CustomUser.DoesNotExist:
+            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class GrantPermissionsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @permission_required('auth.can_grant_permissions', raise_exception=True)
+    def post(self, request, user_id):
+        try:
+            # Check if the requesting user has the permission 'can_grant_permissions'
+            if not request.user.has_perm('auth.can_grant_permissions'):
+                return Response({'message': 'Permission denied. You do not have the required permission to grant permissions.'}, status=status.HTTP_403_FORBIDDEN)
+
+            user_to_grant = CustomUser.objects.get(pk=user_id)
+
+            # Check if the requesting user has the permission to grant the specified permissions
+            if not request.user.has_perm('auth.can_grant_permissions'):
+                return Response({'message': 'Permission denied. You do not have the required permission to grant the specified permissions.'}, status=status.HTTP_403_FORBIDDEN)
+
+            # Your logic to grant permissions goes here
+            user_to_grant.user_permissions.add(Permission.objects.get(codename='can_create_user'))
+            user_to_grant.user_permissions.add(Permission.objects.get(codename='can_activate_user'))
+            user_to_grant.user_permissions.add(Permission.objects.get(codename='can_deactivate_user'))
+
+            UserActionLog.objects.create(user=user_to_grant, action_type='Grant Permissions', granted_by=request.user)
+            
+            return Response({'message': 'Permissions granted successfully'})
+        except CustomUser.DoesNotExist:
+            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -84,44 +164,6 @@ def login_view(request):
     else:
         return Response({'message': 'Login failed'}, status=400)
 
-class RegistrationRequestView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        serializer = RegistrationRequestSerializer(data=request.data)
-
-        # Check if the user has been granted admission
-        # admission = Admission.objects.filter(grantee_email=request.data['email']).first()
-
-        # if admission:
-        #     # User has been granted admission, process the registration
-        #     serializer = RegistrationRequestSerializer(data=request.data)
-
-        if serializer.is_valid():
-            # Check if the user is already in the list of requesters
-            existing_request = RegistrationRequest.objects.filter(email=request.data['email']).first()
-
-            if existing_request:
-                # User is already in the list of requesters
-                return Response({'message': f"Dear {existing_request.full_name}, wait for admin response or contact support."},
-                                status=status.HTTP_200_OK)
-
-            # User is not in the list, create a new registration request
-            registration_request = serializer.save()
-
-            return Response({'message': f"Thank you {registration_request.full_name} for requesting to join our team. Wait for admin response or contact support."},
-                            status=status.HTTP_201_CREATED)
-
-        return Response({'message': 'Registration request failed.', 'errors': serializer.errors},
-                        status=status.HTTP_400_BAD_REQUEST)
-
-class RegistrationRequestList(generics.ListCreateAPIView):
-    queryset = RegistrationRequest.objects.all()
-    serializer_class = RegistrationRequestSerializer
-
-class RegistrationRequestDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = RegistrationRequest.objects.all()
-    serializer_class = RegistrationRequestSerializer
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
