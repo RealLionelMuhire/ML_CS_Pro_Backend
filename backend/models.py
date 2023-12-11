@@ -82,6 +82,11 @@ class UserActionLog(models.Model):
     action_time = models.DateTimeField(default=timezone.now)
     action_type = models.CharField(max_length=20)  # e.g., 'Create User', 'Activate User', etc.
     permission = models.ForeignKey(Permission, on_delete=models.SET_NULL, null=True, blank=True)
+    granted_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='granted_logs')
+    granted_by_fullname = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.action_type}"
 
 class Client(models.Model):
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)

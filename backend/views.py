@@ -34,6 +34,7 @@ from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import Permission
 from django.contrib.auth.decorators import permission_required
+from django.utils.decorators import method_decorator
 
 
 class HelloWorldView(APIView):
@@ -84,14 +85,22 @@ class AllPermissionsView(APIView):
 class ActivateUserView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @permission_required('auth.can_activate_user', raise_exception=True)
+    @method_decorator(permission_required('auth.can_activate_user', raise_exception=True))
     def post(self, request, user_id):
         try:
             user = CustomUser.objects.get(pk=user_id)
-            user.is_active = True
-            user.save()
-            UserActionLog.objects.create(user=user, action_type='Activate User', granted_by=request.user)
-            return Response({'message': 'User activated successfully'})
+            
+            if not user.is_active:
+                # If the user is not activated, activate and send welcome email
+                user.is_active = True
+                user.save()
+
+                # Log the activation and send a response
+                UserActionLog.objects.create(user=user, action_type='Activate User', permission=user.user_permissions.last(), granted_by=request.user, granted_by_fullname=request.user.FullName)
+                return Response({'message': 'User activated successfully. Welcome email sent.'})
+            else:
+                # If the user is already activated, skip activation and return a response
+                return Response({'message': 'User is already activated.'})
         except CustomUser.DoesNotExist:
             return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
