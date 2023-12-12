@@ -107,21 +107,28 @@ class ActivateUserView(APIView):
 class DeactivateUserView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @permission_required('auth.can_deactivate_user', raise_exception=True)
+    @method_decorator(permission_required('auth.can_deactivate_user', raise_exception=True))
     def post(self, request, user_id):
         try:
             user = CustomUser.objects.get(pk=user_id)
-            user.is_active = False
-            user.save()
-            UserActionLog.objects.create(user=user, action_type='Deactivate User', granted_by=request.user)
-            return Response({'message': 'User deactivated successfully'})
+            if user.is_active:
+                # If the user is activated, deactivate
+                user.is_active = False
+                user.save()
+
+                # Log the deactivation and send a response
+                UserActionLog.objects.create(user=user, action_type='Deactivate User', permission=user.user_permissions.last(), granted_by=request.user, granted_by_fullname=request.user.FullName)
+                return Response({'message': 'User Deactivated successfully'})
+            else:
+                # If the user is already deactivated, skip deactivation and return a response
+                return Response({'message': 'User is already deactivated.'})
         except CustomUser.DoesNotExist:
             return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class GrantPermissionsView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @permission_required('auth.can_grant_permissions', raise_exception=True)
+    @method_decorator(permission_required('auth.can_grant_permissions', raise_exception=True))
     def post(self, request, user_id):
         try:
             # Check if the requesting user has the permission 'can_grant_permissions'
