@@ -121,3 +121,4 @@ curl -X POST http://localhost:8000/api/admissions/ -H "Content-Type: application
   "registration_request": 1
 }'
 
+

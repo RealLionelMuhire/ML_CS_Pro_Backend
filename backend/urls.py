@@ -1,7 +1,9 @@
 from django.urls import path
-from .views import HelloWorldView, RegistrationView, login_view, logout_view,  ClientRegistrationView, ClientDeleteView, search_clients
-from .views import ListClientsView, AddFieldToClientView, InitiateActionView, CloseActionView, ActionListView
-from .views import ForgotPasswordView, ResetPasswordView, UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
+from .views.custom_user_views import HelloWorldView, RegistrationView, get_dashboard_data
+from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, AddFieldToClientView, search_clients, ClientRegistrationView, ClientDeleteView
+from .views.action_views import InitiateActionView, CloseActionView, ActionListView
+from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView
+from .views.permission_views import UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
 
 urlpatterns = [
     path('api/hello/', HelloWorldView.as_view(), name='hello_world'),
@@ -23,4 +25,5 @@ urlpatterns = [
     path('api/activate-user/<int:user_id>/', ActivateUserView.as_view(), name='activate_user'),
     path('api/deactivate-user/<int:user_id>/', DeactivateUserView.as_view(), name='deactivate_user'),
     path('api/grant-permissions/<int:user_id>/', GrantPermissionsView.as_view(), name='grant_permissions'),
+    path('api/dashboard-data/', get_dashboard_data, name='get_dashboard_data')
 ]
