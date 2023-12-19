@@ -44,8 +44,8 @@ class RegistrationView(APIView):
         # Include additional information in the request data
         request.data['registered_by_id'] = request.user.UserID
         print(f"The user who is registering has an ID {request.user.UserID}")
-        request.data['registered_by_fullname'] = request.user.FullName
-        print(f"The user who is registering has the name {request.user.FullName}")
+        request.data['registered_by_fullname'] = request.user.FirstName
+        print(f"The user who is registering has the name {request.user.FirstName}")
 
         # Create a user serializer and handle registration
         serializer = UserSerializer(data=request.data)
@@ -63,5 +63,5 @@ class RegistrationView(APIView):
 @permission_classes([IsAuthenticated])
 def get_dashboard_data(request):
     # fetch dashboard data
-    data = {'user': request.user.FullName, 'message': 'Welcome to the dashboard!'}
+    data = {'user': request.user.FirstName, 'message': 'Welcome to the dashboard!'}
     return Response(data)

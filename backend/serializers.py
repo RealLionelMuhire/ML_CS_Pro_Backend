@@ -15,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['UserID', 'UserType', 'username', 'email', 'FullName', 'NationalID', 'Location', 'is_active', 'is_staff', 'can_create_user', 'can_activate_user', 'can_deactivate_user', 'can_grant_permissions', 'registered_by_id', 'registered_by_fullname']
+        fields = ['UserID', 'UserRoles', 'username', 'email', 'FirstName', 'LastName', 'NationalID', 'Address', 'is_active', 'is_staff', 'can_create_user', 'can_activate_user', 'can_deactivate_user', 'can_grant_permissions', 'registered_by_id', 'registered_by_fullname']
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(**validated_data)

@@ -28,12 +28,13 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     UserID = models.AutoField(primary_key=True)
-    UserType = models.CharField(max_length=20)
+    UserRoles = models.CharField(max_length=20)
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(unique=True)
-    FullName = models.CharField(max_length=255)
+    FirstName = models.CharField(max_length=255)
+    LastName = models.CharField(max_length=255)
     NationalID = models.CharField(max_length=25, unique=True)
-    Location = models.CharField(max_length=100)
+    Address = models.CharField(max_length=100)
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     registered_by_id = models.IntegerField(null=True, blank=True)
@@ -49,6 +50,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
 
 def create_custom_permissions():
     permissions = [
