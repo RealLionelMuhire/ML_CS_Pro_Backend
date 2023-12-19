@@ -8,6 +8,7 @@ from rest_framework import status
 from ..serializers import UserSerializer
 from django.db import IntegrityError
 from rest_framework.decorators import api_view, permission_classes
+from ..models import CustomUser
 
 
 class HelloWorldView(APIView):
@@ -58,6 +59,19 @@ class RegistrationView(APIView):
         except IntegrityError as e:
             print(f"IntegrityError: {e}")
             return Response({'message': 'Registration failed. Duplicate user.'}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserListView(APIView):
+    """
+    API view to retrieve a list of users.
+    Endpoint: GET /api/users/
+    """
+
+    def get(self, request):
+        """Handle GET requests for retrieving a list of users."""
+        users = CustomUser.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

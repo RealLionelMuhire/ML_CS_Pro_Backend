@@ -51,7 +51,7 @@ class ActivateUserView(APIView):
             if not user.is_active:
                 user.is_active = True
                 user.save()
-                UserActionLog.objects.create(user=user, action_type='Activate User', permission=user.user_permissions.last(), granted_by=request.user, granted_by_fullname=request.user.FullName)
+                UserActionLog.objects.create(user=user, action_type='Activate User', permission=user.user_permissions.last(), granted_by=request.user, granted_by_fullname=request.user.FirstName)
                 return Response({'message': 'User activated successfully. Welcome email sent.'})
             else:
                 return Response({'message': 'User is already activated.'})
@@ -75,7 +75,7 @@ class DeactivateUserView(APIView):
             if user.is_active:
                 user.is_active = False
                 user.save()
-                UserActionLog.objects.create(user=user, action_type='Deactivate User', permission=user.user_permissions.last(), granted_by=request.user, granted_by_fullname=request.user.FullName)
+                UserActionLog.objects.create(user=user, action_type='Deactivate User', permission=user.user_permissions.last(), granted_by=request.user, granted_by_fullname=request.user.FirstName)
                 return Response({'message': 'User Deactivated successfully'})
             else:
                 return Response({'message': 'User is already deactivated.'})

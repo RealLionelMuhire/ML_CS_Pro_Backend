@@ -1,5 +1,5 @@
 from django.urls import path
-from .views.custom_user_views import HelloWorldView, RegistrationView, get_dashboard_data
+from .views.custom_user_views import HelloWorldView, RegistrationView, get_dashboard_data, UserListView
 from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, AddFieldToClientView, search_clients, ClientRegistrationView, ClientDeleteView
 from .views.action_views import InitiateActionView, CloseActionView, ActionListView
 from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView
@@ -8,6 +8,7 @@ from .views.permission_views import UserPermissionsView, AllPermissionsView,Acti
 urlpatterns = [
     path('api/hello/', HelloWorldView.as_view(), name='hello_world'),
     path('api/register/', RegistrationView.as_view(), name='registration'),
+    path('api/users/', UserListView.as_view(), name='user-list'),
     path('api/login/', login_view, name='login'),
     path('api/logout/', logout_view, name='api_logout'),
     path('api/register-client/', ClientRegistrationView.as_view(), name='register-client'),
