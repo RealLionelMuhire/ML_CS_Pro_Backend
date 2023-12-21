@@ -33,7 +33,7 @@ class ClientRegistrationView(APIView):
             # Set the registrar information
             request_data['registrarID'] = user.UserID
             request_data['registrarEmail'] = user.email
-            request_data['registerarFirstName'] = user.FirstName
+            request_data['registrarFirstName'] = user.FirstName
 
             # Create the serializer
             serializer = ClientSerializer(data=request_data)
