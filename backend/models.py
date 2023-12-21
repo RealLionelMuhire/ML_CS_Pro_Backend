@@ -35,10 +35,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     LastName = models.CharField(max_length=255, blank=True, null=True)
     NationalID = models.CharField(max_length=25, unique=True)
     Address = models.CharField(max_length=100, blank=True)
-    is_active = models.BooleanField(default=False, null=True, blank=True)
-    is_staff = models.BooleanField(default=False, null=True, blank=True)
-    registered_by_id = models.IntegerField(null=True, blank=True)
-    registered_by_fullname = models.CharField(max_length=255, null=True, blank=True)
+    isActive = models.BooleanField(default=False, null=True, blank=True)
+    isStaff = models.BooleanField(default=False, null=True, blank=True)
+    registrarID = models.IntegerField(null=True, blank=True)
+    registrarFirstName = models.CharField(max_length=255, null=True, blank=True)
     accessLevel = models.CharField(max_length=20, null=True, blank=True)
     BirthDate = models.DateField(null=True, blank=True)
 
@@ -94,22 +94,32 @@ class UserActionLog(models.Model):
 
 class Client(models.Model):
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=255)
-    tax_residency = models.CharField(max_length=255)
+    FirstName = models.CharField(max_length=255)
+    LastName = models.CharField(max_length=255)
+    taxResidency = models.CharField(max_length=255)
     tin = models.CharField(max_length=50)
     citizenship = models.CharField(max_length=50)
-    date_of_birth = models.DateField()
-    place_of_birth = models.CharField(max_length=100)
-    passport_id_number = models.CharField(max_length=50, unique=True)
-    country_of_issue = models.CharField(max_length=50)
-    expiry_date = models.DateField()
+    dateOfBirth = models.DateField()
+    placeOfBirth = models.CharField(max_length=100)
+    passportIdNumber = models.CharField(max_length=50, unique=True)
+    countryOfIssue = models.CharField(max_length=50)
+    expiryDate = models.DateField()
     occupation = models.CharField(max_length=100)
-    client_contact_phone = models.CharField(max_length=20)
-    client_email = models.EmailField(unique=True)
-    preferred_language = models.CharField(max_length=50)
+    clientContactPhone = models.CharField(max_length=20)
+    clientEmail = models.EmailField(unique=True)
+    preferredLanguage = models.CharField(max_length=50)
+    registrarID = models.IntegerField(null=True, blank=True)
+    registrarEmail = models.EmailField(null=True, blank=True)
+    registrarFirstName = models.CharField(max_length=255, null=True, blank=True)
+    isActive = models.BooleanField(default=False, null=True, blank=True)
+    activatorID = models.IntegerField(null=True, blank=True)
+    activatorEmail = models.EmailField(unique=True, null=True, blank=True)
+    activatorFirstName = models.CharField(max_length=255, null=True, blank=True)
+
 
     def __str__(self):
-        return self.full_name
+        return f"{self.FirstName} {self.LastName}"
+
 
 class Action(models.Model):
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)

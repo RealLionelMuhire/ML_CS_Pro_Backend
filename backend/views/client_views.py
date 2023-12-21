@@ -27,15 +27,21 @@ class ClientRegistrationView(APIView):
 
         # Combine the user data with the client data
         request_data = request.data
-        request_data['user'] = user.UserID  # Replace 'id' with the actual field in your CustomUser model
-
-        # Create the serializer
-        serializer = ClientSerializer(data=request_data)
+        request_data['user'] = user.UserID
 
         try:
+            # Set the registrar information
+            request_data['registrarID'] = user.UserID
+            request_data['registrarEmail'] = user.email
+            request_data['registerarFirstName'] = user.FirstName
+
+            # Create the serializer
+            serializer = ClientSerializer(data=request_data)
+
             if serializer.is_valid():
-                # Save the client with the associated user
+                # Save the client with the associated user and registrar
                 client = serializer.save()
+
                 return Response({'message': 'Client registration successful', 'client_id': client.id})
             else:
                 return Response({'message': 'Client registration failed', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

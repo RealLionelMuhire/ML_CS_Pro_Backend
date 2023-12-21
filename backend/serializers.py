@@ -10,12 +10,12 @@ class UserSerializer(serializers.ModelSerializer):
     can_activate_user = serializers.BooleanField(write_only=True, required=False)
     can_deactivate_user = serializers.BooleanField(write_only=True, required=False)
     can_grant_permissions = serializers.BooleanField(write_only=True, required=False)
-    registered_by_id = serializers.IntegerField(required=False)
-    registered_by_fullname = serializers.CharField(max_length=255, required=False)
+    registrarID = serializers.IntegerField(required=False)
+    registrarFirstName = serializers.CharField(max_length=255, required=False)
 
     class Meta:
         model = CustomUser
-        fields = ['UserID', 'UserRoles', 'email', 'FirstName', 'LastName', 'NationalID', 'Address', 'is_active', 'is_staff', 'can_create_user', 'can_activate_user', 'can_deactivate_user', 'can_grant_permissions', 'registered_by_id', 'registered_by_fullname', 'accessLevel']
+        fields = ['UserID', 'UserRoles', 'email', 'FirstName', 'LastName', 'NationalID', 'Address', 'isActive', 'isStaff', 'can_create_user', 'can_activate_user', 'can_deactivate_user', 'can_grant_permissions', 'registrarID', 'registrarFirstName', 'accessLevel']
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(**validated_data)
