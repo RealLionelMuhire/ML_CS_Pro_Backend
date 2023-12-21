@@ -49,27 +49,71 @@ class ClientRegistrationView(APIView):
             print(f"IntegrityError: {e}")
             return Response({'message': 'Client registration failed. Duplicate client.'}, status=status.HTTP_400_BAD_REQUEST)
 
-class ClientDeleteView(generics.DestroyAPIView):
+class ClientDeactivateView(generics.RetrieveUpdateAPIView):
     """
-    API view for deleting a client associated with the authenticated user.
+    API view for deactivating a client associated with the authenticated user.
     Requires authentication for access.
-    Endpoint: DELETE /client-delete/<int:pk>/
+    Endpoint: PUT /client-deactivate/<int:pk>/
     """
 
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
     permission_classes = [IsAuthenticated]
 
-    def destroy(self, request, *args, **kwargs):
-        """Handle DELETE requests to delete a client."""
+    def update(self, request, *args, **kwargs):
+        """Handle PUT requests to deactivate a client."""
         try:
             client = self.get_object()
             # Check if the authenticated user is the owner of the client
             if request.user != client.user:
-                return Response({'message': 'You do not have permission to delete this client.'}, status=status.HTTP_403_FORBIDDEN)
-            
-            client.delete()
-            return Response({'message': 'Client deleted successfully'})
+                return Response({'message': 'You do not have permission to deactivate this client.'}, status=status.HTTP_403_FORBIDDEN)
+
+            # Check if the client is already deactivated
+            if not client.isActive:
+                return Response({'message': 'Client is already deactivated'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Deactivate the client
+            client.isActive = False
+            client.activatorID = request.user.UserID
+            client.activatorEmail = request.user.email
+            client.activatorFirstName = request.user.FirstName
+            client.save()
+
+            return Response({'message': 'Client deactivated successfully'})
+        except Client.DoesNotExist:
+            return Response({'message': 'Client not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class ClientActivateView(generics.RetrieveUpdateAPIView):
+    """
+    API view for activating a client associated with the authenticated user.
+    Requires authentication for access.
+    Endpoint: PUT /client-activate/<int:pk>/
+    """
+
+    queryset = Client.objects.all()
+    serializer_class = ClientSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        """Handle PUT requests to activate a client."""
+        try:
+            client = self.get_object()
+            # Check if the authenticated user is the owner of the client
+            if request.user != client.user:
+                return Response({'message': 'You do not have permission to activate this client.'}, status=status.HTTP_403_FORBIDDEN)
+
+            # Check if the client is already activated
+            if client.isActive:
+                return Response({'message': 'Client is already activated'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Activate the client
+            client.isActive = True
+            client.deactivatorID = request.user.UserID
+            client.deactivatorEmail = request.user.email
+            client.deactivatorFirstName = request.user.FirstName
+            client.save()
+
+            return Response({'message': 'Client activated successfully'})
         except Client.DoesNotExist:
             return Response({'message': 'Client not found'}, status=status.HTTP_404_NOT_FOUND)
 

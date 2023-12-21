@@ -102,8 +102,8 @@ class Client(models.Model):
     dateOfBirth = models.DateField()
     placeOfBirth = models.CharField(max_length=100)
     passportIdNumber = models.CharField(max_length=50, unique=True)
-    countryOfIssue = models.CharField(max_length=50)
-    expiryDate = models.DateField()
+    countryOfIssue = models.CharField(max_length=50, null=True, blank=True)
+    expiryDate = models.DateField(null=True, blank=True)
     occupation = models.CharField(max_length=100)
     clientContactPhone = models.CharField(max_length=20)
     clientEmail = models.EmailField(unique=True)
@@ -115,6 +115,9 @@ class Client(models.Model):
     activatorID = models.IntegerField(null=True, blank=True)
     activatorEmail = models.EmailField(unique=True, null=True, blank=True)
     activatorFirstName = models.CharField(max_length=255, null=True, blank=True)
+    deactivatorID = models.IntegerField(null=True, blank=True)
+    deactivatorEmail = models.EmailField(unique=True, null=True, blank=True)
+    deactivatorFirstName = models.CharField(max_length=255, null=True, blank=True)
 
 
     def __str__(self):
