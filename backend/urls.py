@@ -1,6 +1,6 @@
 from django.urls import path
 from .views.custom_user_views import HelloWorldView, RegistrationView, get_dashboard_data, UserListView
-from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, AddFieldToClientView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView
+from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView
 from .views.action_views import InitiateActionView, CloseActionView, ActionListView
 from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView
 from .views.permission_views import UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/activate-client/<int:pk>/', ClientActivateView.as_view(), name='activate-client'),
     path('api/search-clients/', search_clients, name='search-clients'),
     path('api/list-clients/', ListClientsView.as_view(), name='list-clients'),
+    path('api/clients-list-by-id/', ClientListByIdView.as_view(), name='clients-list-by-id'),
     path('api/add-field-to-client/<int:client_id>/', AddFieldToClientView.as_view(), name='add-field-to-client'),
     path('api/initiate-action/<int:client_id>/', InitiateActionView.as_view(), name='initiate-action'),
     path('api/close-action/<int:action_id>/', CloseActionView.as_view(), name='close-action'),

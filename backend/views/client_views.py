@@ -155,6 +155,37 @@ class ListClientsView(APIView):
 
         return Response(serializer.data)
 
+class ClientListByIdView(generics.ListAPIView):
+    """
+    API view for retrieving a list of clients by IDs.
+    Requires authentication for access.
+    Endpoint: GET /clients-list-by-id/?ids=1,2,3
+    """
+
+    serializer_class = ClientSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Get the list of client IDs from the query parameters
+        client_ids_str = self.request.query_params.get('ids', '')
+        client_ids = [int(client_id) for client_id in client_ids_str.split(',') if client_id.isdigit()]
+
+        # Filter and retrieve clients based on the provided IDs
+        queryset = Client.objects.filter(id__in=client_ids)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serialized_clients = []
+
+        # Serialize the clients and handle not found cases
+        for client_id in [int(client_id) for client_id in self.request.query_params.get('ids', '').split(',')]:
+            client = get_object_or_404(queryset, id=client_id)
+            serializer = self.get_serializer(client)
+            serialized_clients.append(serializer.data)
+
+        return Response(serialized_clients)
+
 class AddFieldToClientView(APIView):
     """
     API view for adding a new field to a client associated with the authenticated user.
