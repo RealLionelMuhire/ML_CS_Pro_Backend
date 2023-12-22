@@ -1,6 +1,6 @@
 from django.urls import path
 from .views.custom_user_views import HelloWorldView, RegistrationView, get_dashboard_data, UserListView
-from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, AddFieldToClientView, search_clients, ClientRegistrationView, ClientDeleteView
+from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, AddFieldToClientView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView
 from .views.action_views import InitiateActionView, CloseActionView, ActionListView
 from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView
 from .views.permission_views import UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
@@ -12,7 +12,8 @@ urlpatterns = [
     path('api/login/', login_view, name='login'),
     path('api/logout/', logout_view, name='api_logout'),
     path('api/register-client/', ClientRegistrationView.as_view(), name='register-client'),
-    path('api/delete-client/<int:pk>/', ClientDeleteView.as_view(), name='delete-client'),
+    path('api/deactivate-client/<int:pk>/', ClientDeactivateView.as_view(), name='deactivate-client'),
+    path('api/activate-client/<int:pk>/', ClientActivateView.as_view(), name='activate-client'),
     path('api/search-clients/', search_clients, name='search-clients'),
     path('api/list-clients/', ListClientsView.as_view(), name='list-clients'),
     path('api/add-field-to-client/<int:client_id>/', AddFieldToClientView.as_view(), name='add-field-to-client'),

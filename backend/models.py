@@ -113,10 +113,10 @@ class Client(models.Model):
     registrarFirstName = models.CharField(max_length=255, null=True, blank=True)
     isActive = models.BooleanField(default=False, null=True, blank=True)
     activatorID = models.IntegerField(null=True, blank=True)
-    activatorEmail = models.EmailField(unique=True, null=True, blank=True)
+    activatorEmail = models.EmailField(null=True, blank=True)
     activatorFirstName = models.CharField(max_length=255, null=True, blank=True)
     deactivatorID = models.IntegerField(null=True, blank=True)
-    deactivatorEmail = models.EmailField(unique=True, null=True, blank=True)
+    deactivatorEmail = models.EmailField(null=True, blank=True)
     deactivatorFirstName = models.CharField(max_length=255, null=True, blank=True)
 
 
