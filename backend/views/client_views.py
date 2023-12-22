@@ -74,9 +74,9 @@ class ClientDeactivateView(generics.RetrieveUpdateAPIView):
 
             # Deactivate the client
             client.isActive = False
-            client.activatorID = request.user.UserID
-            client.activatorEmail = request.user.email
-            client.activatorFirstName = request.user.FirstName
+            client.deactivatorID = request.user.UserID
+            client.deactivatorEmail = request.user.email
+            client.deactivatorFirstName = request.user.FirstName
             client.save()
 
             return Response({'message': 'Client deactivated successfully'})
@@ -108,9 +108,9 @@ class ClientActivateView(generics.RetrieveUpdateAPIView):
 
             # Activate the client
             client.isActive = True
-            client.deactivatorID = request.user.UserID
-            client.deactivatorEmail = request.user.email
-            client.deactivatorFirstName = request.user.FirstName
+            client.activatorID = request.user.UserID
+            client.activatorEmail = request.user.email
+            client.activatorFirstName = request.user.FirstName
             client.save()
 
             return Response({'message': 'Client activated successfully'})
