@@ -42,21 +42,31 @@ class ClientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ServiceSerializer(serializers.ModelSerializer):
-    elapsed_time = serializers.SerializerMethodField()
-    sum_elapsed_time = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    client_name = serializers.CharField(read_only=True)
+    client_email = serializers.EmailField(read_only=True)
+    provider_name = serializers.CharField(read_only=True)
+    provider_email = serializers.EmailField(read_only=True)
 
     class Meta:
         model = Service
-        fields = ['title', 'objective', 'start_time', 'end_time', 'description', 'is_active', 'elapsed_time', 'sum_elapsed_time', 'service_cost_per_hour', 'currency', 'provider_id', 'provider_email', 'provider_name', 'client_name', 'client_email','serviced_client_id']
-        extra_kwargs = {
-            'sum_elapsed_time': {'write_only': True},
-        }
+        fields = [
+            'id',
+            'user',
+            'title',
+            'objective',
+            'start_time',
+            'end_time',
+            'description',
+            'is_active',
+            'total_elapsed_time',
+            'service_cost_per_hour',
+            'currency',
+            'total_cost',
+            'provider_id',
+            'provider_email',
+            'provider_name',
+            'serviced_client_id',
+            'client_name',
+            'client_email',
+        ]
 
-    def get_elapsed_time(self, obj):
-        start_time = obj.start_time
-        end_time = obj.end_time
-
-        if start_time and end_time:
-            elapsed_time_minutes = (end_time - start_time).total_seconds() / 60
-            return elapsed_time_minutes
-        return None

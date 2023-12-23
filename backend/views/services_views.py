@@ -80,9 +80,9 @@ class CloseServiceView(APIView):
     def post(self, request, service_id):
         """Handle POST requests to close a service."""
         try:
-            service = Service.objects.get(id=service_id, is_active=True)
+            service = Service.objects.get(id=service_id)
         except Service.DoesNotExist:
-            return Response("Service does not exist or is not active.")
+            return Response({"message": "Service does not exist or is not active."}, status=status.HTTP_400_BAD_REQUEST)
 
         if service.start_time is None:
             return Response({'message': 'Cannot close uninitiated service.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -91,15 +91,17 @@ class CloseServiceView(APIView):
             return Response({'message': 'Service already closed'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Check if the user initiating the service is the same as the user who initiated it
-        if request.user == service.user:
+        if request.user:
+            service.is_active = False
             service.end_time = timezone.now()
             service.description = request.data.get('description', None)
 
             elapsed_time_seconds = (service.end_time - service.start_time).total_seconds()
-            elapsed_time_minutes = Decimal(elapsed_time_seconds) / Decimal(60)  # Convert seconds to minutes
+            elapsed_time_hours = Decimal(elapsed_time_seconds) / Decimal(3600)
 
-            service.total_elapsed_time += elapsed_time_minutes
-            service.is_active = False
+            service.total_elapsed_time = elapsed_time_hours
+            service.total_cost = service.service_cost_per_hour * elapsed_time_hours
+            
             service.save()
 
             serializer = ServiceSerializer(service)
@@ -109,7 +111,7 @@ class CloseServiceView(APIView):
 
 class ServiceListView(APIView):
     """
-    API view for listing services associated with the authenticated user.
+    API view for listing services for authenticated user.
     Requires authentication for access.
     Endpoint: GET /list-services/
     """
@@ -118,38 +120,8 @@ class ServiceListView(APIView):
 
     def get(self, request, *args, **kwargs):
         """Handle GET requests to list services."""
-        user = request.user
-        client_id = self.request.query_params.get('client')
-        title = self.request.query_params.get('title')
-        is_active = self.request.query_params.get('is_active')
-        user_id = self.request.query_params.get('user')
+        services = Service.objects.all()
 
-        queryset = Service.objects.filter(user=user)  # Update model
+        serializer = ServiceSerializer(services, many=True)
 
-        # Filter by client ID
-        if client_id:
-            queryset = queryset.filter(client_id=client_id)
-
-        # Filter by title
-        if title:
-            queryset = queryset.filter(title=title)
-
-        # Filter by is_active
-        if is_active:
-            queryset = queryset.filter(is_active=is_active.lower() == 'true')
-
-        # filter by user
-        if user_id:
-            queryset = Service.objects.filter(user_id=user_id)  # Update model
-
-        # Calculate total elapsed time
-        queryset = queryset.annotate(sum_elapsed_time=Sum('total_elapsed_time'))
-
-        # Sort by default from newest to oldest
-        queryset = queryset.order_by('-start_time')
-
-        # Serialize the queryset
-        serializer = ServiceSerializer(queryset, many=True)  # Update serializer
-        serialized_data = serializer.data
-
-        return Response(serialized_data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
