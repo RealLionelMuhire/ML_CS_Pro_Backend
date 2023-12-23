@@ -1,6 +1,6 @@
 # backend/serializers.py
 from rest_framework import serializers
-from .models import CustomUser, Client, Action, UserActionLog
+from .models import CustomUser, Client, Service, UserActionLog
 from django.contrib.auth.models import Permission
 
 class UserSerializer(serializers.ModelSerializer):
@@ -41,12 +41,12 @@ class ClientSerializer(serializers.ModelSerializer):
         model = Client
         fields = '__all__'
 
-class ActionSerializer(serializers.ModelSerializer):
+class ServiceSerializer(serializers.ModelSerializer):
     elapsed_time = serializers.SerializerMethodField()
     sum_elapsed_time = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
-        model = Action
+        model = Service
         fields = ['title', 'objective', 'start_time', 'end_time', 'description', 'is_active', 'elapsed_time', 'sum_elapsed_time']
         extra_kwargs = {
             'sum_elapsed_time': {'write_only': True},

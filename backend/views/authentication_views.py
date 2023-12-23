@@ -16,7 +16,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.views import View
 from datetime import timedelta
-from ..models import PasswordResetToken, Action, CustomUser
+from ..models import PasswordResetToken, Service, CustomUser
 from rest_framework import status
 from django.contrib.auth.hashers import make_password
 from ..serializers import UserSerializer
@@ -65,12 +65,12 @@ def logout_view(request):
     request.auth.delete()
 
     # Close all active actions initiated by the user
-    active_actions = Action.objects.filter(user=user, is_active=True)
-    for action in active_actions:
-        action.end_time = timezone.now()
-        action.is_active = False
-        action.save()
-        print("Closing actions done")
+    active_services = Service.objects.filter(user=user, is_active=True)
+    for service in active_services:
+        service.end_time = timezone.now()
+        service.is_active = False
+        service.save()
+        print("Closing service done")
 
     return Response({'message': 'Logout successful'})
 

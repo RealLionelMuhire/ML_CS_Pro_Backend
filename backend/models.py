@@ -125,7 +125,7 @@ class Client(models.Model):
         return f"{self.FirstName} {self.LastName}"
 
 
-class Action(models.Model):
+class Service(models.Model):
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
