@@ -18,9 +18,11 @@ urlpatterns = [
     path('api/list-clients/', ListClientsView.as_view(), name='list-clients'),
     path('api/clients-list-by-id/', ClientListByIdView.as_view(), name='clients-list-by-id'),
     path('api/add-field-to-client/<int:client_id>/', AddFieldToClientView.as_view(), name='add-field-to-client'),
+# services
     path('api/initiate-service/<int:client_id>/', InitiateServiceView.as_view(), name='initiate-service'),
-    path('api/close-service/<int:action_id>/', CloseServiceView.as_view(), name='close-service'),
+    path('api/close-service/<int:service_id>/', CloseServiceView.as_view(), name='close-service'),
     path('api/list-services/', ServiceListView.as_view(), name='list-service'),
+
     path('api/forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
     path('api/reset-password/<str:uidb64>/<str:token>/', ResetPasswordView.as_view(), name='reset-password'),
     path('api/user-permissions/', UserPermissionsView.as_view(), name='user_permissions'),

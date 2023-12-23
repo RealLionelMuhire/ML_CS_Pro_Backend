@@ -28,26 +28,40 @@ class InitiateServiceView(APIView):
         except Client.DoesNotExist:
             raise Http404("Client does not exist or is not registered")
 
+        # Check if the client is active
+        if not client.isActive:
+            return Response({'message': f'{client.firstName} {client.lastName} is not active.'}, status=status.HTTP_400_BAD_REQUEST)
+
         title = request.data.get('title')
 
         # Check for an existing unclosed service with the same title
         existing_service = Service.objects.filter(
-            client=client,
+            serviced_client_id=client.id,
             title=title,
-            end_time__isnull=True  # Unclosed services
+            end_time__isnull=True
         ).first()
+
+
 
         if existing_service:
             return Response({'message': 'An unclosed service with the same title already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
         data = {
-            'user': user.UserID,
-            'client': client.id,
+            'user_id': user.UserID,
             'title': request.data.get('title'),
             'objective': request.data.get('objective'),
+            'service_cost_per_hour': request.data.get('service_cost_per_hour'),
+            'currency': request.data.get('currency'),
+            'provider_id': user.UserID,
+            'provider_email': user.email,
+            'provider_name': f"{user.FirstName} {user.LastName}",
+            'is_active': True,
+            'client_name': f"{client.firstName} {client.lastName}",
+            'client_email': client.clientEmail,
+            'serviced_client_id': client.id,
         }
 
-        serializer = ServiceSerializer(data=data)  # Update serializer
+        serializer = ServiceSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response({'message': 'Service initiated successfully'})
@@ -88,7 +102,7 @@ class CloseServiceView(APIView):
             service.is_active = False
             service.save()
 
-            serializer = ServiceSerializer(service)  # Update serializer
+            serializer = ServiceSerializer(service)
             return Response({'message': 'Service closed successfully', 'service': serializer.data})
         else:
             return Response({'message': 'You do not have permission to close this service'}, status=status.HTTP_403_FORBIDDEN)

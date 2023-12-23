@@ -47,7 +47,7 @@ class ServiceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Service
-        fields = ['title', 'objective', 'start_time', 'end_time', 'description', 'is_active', 'elapsed_time', 'sum_elapsed_time']
+        fields = ['title', 'objective', 'start_time', 'end_time', 'description', 'is_active', 'elapsed_time', 'sum_elapsed_time', 'service_cost_per_hour', 'currency', 'provider_id', 'provider_email', 'provider_name', 'client_name', 'client_email','serviced_client_id']
         extra_kwargs = {
             'sum_elapsed_time': {'write_only': True},
         }
@@ -60,4 +60,3 @@ class ServiceSerializer(serializers.ModelSerializer):
             elapsed_time_minutes = (end_time - start_time).total_seconds() / 60
             return elapsed_time_minutes
         return None
-

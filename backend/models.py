@@ -126,7 +126,7 @@ class Client(models.Model):
 
 
 class Service(models.Model):
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=255)
     objective = models.TextField()
     start_time = models.DateTimeField(auto_now_add=True)
@@ -140,8 +140,8 @@ class Service(models.Model):
     provider_id = models.IntegerField(null=True, blank=True)
     provider_email = models.EmailField(null=True, blank=True)
     provider_name = models.CharField(max_length=255, null=True, blank=True)
-    client_id = models.ForeignKey(Client, on_delete=models.CASCADE)
-    client_first_name = models.CharField(max_length=255, null=True, blank=True)
+    serviced_client_id = models.IntegerField(null=True, blank=True)
+    client_name = models.CharField(max_length=255, null=True, blank=True)
     client_email = models.EmailField(null=True, blank=True)
 
     def __str__(self):
