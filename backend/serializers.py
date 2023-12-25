@@ -42,10 +42,10 @@ class ClientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ServiceSerializer(serializers.ModelSerializer):
-    client_name = serializers.CharField(read_only=True)
-    client_email = serializers.EmailField(read_only=True)
-    provider_name = serializers.CharField(read_only=True)
-    provider_email = serializers.EmailField(read_only=True)
+    # client_name = serializers.CharField(read_only=True)
+    # client_email = serializers.EmailField(read_only=True)
+    # provider_name = serializers.CharField(read_only=True)
+    # provider_email = serializers.EmailField(read_only=True)
 
     class Meta:
         model = Service

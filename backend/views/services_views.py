@@ -60,6 +60,7 @@ class InitiateServiceView(APIView):
             'client_email': client.clientEmail,
             'serviced_client_id': client.id,
         }
+        print(data)
 
         serializer = ServiceSerializer(data=data)
         if serializer.is_valid():

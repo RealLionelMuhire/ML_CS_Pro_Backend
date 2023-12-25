@@ -60,7 +60,6 @@ def create_custom_permissions():
         ('can_activate_user', 'Can activate user'),
         ('can_deactivate_user', 'Can deactivate user'),
         ('can_grant_permissions', 'Can grant permissions'),
-        # more permissions if needed
     ]
 
     content_type = ContentType.objects.get_for_model(CustomUser)
@@ -128,7 +127,7 @@ class Client(models.Model):
 class Service(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=255)
-    objective = models.TextField()
+    objective = models.TextField(null=True, blank=True)
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -136,7 +135,7 @@ class Service(models.Model):
     total_elapsed_time = models.DecimalField(default=0, max_digits=10, decimal_places=2)
     service_cost_per_hour = models.DecimalField(default=0, max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=10, default='RWF')
-    total_cost = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2,default=0)
     provider_id = models.IntegerField(null=True, blank=True)
     provider_email = models.EmailField(null=True, blank=True)
     provider_name = models.CharField(max_length=255, null=True, blank=True)
@@ -151,3 +150,12 @@ class PasswordResetToken(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     token = models.CharField(max_length=255, unique=True)
     expiration_time = models.DateTimeField()
+
+class Event(models.Model):
+    title = models.CharField(max_length=255)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.title
