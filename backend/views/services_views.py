@@ -10,6 +10,8 @@ from rest_framework import status
 from django.utils import timezone
 from decimal import Decimal
 from django.db.models import Sum
+from django.shortcuts import get_object_or_404
+from rest_framework import generics
 
 class InitiateServiceView(APIView):
     """
@@ -60,7 +62,6 @@ class InitiateServiceView(APIView):
             'client_email': client.clientEmail,
             'serviced_client_id': client.id,
         }
-        print(data)
 
         serializer = ServiceSerializer(data=data)
         if serializer.is_valid():
@@ -126,3 +127,35 @@ class ServiceListView(APIView):
         serializer = ServiceSerializer(services, many=True)
 
         return Response(serializer.data)
+
+class ServiceListByIdView(generics.ListAPIView):
+    """
+    API view for retrieving a list of services by IDs.
+    Requires authentication for access.
+    Endpoint: GET /service-list-by-id/?ids=1,2,3
+    """
+
+    serializer_class = ServiceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Get the list of client IDs from the query parameters
+        service_ids_str = self.request.query_params.get('ids', '')
+        service_ids = [int(service_id) for service_id in service_ids_str.split(',') if service_id.isdigit()]
+
+        # Filter and retrieve clients based on the provided IDs
+        queryset = Service.objects.filter(id__in=service_ids)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serialized_services = []
+
+        # Serialize the clients and handle not found cases
+        for service_id in [int(service_id) for service_id in self.request.query_params.get('ids', '').split(',')]:
+            service = get_object_or_404(queryset, id=service_id)
+            serializer = self.get_serializer(service)
+            serialized_services.append(serializer.data)
+
+        return Response(serialized_services)
+
