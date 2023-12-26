@@ -22,6 +22,7 @@ from django.contrib.auth.hashers import make_password
 from ..serializers import UserSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
+from decimal import Decimal
 
 User = get_user_model()
 
@@ -61,16 +62,23 @@ def logout_view(request):
     """Handle user logout."""
     # Log out the user and invalidate the token
     user = request.user
-    logout(request)
-    request.auth.delete()
 
     # Close all active actions initiated by the user
-    active_services = Service.objects.filter(user=user, is_active=True)
+    active_services = Service.objects.filter(provider_id=user.UserID, is_active=True)
     for service in active_services:
-        service.end_time = timezone.now()
+        print("Closing service done: ", service.title)
         service.is_active = False
+        service.end_time = timezone.now()
+        service.description = "Auto Close By Log Out"
+        elapsed_time_seconds = (service.end_time - service.start_time).total_seconds()
+        elapsed_time_hours = Decimal(elapsed_time_seconds) / Decimal(3600)
+
+        service.total_elapsed_time = elapsed_time_hours
+        service.total_cost = service.service_cost_per_hour * elapsed_time_hours
+        
         service.save()
-        print("Closing service done")
+    logout(request)
+    request.auth.delete()
 
     return Response({'message': 'Logout successful'})
 
