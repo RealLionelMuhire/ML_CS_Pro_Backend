@@ -72,7 +72,7 @@ class ServiceSerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fiels = '__all__'
+        fields = '__all__'
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
