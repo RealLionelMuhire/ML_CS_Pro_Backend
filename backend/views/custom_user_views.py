@@ -13,6 +13,8 @@ from django.db.models import Count, Sum
 from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import generics
+from django.http import JsonResponse
+from decimal import Decimal
 
 class HelloWorldView(APIView):
     """
@@ -181,6 +183,7 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
         # Retrieve the authenticated user
         return self.request.user
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def dashboard_data_view(request):
@@ -196,19 +199,26 @@ def dashboard_data_view(request):
     total_services = Service.objects.count()
     start_of_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     new_services_current_month = Service.objects.filter(start_time__gte=start_of_month).count()
+    increase_rate_services = (total_services - new_services_current_month) / total_services
+    increase_rate_services_percentage = increase_rate_services * 100
+    
+
 
     # 2. Total Clients, New Clients in the current month
     total_clients = Client.objects.count()
     new_clients_current_month = Client.objects.filter(registrationDate__gte=start_of_month).count()
+    increase_rate_clients = (total_clients - new_clients_current_month) / total_clients
+    increase_rate_clients_percentage = increase_rate_clients * 100
 
     # 3. A list of 10 recent services with client_name, date, and total cost
     recent_services = Service.objects.order_by('-start_time')[:10]
     recent_services_data = [
         {
-            'client_id':service.serviced_client_id,
+            'client_id': service.serviced_client_id,
             'client_name': service.client_name,
             'date': service.start_time.strftime('%Y-%m-%d'),
-            'total_cost': '{} {}'.format(service.currency, service.total_cost),
+            'total_cost': '{}'.format(service.total_cost),
+            'currency': '{}'.format(service.currency),
         }
         for service in recent_services
     ]
@@ -217,8 +227,12 @@ def dashboard_data_view(request):
     response_data = {
         'total_services': total_services,
         'new_services_current_month': new_services_current_month,
+        'increase_rate_services': increase_rate_services,
+        'increase_rate_services_percentage': increase_rate_services_percentage,
         'total_clients': total_clients,
         'new_clients_current_month': new_clients_current_month,
+        'increase_rate_clients': increase_rate_clients,
+        'increase_rate_clients_percentage': increase_rate_clients_percentage,
         'recent_services': recent_services_data,
     }
 
