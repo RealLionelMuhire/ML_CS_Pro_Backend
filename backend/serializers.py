@@ -74,3 +74,12 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fiels = '__all__'
 
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['UserID', 'UserRoles', 'email', 'contact', 'FirstName', 'LastName', 'NationalID', 'Address', 'registrarFirstName', 'accessLevel', 'BirthDate']
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['contact', 'Address', 'BirthDate', 'FirstName', 'LastName', 'email' ]

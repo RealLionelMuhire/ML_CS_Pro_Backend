@@ -1,5 +1,5 @@
 from django.urls import path
-from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView
+from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView, UserProfileView, UserProfileUpdateView
 from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView
 from .views.services_views import InitiateServiceView, CloseServiceView, ServiceListView, ServiceListByIdView
 from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView
@@ -13,6 +13,8 @@ urlpatterns = [
     path('api/users/', UserListView.as_view(), name='user-list'),
     path('api/deactivate-user/<int:user_id>/', DeactivateUserView.as_view(), name='deactivate_user'),
     path('api/activate-user/<int:user_id>/', ActivateUserView.as_view(), name='activate_user'),
+    path('api/user-profile/', UserProfileView.as_view(), name='user-profile'),
+    path('api/update-user-profile/', UserProfileUpdateView.as_view(), name='update-user-profile'),
 # clients
     path('api/register-client/', ClientRegistrationView.as_view(), name='register-client'),
     path('api/deactivate-client/<int:pk>/', ClientDeactivateView.as_view(), name='deactivate-client'),

@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
 from rest_framework import status
-from ..serializers import UserSerializer
+from ..serializers import UserSerializer, CustomUserSerializer, UserProfileUpdateSerializer
 from django.db import IntegrityError
 from rest_framework.decorators import api_view, permission_classes
 from ..models import CustomUser, Service, Client
@@ -150,6 +150,36 @@ class UserListView(APIView):
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
+class UserProfileView(generics.RetrieveAPIView):
+    """
+    API view for retrieving the demographic data of the authenticated user.
+    Requires authentication for access.
+    Endpoint: GET /user-profile/
+    """
+
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        # Retrieve the authenticated user
+        return self.request.user
+
+class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
+    """
+    API view for retrieving and updating the profile data of the authenticated user.
+    Requires authentication for access.
+    Endpoint: GET /update-user-profile/
+              PUT /update-user-profile/
+    """
+
+    queryset = CustomUser.objects.all()
+    serializer_class = UserProfileUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        # Retrieve the authenticated user
+        return self.request.user
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
