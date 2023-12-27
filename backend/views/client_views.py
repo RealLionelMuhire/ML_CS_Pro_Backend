@@ -10,6 +10,7 @@ from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from django.db import IntegrityError
 from rest_framework import status
+from django.utils import timezone
 
 class ClientRegistrationView(APIView):
     """
@@ -77,6 +78,7 @@ class ClientDeactivateView(generics.RetrieveUpdateAPIView):
             client.deactivatorID = request.user.UserID
             client.deactivatorEmail = request.user.email
             client.deactivatorFirstName = request.user.FirstName
+            client.deactivationDate = timezone.now()
             client.save()
 
             return Response({'message': 'Client deactivated successfully'})
@@ -111,6 +113,7 @@ class ClientActivateView(generics.RetrieveUpdateAPIView):
             client.activatorID = request.user.UserID
             client.activatorEmail = request.user.email
             client.activatorFirstName = request.user.FirstName
+            client.activationDate = timezone.now()
             client.save()
 
             return Response({'message': 'Client activated successfully'})

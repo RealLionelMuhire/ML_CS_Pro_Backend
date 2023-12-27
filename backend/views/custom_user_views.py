@@ -8,8 +8,11 @@ from rest_framework import status
 from ..serializers import UserSerializer
 from django.db import IntegrityError
 from rest_framework.decorators import api_view, permission_classes
-from ..models import CustomUser
-
+from ..models import CustomUser, Service, Client
+from django.db.models import Count, Sum
+from django.http import JsonResponse
+from django.utils import timezone
+from rest_framework import generics
 
 class HelloWorldView(APIView):
     """
@@ -60,6 +63,81 @@ class RegistrationView(APIView):
             print(f"IntegrityError: {e}")
             return Response({'message': 'Registration failed. Duplicate user.'}, status=status.HTTP_400_BAD_REQUEST)
 
+class UserDeactivateView(generics.RetrieveUpdateAPIView):
+    """
+    API view for deactivating a user associated with the authenticated user.
+    Requires authentication for access.
+    Endpoint: PUT /user-deactivate/<int:pk>/
+    """
+
+    def update(self, request, *args, **kwargs):
+        try:
+            user = self.get_object()
+            # Check if the authenticated user is the owner of the user
+            if request.user != user:
+                return Response({'message': 'You do not have permission to deactivate this user.'}, status=status.HTTP_403_FORBIDDEN)
+
+            # Check if the user is already deactivated
+            if not user.isActive:
+                return Response({'message': 'User is already deactivated'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Deactivate the user
+            user.isActive = False
+            user.deactivatorID = request.user.UserID
+            user.deactivatorEmail = request.user.email
+            user.deactivatorFirstName = request.user.FirstName
+            user.deactivationDate = timezone.now()
+            user.save()
+
+            # Update activator fields in CustomUser model
+            request.user.deactivatorID = request.user.UserID
+            request.user.deactivatorEmail = request.user.email
+            request.user.deactivatorFirstName = request.user.FirstName
+            request.user.deactivationDate = timezone.now()
+            request.user.save()
+
+            return Response({'message': 'User deactivated successfully'})
+        except CustomUser.DoesNotExist:
+            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class UserActivateView(generics.RetrieveUpdateAPIView):
+    """
+    API view for activating a user associated with the authenticated user.
+    Requires authentication for access.
+    Endpoint: PUT /user-deactivate/<int:pk>/
+    """
+
+    def update(self, request, *args, **kwargs):
+        try:
+            user = self.get_object()
+            # Check if the authenticated user is the owner of the user
+            if request.user != user:
+                return Response({'message': 'You do not have permission to activate this user.'}, status=status.HTTP_403_FORBIDDEN)
+
+            # Check if the user is already activated
+            if user.isActive:
+                return Response({'message': 'User is already activated'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Activate the user
+            user.isActive = True
+            user.activatorID = request.user.UserID
+            user.activatorEmail = request.user.email
+            user.activatorFirstName = request.user.FirstName
+            user.activationDate = timezone.now()
+            user.save()
+
+            # Update activator fields in CustomUser model
+            request.user.activatorID = request.user.UserID
+            request.user.activatorEmail = request.user.email
+            request.user.activatorFirstName = request.user.FirstName
+            request.user.activationDate = timezone.now()
+            request.user.save()
+
+            return Response({'message': 'User activated successfully'})
+        except CustomUser.DoesNotExist:
+            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
 class UserListView(APIView):
     """
     API view to retrieve a list of users.
@@ -75,7 +153,43 @@ class UserListView(APIView):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_dashboard_data(request):
-    # fetch dashboard data
-    data = {'user': request.user.FirstName, 'message': 'Welcome to the dashboard!'}
-    return Response(data)
+def dashboard_data_view(request):
+    """
+    Dashboard data view providing statistics:
+    1. Total Services, New Services in the current month
+    2. Total Clients, New Clients in the current month
+    3. A list of 10 recent services with client_name, date, and total cost
+
+    Returns a JSON response containing the requested data.
+    """
+    # 1. Total Services, New Services in the current month
+    total_services = Service.objects.count()
+    start_of_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    new_services_current_month = Service.objects.filter(start_time__gte=start_of_month).count()
+
+    # 2. Total Clients, New Clients in the current month
+    total_clients = Client.objects.count()
+    new_clients_current_month = Client.objects.filter(registrationDate__gte=start_of_month).count()
+
+    # 3. A list of 10 recent services with client_name, date, and total cost
+    recent_services = Service.objects.order_by('-start_time')[:10]
+    recent_services_data = [
+        {
+            'client_id':service.serviced_client_id,
+            'client_name': service.client_name,
+            'date': service.start_time.strftime('%Y-%m-%d'),
+            'total_cost': '{} {}'.format(service.currency, service.total_cost),
+        }
+        for service in recent_services
+    ]
+
+    # Prepare the response data
+    response_data = {
+        'total_services': total_services,
+        'new_services_current_month': new_services_current_month,
+        'total_clients': total_clients,
+        'new_clients_current_month': new_clients_current_month,
+        'recent_services': recent_services_data,
+    }
+
+    return JsonResponse(response_data)

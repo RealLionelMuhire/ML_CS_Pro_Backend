@@ -1,6 +1,6 @@
 # backend/serializers.py
 from rest_framework import serializers
-from .models import CustomUser, Client, Service, UserActionLog
+from .models import CustomUser, Client, Service, UserActionLog, Event
 from django.contrib.auth.models import Permission
 
 class UserSerializer(serializers.ModelSerializer):
@@ -69,4 +69,8 @@ class ServiceSerializer(serializers.ModelSerializer):
             'client_name',
             'client_email',
         ]
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fiels = '__all__'
 

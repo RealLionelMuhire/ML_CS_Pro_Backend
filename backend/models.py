@@ -39,8 +39,19 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     isStaff = models.BooleanField(default=False, null=True, blank=True)
     registrarID = models.IntegerField(null=True, blank=True)
     registrarFirstName = models.CharField(max_length=255, null=True, blank=True)
+    registrationDate = models.DateTimeField(auto_now_add=True)
     accessLevel = models.CharField(max_length=20, null=True, blank=True)
     BirthDate = models.DateField(null=True, blank=True)
+    
+    activatorID = models.IntegerField(null=True, blank=True)
+    activatorEmail = models.EmailField(null=True, blank=True)
+    activatorFirstName = models.CharField(max_length=255, null=True, blank=True)
+    activationDate = models.DateTimeField(null=True, blank=True)
+
+    deactivatorID = models.IntegerField(null=True, blank=True)
+    deactivatorEmail = models.EmailField(null=True, blank=True)
+    deactivatorFirstName = models.CharField(max_length=255, null=True, blank=True)
+    deactivationDate = models.DateTimeField(null=True, blank=True)
 
     objects = CustomUserManager()
 
@@ -111,13 +122,16 @@ class Client(models.Model):
     registrarID = models.IntegerField(null=True, blank=True)
     registrarEmail = models.EmailField(null=True, blank=True)
     registrarFirstName = models.CharField(max_length=255, null=True, blank=True)
+    registrationDate = models.DateTimeField(auto_now_add=True)
     isActive = models.BooleanField(default=False, null=True, blank=True)
     activatorID = models.IntegerField(null=True, blank=True)
     activatorEmail = models.EmailField(null=True, blank=True)
     activatorFirstName = models.CharField(max_length=255, null=True, blank=True)
+    activationDate = models.DateField(null=True, blank=True)
     deactivatorID = models.IntegerField(null=True, blank=True)
     deactivatorEmail = models.EmailField(null=True, blank=True)
     deactivatorFirstName = models.CharField(max_length=255, null=True, blank=True)
+    deactivationDate = models.DateField(null=True, blank=True)
 
 
     def __str__(self):
@@ -125,6 +139,7 @@ class Client(models.Model):
 
 
 class Service(models.Model):
+    initationDate = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=255)
     objective = models.TextField(null=True, blank=True)
@@ -147,6 +162,7 @@ class Service(models.Model):
         return self.title
 
 class PasswordResetToken(models.Model):
+    resetDate = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     token = models.CharField(max_length=255, unique=True)
     expiration_time = models.DateTimeField()

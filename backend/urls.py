@@ -1,12 +1,12 @@
 from django.urls import path
-from .views.custom_user_views import HelloWorldView, RegistrationView, get_dashboard_data, UserListView
+from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView
 from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView
 from .views.services_views import InitiateServiceView, CloseServiceView, ServiceListView, ServiceListByIdView
 from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView
 from .views.permission_views import UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
 
 urlpatterns = [
-    path('api/dashboard-data/', get_dashboard_data, name='get_dashboard_data'),
+    path('api/dashboard-data/', dashboard_data_view, name='dashboard_data'),
 # users
     path('api/hello/', HelloWorldView.as_view(), name='hello_world'),
     path('api/register/', RegistrationView.as_view(), name='registration'),
