@@ -4,6 +4,7 @@ from .views.client_views import ListClientsView, AddFieldToClientView, ListClien
 from .views.services_views import InitiateServiceView, CloseServiceView, ServiceListView, ServiceListByIdView
 from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView
 from .views.permission_views import UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
+from .views.events_view import EventDetailView, EventListView
 
 urlpatterns = [
     path('api/dashboard-data/', dashboard_data_view, name='dashboard_data'),
@@ -33,8 +34,11 @@ urlpatterns = [
     path('api/login/', login_view, name='login'),
     path('api/forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
     path('api/reset-password/<str:uidb64>/<str:token>/', ResetPasswordView.as_view(), name='reset-password'),
-#permissions
+# permissions
     path('api/user-permissions/', UserPermissionsView.as_view(), name='user_permissions'),
     path('api/all-permissions/', AllPermissionsView.as_view(), name='all_permissions'),
     path('api/grant-permissions/<int:user_id>/', GrantPermissionsView.as_view(), name='grant_permissions'),
+# events
+    path('api/events/', EventListView.as_view(), name='event-list'),
+    path('api/events/<int:pk>/', EventDetailView.as_view(), name='event-detail'),
 ]
