@@ -42,7 +42,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     registrationDate = models.DateTimeField(auto_now_add=True)
     accessLevel = models.CharField(max_length=20, null=True, blank=True)
     BirthDate = models.DateField(null=True, blank=True)
-    
+
     activatorID = models.IntegerField(null=True, blank=True)
     activatorEmail = models.EmailField(null=True, blank=True)
     activatorFirstName = models.CharField(max_length=255, null=True, blank=True)
@@ -169,8 +169,8 @@ class PasswordResetToken(models.Model):
 
 class Event(models.Model):
     title = models.CharField(max_length=255)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    start = models.DateTimeField()
+    end = models.DateTimeField()
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
