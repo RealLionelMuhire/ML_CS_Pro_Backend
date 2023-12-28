@@ -183,6 +183,15 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
         # Retrieve the authenticated user
         return self.request.user
 
+    def update(self, request, *args, **kwargs):
+        # Override the update method to handle partial updates
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
