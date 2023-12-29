@@ -168,29 +168,11 @@ class UserProfileView(generics.RetrieveAPIView):
         return self.request.user
 
 class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
-    """
-    API view for retrieving and updating the profile data of the authenticated user.
-    Requires authentication for access.
-    Endpoint: GET /update-user-profile/
-              PUT /update-user-profile/
-    """
-
     queryset = CustomUser.objects.all()
     serializer_class = UserProfileUpdateSerializer
     permission_classes = [IsAuthenticated]
-
     def get_object(self):
-        # Retrieve the authenticated user
         return self.request.user
-
-    def update(self, request, *args, **kwargs):
-        # Override the update method to handle partial updates
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

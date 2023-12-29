@@ -82,4 +82,19 @@ class CustomUserSerializer(serializers.ModelSerializer):
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['contact', 'Address', 'BirthDate', 'FirstName', 'LastName', 'email' ]
+        fields = ['contact', 'Address', 'BirthDate', 'FirstName', 'LastName', 'email']
+        # Make fields optional
+        extra_kwargs = {
+            'contact': {'required': False},
+            'Address': {'required': False},
+            'BirthDate': {'required': False},
+            'FirstName': {'required': False},
+            'LastName': {'required': False},
+            'email': {'required': False},
+        }
+
+    def to_internal_value(self, data):
+        # Skip validation for fields not present in the request data
+        fields_to_skip = [key for key, value in data.items() if value == '']
+        data = {key: value for key, value in data.items() if key not in fields_to_skip}
+        return super().to_internal_value(data)
