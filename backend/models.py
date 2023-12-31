@@ -109,12 +109,12 @@ class Client(models.Model):
     taxResidency = models.CharField(max_length=255)
     tinNumber = models.CharField(max_length=50)
     citizenship = models.CharField(max_length=50)
-    dateOfBirth = models.DateField(null=True, blank=True)
+    birthDate = models.DateField(null=True, blank=True)
     passportIdNumber = models.CharField(max_length=50, unique=True)
     countryOfIssue = models.CharField(max_length=50, null=True, blank=True)
-    expiryDate = models.DateField(null=True, blank=True)
+    passportExpiryDate = models.DateField(null=True, blank=True)
     companyName = models.CharField(max_length=100, null=True, blank=True)
-    clientRole_InCompany = models.CharField(max_length=255, null=True, blank=True)
+    sharePercent = models.CharField(max_length=255, null=True, blank=True)
     currentAddress = models.CharField(max_length=150, blank=True)
     clientContact = models.CharField(max_length=20)
     clientEmail = models.EmailField(unique=True)
@@ -132,6 +132,12 @@ class Client(models.Model):
     deactivatorEmail = models.EmailField(null=True, blank=True)
     deactivatorFirstName = models.CharField(max_length=255, null=True, blank=True)
     deactivationDate = models.DateField(null=True, blank=True)
+    designation = models.CharField(max_length=255, null=True, blank=True)
+    introducerName = models.CharField(max_length=255, null=True, blank=True)
+    introducerEmail = models.EmailField(null=True, blank=True)
+    contactPersonName = models.CharField(max_length=255, null=True, blank=True)
+    contactPersonEmail = models.EmailField(null=True, blank=True)
+    contactPersonPhone = models.CharField(max_length=20, null=True, blank=True)
 
 
     def __str__(self):

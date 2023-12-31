@@ -4,7 +4,7 @@ from .views.client_views import ListClientsView, AddFieldToClientView, ListClien
 from .views.services_views import InitiateServiceView, CloseServiceView, ServiceListView, ServiceListByIdView
 from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView
 from .views.permission_views import UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
-from .views.events_view import EventDetailView, EventListView
+from .views.events_view import EventDetailView, EventListView, AllEventsListView
 
 urlpatterns = [
     path('api/dashboard-data/', dashboard_data_view, name='dashboard_data'),
@@ -41,4 +41,5 @@ urlpatterns = [
 # events
     path('api/events/', EventListView.as_view(), name='event-list'),
     path('api/events/<int:pk>/', EventDetailView.as_view(), name='event-detail'),
+    path('api/all-events/', AllEventsListView.as_view(), name='all-events-list'),
 ]

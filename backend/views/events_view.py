@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from ..models import Event
 from ..serializers import EventSerializer
+from django.utils import timezone
 
 class EventListView(generics.ListCreateAPIView):
     """
@@ -14,9 +15,16 @@ class EventListView(generics.ListCreateAPIView):
               POST /api/events/ (Create a new event)
     """
 
-    queryset = Event.objects.all()
     serializer_class = EventSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Get a list of all upcoming events.
+        """
+        now = timezone.now()
+        queryset = Event.objects.filter(end__gte=now).order_by('start')
+        return queryset
 
     def list(self, request, *args, **kwargs):
         """
@@ -29,6 +37,24 @@ class EventListView(generics.ListCreateAPIView):
         Create a new event.
         """
         return super().create(request, *args, **kwargs)
+
+class AllEventsListView(generics.ListAPIView):
+    """
+    API view for listing all events.
+    Requires authentication for access.
+    Endpoint: GET /api/all-events/ (List all events)
+    """
+
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        """
+        Get a list of all events.
+        """
+        return super().list(request, *args, **kwargs)
+
 
 class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
