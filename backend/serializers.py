@@ -1,6 +1,6 @@
 # backend/serializers.py
 from rest_framework import serializers
-from .models import CustomUser, Client, Service, UserActionLog, Event
+from .models import CustomUser, Client, Service, UserActionLog, Event, Alert
 from django.contrib.auth.models import Permission
 
 class UserSerializer(serializers.ModelSerializer):
@@ -98,3 +98,7 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
         fields_to_skip = [key for key, value in data.items() if value == '']
         data = {key: value for key, value in data.items() if key not in fields_to_skip}
         return super().to_internal_value(data)
+class AlertSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Alert
+        fields = '__all__'
