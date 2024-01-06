@@ -15,6 +15,7 @@ def handle_alert_expiration(sender, instance, **kwargs):
 
         # If expiration_date is passed and action_taken is False
         instance.action_taken_description = "No Action taken"
+        instance.is_active = False  # Set is_active to False
         instance.save()
 
         # Reconnect the post_save signal
@@ -25,6 +26,7 @@ def handle_alert_expiration(sender, instance, **kwargs):
 
         # If action_taken is True
         instance.action_taken_description = f"Action taken by {instance.action_taker_name} on {instance.action_taken_date}"
+        instance.is_active = False  # Set is_active to False
         instance.save()
 
         # Reconnect the post_save signal
