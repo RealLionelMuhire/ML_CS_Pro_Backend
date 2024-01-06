@@ -111,3 +111,45 @@ def handle_alert_expiration(sender, instance, **kwargs):
         # If action_taken is True
         instance.action_taken_description = f"Action taken by {instance.action_taker_name} on {instance.action_taken_date}"
         instance.save()
+
+@permission_classes([IsAuthenticated])
+class AlertActionView(APIView):
+    """
+    API view for taking action on an alert.
+    Requires authentication for access.
+    Endpoint: POST /alert-action/<int:alert_id>/
+    """
+
+    def get_alert_or_404(self, alert_id):
+        try:
+            return Alert.objects.get(id=alert_id)
+        except Alert.DoesNotExist:
+            raise Http404("Alert does not exist or is not registered")
+
+    def post(self, request, alert_id):
+        """
+        Handle POST requests to take action on an alert.
+        Returns success or error message.
+        """
+        user = request.user
+        alert = self.get_alert_or_404(alert_id)
+
+        # Check if the alert is active
+        if not alert.is_active:
+            return Response({'message': 'Alert is not active.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Take action on the alert
+            alert.action_taken = True
+            alert.action_taker_name = f"{user.FirstName} {user.LastName}"
+            alert.action_taker_email = user.email
+            alert.action_taken_date = timezone.now()
+            alert.is_active = False
+            alert.save()
+
+            return Response({
+                'success': True,
+                'message': f'Action taken on the alert. Alert is no longer active.'
+            })
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

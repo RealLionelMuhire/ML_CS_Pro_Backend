@@ -31,3 +31,4 @@ def handle_alert_expiration(sender, instance, **kwargs):
 
         # Reconnect the post_save signal
         post_save.connect(handle_alert_expiration, sender=Alert)
+ 
