@@ -52,7 +52,10 @@ class AlertInitiationView(APIView):
                     # Add other fields as needed
                 )
 
-                return Response({'success': True, 'message': 'Alert created successfully'})
+                return Response({
+                'success': True,
+                'message': f'Alert created successfully. Due on: {Alert.schedule_date}. Expires on: {Alert.expiration_date}'
+            })
             else:
                 return Response({'error': 'Invalid data', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
