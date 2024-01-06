@@ -186,6 +186,7 @@ class Alert(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     action_taken = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     # Dates
     schedule_date = models.DateTimeField()

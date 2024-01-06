@@ -6,6 +6,8 @@ from rest_framework.decorators import permission_classes
 from ..models import Client, Alert
 from ..serializers import AlertSerializer
 from django.http import Http404
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 @permission_classes([IsAuthenticated])
 class AlertInitiationView(APIView):
@@ -37,15 +39,27 @@ class AlertInitiationView(APIView):
             # Validate and process the data using a serializer
             serializer = AlertSerializer(data=request.data)
             if serializer.is_valid():
+                schedule_date = serializer.validated_data.get('schedule_date')
+                expiration_date = serializer.validated_data.get('expiration_date')
+
+                # Validate schedule_date is before expiration_date
+                if schedule_date >= expiration_date:
+                    raise ValidationError('Schedule date must be before expiration date.')
+
+                # Validate schedule_date is greater than current date
+                current_date = timezone.now()
+                if schedule_date <= current_date:
+                    raise ValidationError('Schedule date must be greater than the current date.')
+
                 # Save the alert to the database
                 alert = Alert.objects.create(
                     client_id=client_id,
                     user=user,
-                    title=request.data.get('title'),
-                    description=request.data.get('description'),
-                    action_taken=request.data.get('action_taken', False),
-                    schedule_date=request.data.get('schedule_date'),
-                    expiration_date=request.data.get('expiration_date'),
+                    title=serializer.validated_data.get('title'),
+                    description=serializer.validated_data.get('description'),
+                    action_taken=serializer.validated_data.get('action_taken', False),
+                    schedule_date=schedule_date,
+                    expiration_date=expiration_date,
                     setter_name=f"{user.FirstName} {user.LastName}",
                     setter_email=user.email,
                     client_name=f"{client.firstName} {client.lastName}",
@@ -53,11 +67,13 @@ class AlertInitiationView(APIView):
                 )
 
                 return Response({
-                'success': True,
-                'message': f'Alert created successfully. Due on: {Alert.schedule_date}. Expires on: {Alert.expiration_date}'
-            })
+                    'success': True,
+                    'message': f'Alert created successfully. Due on: {alert.schedule_date}. Expires on: {alert.expiration_date}'
+                })
             else:
                 return Response({'error': 'Invalid data', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -79,4 +95,5 @@ class AlertListView(APIView):
         serializer = AlertSerializer(alerts, many=True)
 
         return Response(serializer.data)
+
 
