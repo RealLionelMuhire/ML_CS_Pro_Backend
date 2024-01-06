@@ -187,6 +187,7 @@ class Alert(models.Model):
     description = models.TextField()
     action_taken = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    action_taken_description = models.TextField(blank=True, null=True)
 
     # Dates
     schedule_date = models.DateTimeField()

@@ -8,6 +8,8 @@ from ..serializers import AlertSerializer
 from django.http import Http404
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 @permission_classes([IsAuthenticated])
 class AlertInitiationView(APIView):
@@ -49,7 +51,7 @@ class AlertInitiationView(APIView):
                 # Validate schedule_date is greater than current date
                 current_date = timezone.now()
                 if schedule_date <= current_date:
-                    raise ValidationError('Schedule date must be greater than the current date.')
+                    raise ValidationError('Schedule date must be later than the current date.')
 
                 # Save the alert to the database
                 alert = Alert.objects.create(
@@ -96,4 +98,16 @@ class AlertListView(APIView):
 
         return Response(serializer.data)
 
-
+@receiver(post_save, sender=Alert)
+def handle_alert_expiration(sender, instance, **kwargs):
+    """
+    Signal handler to perform actions when an Alert is saved.
+    """
+    if instance.expiration_date and instance.expiration_date <= timezone.now() and not instance.action_taken:
+        # If expiration_date is passed and action_taken is False
+        instance.action_taken_description = "No Action taken"
+        instance.save()
+    elif instance.action_taken:
+        # If action_taken is True
+        instance.action_taken_description = f"Action taken by {instance.action_taker_name} on {instance.action_taken_date}"
+        instance.save()
