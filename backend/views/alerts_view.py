@@ -97,21 +97,6 @@ class AlertListView(APIView):
         serializer = AlertSerializer(alerts, many=True)
 
         return Response(serializer.data)
-
-@receiver(post_save, sender=Alert)
-def handle_alert_expiration(sender, instance, **kwargs):
-    """
-    Signal handler to perform actions when an Alert is saved.
-    """
-    if instance.expiration_date and instance.expiration_date <= timezone.now() and not instance.action_taken:
-        # If expiration_date is passed and action_taken is False
-        instance.action_taken_description = "No Action taken"
-        instance.save()
-    elif instance.action_taken:
-        # If action_taken is True
-        instance.action_taken_description = f"Action taken by {instance.action_taker_name} on {instance.action_taken_date}"
-        instance.save()
-
 @permission_classes([IsAuthenticated])
 class AlertActionView(APIView):
     """
