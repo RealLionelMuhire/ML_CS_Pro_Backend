@@ -8,8 +8,9 @@ from ..serializers import AlertSerializer
 from django.http import Http404
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+from django.shortcuts import get_object_or_404
+from rest_framework import generics
+
 
 @permission_classes([IsAuthenticated])
 class AlertInitiationView(APIView):
@@ -138,3 +139,34 @@ class AlertActionView(APIView):
             })
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class AlertDetailView(generics.ListAPIView):
+    """"
+    API view for viewing a single alert by its ID.
+    Requires authentication for access.
+    Endpoint: GET /alert-detail/<int:alert_id>/
+    """
+
+    serializer_class = AlertSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Get the list of alert IDs from the query parameters
+        alert_ids_str = self.request.query_params.get('ids', '')
+        alert_ids = [int(alert_id) for alert_id in alert_ids_str.split(',') if alert_id.isdigit()]
+
+        # Filter and retrieve alerts based on the provided IDs
+        queryset = Alert.objects.filter(id__in=alert_ids)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serialized_alerts = []
+
+        # Serialize the alerts and handle not found cases
+        for alert_id in [int(alert_id) for alert_id in self.request.query_params.get('ids', '').split(',')]:
+            alert = get_object_or_404(queryset, id=alert_id)
+            serializer = self.get_serializer(alert)
+            serialized_alerts.append(serializer.data)
+
+        return Response(serialized_alerts)

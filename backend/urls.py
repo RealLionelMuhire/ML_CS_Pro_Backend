@@ -5,7 +5,7 @@ from .views.services_views import InitiateServiceView, CloseServiceView, Service
 from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView
 from .views.permission_views import UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
 from .views.events_view import EventDetailView, EventListView, AllEventsListView
-from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView
+from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView
 
 urlpatterns = [
     path('api/dashboard-data/', dashboard_data_view, name='dashboard_data'),
@@ -47,4 +47,5 @@ urlpatterns = [
     path('api/alert-initiate/<int:client_id>/', AlertInitiationView.as_view(), name='alert-initiate'),
     path('api/list-alerts/', AlertListView.as_view(), name='list-alert'),
     path('api/alert-action/<int:alert_id>/', AlertActionView.as_view(), name='alert-action'),
+    path('api/alert-detail/',AlertDetailView.as_view(), name='alert-detail'),
 ]
