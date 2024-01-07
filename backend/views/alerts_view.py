@@ -49,7 +49,7 @@ class AlertInitiationView(APIView):
                     raise ValidationError('Schedule date must be before expiration date.')
 
                 # Validate schedule_date is greater than current date
-                current_date = timezone.now()
+                current_date = timezone.now().date()
                 if schedule_date <= current_date:
                     raise ValidationError('Schedule date must be later than the current date.')
 
@@ -59,12 +59,12 @@ class AlertInitiationView(APIView):
                     user=user,
                     title=serializer.validated_data.get('title'),
                     description=serializer.validated_data.get('description'),
-                    action_taken=serializer.validated_data.get('action_taken', False),
-                    schedule_date=schedule_date,
-                    expiration_date=expiration_date,
+                    schedule_date=serializer.validated_data.get('schedule_date'),
+                    expiration_date=serializer.validated_data.get('expiration_date'),
                     setter_name=f"{user.FirstName} {user.LastName}",
                     setter_email=user.email,
                     client_name=f"{client.firstName} {client.lastName}",
+                    set_date=timezone.now().date(),
                     # Add other fields as needed
                 )
 

@@ -101,14 +101,13 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
 class CustomDateField(serializers.DateField):
     def to_representation(self, value):
         # Format the datetime value as "day-month-year"
-        return value.strftime("%d-%m-%Y") if value else None
+        return value.date() if value else None
 
 class AlertSerializer(serializers.ModelSerializer):
     schedule_date = CustomDateField()
     expiration_date = CustomDateField()
-    set_date = CustomDateField()
-    action_taken_date = CustomDateField()
-
+    set_date = CustomDateField(required=False)
+    action_taken_date = CustomDateField(required=False)
 
     class Meta:
         model = Alert

@@ -190,7 +190,7 @@ class Alert(models.Model):
     action_taken_description = models.TextField(blank=True, null=True)
     # Dates
     schedule_date = models.DateTimeField()
-    set_date = models.DateTimeField(auto_now_add=True)
+    set_date = models.DateTimeField()
     action_taken_date = models.DateTimeField(null=True, blank=True)
     expiration_date = models.DateTimeField()
 
