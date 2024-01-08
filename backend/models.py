@@ -39,7 +39,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     NationalID = models.CharField(max_length=25, unique=True)
     Address = models.CharField(max_length=150, blank=True)
     isActive = models.BooleanField(default=False, null=True, blank=True)
-    isStaff = models.BooleanField(default=False, null=True, blank=True)
+    # isStaff = models.BooleanField(default=False, null=True, blank=True)
     registrarID = models.IntegerField(null=True, blank=True)
     registrarFirstName = models.CharField(max_length=255, null=True, blank=True)
     registrationDate = models.DateTimeField(auto_now_add=True)
@@ -152,7 +152,7 @@ class Client(models.Model):
 
 
     def __str__(self):
-        return f"{self.FirstName} {self.LastName}"
+        return f"{self.firstName} {self.lastName}"
 
 
 class Service(models.Model):

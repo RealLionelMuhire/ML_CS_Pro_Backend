@@ -72,6 +72,11 @@ class UserDeactivateView(generics.RetrieveUpdateAPIView):
     Endpoint: PUT /user-deactivate/<int:pk>/
     """
 
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['put']
+
     def update(self, request, *args, **kwargs):
         try:
             user = self.get_object()
@@ -85,6 +90,7 @@ class UserDeactivateView(generics.RetrieveUpdateAPIView):
 
             # Deactivate the user
             user.isActive = False
+            user.is_staff = False
             user.deactivatorID = request.user.UserID
             user.deactivatorEmail = request.user.email
             user.deactivatorFirstName = request.user.FirstName
@@ -107,8 +113,13 @@ class UserActivateView(generics.RetrieveUpdateAPIView):
     """
     API view for activating a user associated with the authenticated user.
     Requires authentication for access.
-    Endpoint: PUT /user-deactivate/<int:pk>/
+    Endpoint: PUT /user-activate/<int:pk>/
     """
+
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['put']
 
     def update(self, request, *args, **kwargs):
         try:
@@ -123,6 +134,7 @@ class UserActivateView(generics.RetrieveUpdateAPIView):
 
             # Activate the user
             user.isActive = True
+            user.is_staff = True
             user.activatorID = request.user.UserID
             user.activatorEmail = request.user.email
             user.activatorFirstName = request.user.FirstName
