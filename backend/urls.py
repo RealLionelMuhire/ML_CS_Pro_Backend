@@ -1,13 +1,18 @@
 from django.urls import path
+from django.contrib import admin
 from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView, UserProfileView, UserProfileUpdateView
 from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView
 from .views.services_views import InitiateServiceView, CloseServiceView, ServiceListView, ServiceListByIdView
 from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView
 from .views.permission_views import UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
 from .views.events_view import EventDetailView, EventListView, AllEventsListView
-from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView
+from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView, ActiveAlertsView
+from .views.customAdmin import CustomAdminLoginView
 
 urlpatterns = [
+#admin
+    path("admin/", admin.site.urls),
+    path('admin/login/', CustomAdminLoginView.as_view(), name='admin_login'),
     path('api/dashboard-data/', dashboard_data_view, name='dashboard_data'),
 # users
     path('api/hello/', HelloWorldView.as_view(), name='hello_world'),
@@ -48,4 +53,5 @@ urlpatterns = [
     path('api/list-alerts/', AlertListView.as_view(), name='list-alert'),
     path('api/alert-action/<int:alert_id>/', AlertActionView.as_view(), name='alert-action'),
     path('api/alert-detail/',AlertDetailView.as_view(), name='alert-detail'),
+    path('api/active-alerts/', ActiveAlertsView.as_view(), name='active-alerts'),
 ]

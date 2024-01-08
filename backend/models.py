@@ -8,6 +8,7 @@ from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
+from django.utils.crypto import get_random_string
 
 
 class CustomUserManager(BaseUserManager):
@@ -23,6 +24,7 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, email, FirstName, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('NationalID', f'superuser_{get_random_string(length=10)}')
 
         return self.create_user(email, FirstName, password, **extra_fields)
 
@@ -30,8 +32,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     UserID = models.AutoField(primary_key=True)
     UserRoles = models.CharField(max_length=20)
     email = models.EmailField(unique=True)
+    username = models.CharField(max_length=255, null=True, blank=True)
     contact = models.CharField(max_length=255, blank=True, null=True)
-    FirstName = models.CharField(max_length=255)
+    FirstName = models.CharField(max_length=255, blank=True, null=True)
     LastName = models.CharField(max_length=255, blank=True, null=True)
     NationalID = models.CharField(max_length=25, unique=True)
     Address = models.CharField(max_length=150, blank=True)
@@ -42,6 +45,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     registrationDate = models.DateTimeField(auto_now_add=True)
     accessLevel = models.CharField(max_length=20, null=True, blank=True)
     BirthDate = models.DateField(null=True, blank=True)
+    is_staff = models.BooleanField(default=False)
 
     activatorID = models.IntegerField(null=True, blank=True)
     activatorEmail = models.EmailField(null=True, blank=True)
@@ -56,13 +60,15 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ['FirstName']
 
     groups = models.ManyToManyField('auth.Group', related_name='custom_user_set', blank=True)
     user_permissions = models.ManyToManyField('auth.Permission', related_name='custom_user_set', blank=True)
 
     def __str__(self):
-        return self.email
+        # Check if FirstName and LastName are present before formatting the string
+        full_name = f"{self.FirstName} {self.LastName}" if self.FirstName and self.LastName else "N/A"
+        return f"{full_name} - {self.email}"
 
 
 def create_custom_permissions():
@@ -92,16 +98,21 @@ def on_post_migrate(sender, **kwargs):
     create_custom_permissions()
 
 class UserActionLog(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, blank=True)
     action_time = models.DateTimeField(default=timezone.now)
     action_type = models.CharField(max_length=20)  # e.g., 'Create User', 'Activate User', etc.
     permission = models.ForeignKey(Permission, on_delete=models.SET_NULL, null=True, blank=True)
     granted_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='granted_logs')
     granted_by_fullname = models.CharField(max_length=255, null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        # Set the user_id before saving
+        if not self.user_id and self.user:
+            self.user_id = self.user.UserID
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.user.email} - {self.action_type}"
-
 class Client(models.Model):
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
     firstName = models.CharField(max_length=255)

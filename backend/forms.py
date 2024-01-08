@@ -2,11 +2,17 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser
+from django.contrib.auth.forms import AuthenticationForm
+
 
 class AdminRegistrationForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password1', 'password2', 'UserType', 'FullName', 'NationalID', 'Location']
+        fields = ['email', 'password1', 'password2', 'FirstName', 'LastName', 'NationalID', 'Address', 'BirthDate']
+        # Include other fields from CustomUser that you want to appear in the form
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 class ClientRegistrationForm(UserCreationForm):
     ClientStatus = forms.CharField(max_length=20, required=True)
@@ -28,3 +34,7 @@ class ClientRegistrationForm(UserCreationForm):
     Email = forms.EmailField(required=True)
     PhoneNumber = forms.CharField(max_length=20, required=True)
     Password = forms.CharField(widget=forms.PasswordInput, required=True)
+
+class CustomAdminAuthenticationForm(AuthenticationForm):
+    def clean_username(self):
+        return self.cleaned_data['username']

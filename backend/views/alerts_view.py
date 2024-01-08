@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from rest_framework.decorators import permission_classes
+from rest_framework.decorators import permission_classes, api_view
 from ..models import Client, Alert
 from ..serializers import AlertSerializer
 from django.http import Http404
@@ -170,3 +170,22 @@ class AlertDetailView(generics.ListAPIView):
             serialized_alerts.append(serializer.data)
 
         return Response(serialized_alerts)
+
+class ActiveAlertsView(APIView):
+    """
+    API view for listing active alerts associated with the authenticated user.
+    Requires authentication for access.
+    Endpoint: GET /active-alerts/
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        """Handle GET requests to list active alerts."""
+        # Retrieve active alerts associated with the authenticated user
+        active_alerts = Alert.objects.filter( is_active=True).order_by('schedule_date')
+
+        # Serialize the active alerts
+        serializer = AlertSerializer(active_alerts, many=True)
+
+        return Response(serializer.data)
