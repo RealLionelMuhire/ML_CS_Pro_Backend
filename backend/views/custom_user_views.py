@@ -78,6 +78,7 @@ class UserDeactivateView(generics.RetrieveUpdateAPIView):
     http_method_names = ['put']
 
     def update(self, request, *args, **kwargs):
+        print("===>Testing the update function==>")
         try:
             user = self.get_object()
             # Check if the authenticated user is the owner of the user

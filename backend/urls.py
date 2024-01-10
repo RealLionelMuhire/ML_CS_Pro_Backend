@@ -1,4 +1,7 @@
-from django.urls import path
+# urls.py
+
+from django.conf import settings
+from django.urls import include, path
 from django.contrib import admin
 from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView, UserProfileView, UserProfileUpdateView
 from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView
@@ -12,14 +15,15 @@ from .views.customAdmin import CustomAdminLoginView
 urlpatterns = [
 #admin
     path("admin/", admin.site.urls),
+    # path('__debug__/', include('debug_toolbar.urls')),
     path('admin/login/', CustomAdminLoginView.as_view(), name='admin_login'),
     path('api/dashboard-data/', dashboard_data_view, name='dashboard_data'),
 # users
     path('api/hello/', HelloWorldView.as_view(), name='hello_world'),
     path('api/register/', RegistrationView.as_view(), name='registration'),
     path('api/users/', UserListView.as_view(), name='user-list'),
-    path('api/deactivate-user/<int:user_id>/', DeactivateUserView.as_view(), name='deactivate_user'),
-    path('api/activate-user/<int:user_id>/', ActivateUserView.as_view(), name='activate_user'),
+    path('api/deactivate-user/<int:pk/', DeactivateUserView.as_view(), name='deactivate_user'),
+    path('api/activate-user/<int:pk>/', ActivateUserView.as_view(), name='activate_user'),
     path('api/user-profile/', UserProfileView.as_view(), name='user-profile'),
     path('api/update-user-profile/', UserProfileUpdateView.as_view(), name='update-user-profile'),
 # clients
@@ -55,3 +59,10 @@ urlpatterns = [
     path('api/alert-detail/',AlertDetailView.as_view(), name='alert-detail'),
     path('api/active-alerts/', ActiveAlertsView.as_view(), name='active-alerts'),
 ]
+
+# Enable the toolbar only if DEBUG is True and the current IP is in INTERNAL_IPS.
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns += [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ]
