@@ -25,3 +25,4 @@ admin.site.register(Service)
 admin.site.register(PasswordResetToken)
 admin.site.register(Event)
 admin.site.register(Alert)
+admin.site.site_header = 'Admin Dashboard'
