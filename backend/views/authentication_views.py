@@ -34,13 +34,13 @@ def login_view(request):
     # print("testing login")
     email = request.data.get('email').strip()
     password = request.data.get('password').strip()
-    # print(f"This is in login_view, Email from frontend before calling authenticate is : {email}, Password: {password}")
+    print(f"This is in login_view, Email from frontend before calling authenticate is : {email}, Password: {password}")
 
     # Perform authentication using the email
     # user = authenticate(request, email=email, password=password)
     user = authenticate(request, username=email, password=password)
 
-    # print(f"This is in login_view, User from backend after email after calling authenticate is: {user}")
+    print(f"This is in login_view, User from backend after email after calling authenticate is: {user}")
     if user is not None:
         # Log in the user
         login(request, user)

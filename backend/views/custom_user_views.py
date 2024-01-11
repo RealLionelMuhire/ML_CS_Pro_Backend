@@ -15,6 +15,8 @@ from django.utils import timezone
 from rest_framework import generics
 from django.http import JsonResponse
 from decimal import Decimal
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from ..serializers import UserSerializer, UserActivationSerializer
 
 class HelloWorldView(APIView):
     """
@@ -65,7 +67,7 @@ class RegistrationView(APIView):
             print(f"IntegrityError: {e}")
             return Response({'message': 'Registration failed. Duplicate user.'}, status=status.HTTP_400_BAD_REQUEST)
 
-class UserDeactivateView(generics.RetrieveUpdateAPIView):
+class UserDeactivateView(generics.RetrieveUpdateAPIView, BaseUserAdmin):
     """
     API view for deactivating a user associated with the authenticated user.
     Requires authentication for access.
@@ -110,7 +112,7 @@ class UserDeactivateView(generics.RetrieveUpdateAPIView):
             return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-class UserActivateView(generics.RetrieveUpdateAPIView):
+class UserActivateView(generics.UpdateAPIView):
     """
     API view for activating a user associated with the authenticated user.
     Requires authentication for access.
@@ -118,9 +120,13 @@ class UserActivateView(generics.RetrieveUpdateAPIView):
     """
 
     queryset = CustomUser.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserActivationSerializer
     permission_classes = [IsAuthenticated]
     http_method_names = ['put']
+
+
+    print("===>Testing the update function==>")
+    print("queryset is: ", queryset)
 
     def update(self, request, *args, **kwargs):
         try:
@@ -142,16 +148,19 @@ class UserActivateView(generics.RetrieveUpdateAPIView):
             user.activationDate = timezone.now()
             user.save()
 
-            # Update activator fields in CustomUser model
+            # Update activator fields in the requesting user model
             request.user.activatorID = request.user.UserID
             request.user.activatorEmail = request.user.email
             request.user.activatorFirstName = request.user.FirstName
             request.user.activationDate = timezone.now()
             request.user.save()
 
-            return Response({'message': 'User activated successfully'})
+            serializer = UserActivationSerializer(user)
+
+            return Response(serializer.data)
         except CustomUser.DoesNotExist:
             return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
 
 class UserListView(APIView):
     """

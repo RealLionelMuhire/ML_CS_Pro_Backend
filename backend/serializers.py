@@ -79,6 +79,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['UserID', 'UserRoles', 'email', 'contact', 'FirstName', 'LastName', 'NationalID', 'Address', 'registrarFirstName', 'accessLevel', 'BirthDate']
 
+class UserActivationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['isActive', 'is_staff', 'activatorID', 'activatorEmail', 'activatorFirstName', 'activationDate']
+        read_only_fields = ['isActive', 'is_staff', 'activatorID', 'activatorEmail', 'activatorFirstName', 'activationDate']
+
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
