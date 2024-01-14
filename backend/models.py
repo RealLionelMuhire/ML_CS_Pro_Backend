@@ -226,3 +226,29 @@ class Alert(models.Model):
 
     def __str__(self):
         return self.title
+
+class Reservation(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    email = models.EmailField()
+    full_name = models.CharField(max_length=255)
+    phone_contact = models.CharField(max_length=15)  # You may adjust the max_length according to your needs
+    service_title = models.CharField(max_length=255)
+    appointment_datetime = models.DateTimeField()
+
+    def __str__(self):
+        return f"{self.full_name} - {self.appointment_datetime}"
+
+class Options(models.Model):
+    AVAILABLE = 'FREE'
+    BOOKED = 'BOOKED'
+    STATUS_CHOICES = [
+        (AVAILABLE, 'Available'),
+        (BOOKED, 'Booked'),
+    ]
+
+    available_datetime = models.DateTimeField()
+    day_of_week = models.CharField(max_length=10)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=AVAILABLE)
+
+    def __str__(self):
+        return f"{self.available_datetime} - {self.status}"

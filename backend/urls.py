@@ -11,6 +11,7 @@ from .views.permission_views import UserPermissionsView, AllPermissionsView,Acti
 from .views.events_view import EventDetailView, EventListView, AllEventsListView
 from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView, ActiveAlertsView
 from .views.customAdmin import CustomAdminLoginView
+from .views.reservations_view import get_google_sheets_data
 
 urlpatterns = [
 #admin
@@ -58,6 +59,8 @@ urlpatterns = [
     path('api/alert-action/<int:alert_id>/', AlertActionView.as_view(), name='alert-action'),
     path('api/alert-detail/',AlertDetailView.as_view(), name='alert-detail'),
     path('api/active-alerts/', ActiveAlertsView.as_view(), name='active-alerts'),
+# reservations in google sheets
+    path('api/get-google-sheets-data/', get_google_sheets_data, name='get_google_sheets_data'),
 ]
 
 # Enable the toolbar only if DEBUG is True and the current IP is in INTERNAL_IPS.

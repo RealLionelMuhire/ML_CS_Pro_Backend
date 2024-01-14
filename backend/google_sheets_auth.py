@@ -3,9 +3,20 @@ import os
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-path = os.path.join("../../", "client_secret.json")
+def get_sheets_service():
+    path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../credentials.json"))
 
-def get_authenticated_service(path, api_name, api_version):
-    credentials = service_account.Credentials.from_service_account_file(path, scopes=['https://www.googleapis.com/auth/spreadsheets'])
-    service = build(api_name, api_version, credentials=credentials)
-    return service
+    SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+    SERVICE_ACCOUNT_FILE = path
+
+    try:
+        credentials = service_account.Credentials.from_service_account_file(
+            SERVICE_ACCOUNT_FILE, scopes=SCOPES
+        )
+
+        service = build('sheets', 'v4', credentials=credentials)
+        return service
+
+    except Exception as e:
+        print(f"Error initializing Google Sheets service: {e}")
+        return None
