@@ -1,9 +1,9 @@
 from ..models import Reservation
-from ..google_sheets import fetch_data_from_sheets
+from ..google_sheets import fetch_reservation_data_from_sheets
 from django.http import HttpResponse
 
 def reservation_data_sheet(requests):
-    data_from_sheets = fetch_data_from_sheets()
+    data_from_sheets =  fetch_reservation_data_from_sheets()
 
     # Save data to Reservation model
     for row in data_from_sheets:
