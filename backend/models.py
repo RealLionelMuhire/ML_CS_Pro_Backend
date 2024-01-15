@@ -228,7 +228,7 @@ class Alert(models.Model):
         return self.title
 
 class Reservation(models.Model):
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField()
     email = models.EmailField()
     full_name = models.CharField(max_length=255)
     phone_contact = models.CharField(max_length=15)  # You may adjust the max_length according to your needs
