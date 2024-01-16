@@ -71,6 +71,9 @@ def fetch_reservation_data_from_sheets():
 def fetch_options_data_from_sheets():
     SAMPLE_RANGE_NAME = "Options!A1:C1999"
     creds = None
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    token_path = os.path.join(script_dir, "token.json")
+    credentials_path = os.path.join(script_dir, "credentials.json")
     if os.path.exists("token.json"):
         creds = Credentials.from_authorized_user_file("token.json", SCOPES)
     if not creds or not creds.valid:
