@@ -1,8 +1,9 @@
-from ..models import Reservation
-from ..google_sheets import fetch_reservation_data_from_sheets
+from ..models import Reservation, Options
 from django.http import HttpResponse
+from ..google_sheet.google_sheets import fetch_options_data_from_sheets, fetch_reservation_data_from_sheets
 
-def reservation_data_sheet(requests):
+
+def reservation_data_sheet(request):
     data_from_sheets =  fetch_reservation_data_from_sheets()
 
     # Save data to Reservation model
@@ -17,3 +18,18 @@ def reservation_data_sheet(requests):
         )
     
     return HttpResponse("Data imported successfully.")
+
+def options_data_sheet(request):
+    data_from_sheets = fetch_options_data_from_sheets()
+
+    # Save data to Options model
+    for row in data_from_sheets:
+        Options.objects.update_or_create(
+            available_datetime=row[0],
+            defaults={
+                'day_of_week': row[1],
+                'status': row[2],
+            }
+        )
+
+    return HttpResponse("Options data imported successfully.")

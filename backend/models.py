@@ -239,16 +239,9 @@ class Reservation(models.Model):
         return f"{self.full_name} - {self.appointment_datetime}"
 
 class Options(models.Model):
-    AVAILABLE = 'FREE'
-    BOOKED = 'BOOKED'
-    STATUS_CHOICES = [
-        (AVAILABLE, 'Available'),
-        (BOOKED, 'Booked'),
-    ]
-
     available_datetime = models.DateTimeField()
     day_of_week = models.CharField(max_length=10)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=AVAILABLE)
+    status = models.CharField(max_length=255)
 
     def __str__(self):
         return f"{self.available_datetime} - {self.status}"

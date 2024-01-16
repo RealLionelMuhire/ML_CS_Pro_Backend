@@ -1,4 +1,4 @@
-# backend/google_sheets.py
+# backend/google_sheet/google_sheets.py
 import os
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -7,26 +7,31 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.errors import HttpError
 from datetime import datetime
 from google_auth_oauthlib.flow import InstalledAppFlow
-from .models import Reservation
-from .models import Options
+from ..models import Reservation
+from ..models import Options
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SAMPLE_SPREADSHEET_ID = "1c7DCtvZw0zdInkWw57H8Vz0_c0s7ioE9DjvoGKdg-yQ"
 
 def fetch_reservation_data_from_sheets():
     SAMPLE_RANGE_NAME = "Reservations!A1:F1999"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
     creds = None
-    if os.path.exists("token.json"):
-        creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+    token_path = os.path.join(script_dir, "token.json")
+    credentials_path = os.path.join(script_dir, "credentials.json")
+
+    if os.path.exists(token_path):
+        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                "credentials.json", SCOPES
+                credentials_path, SCOPES
             )
             creds = flow.run_local_server(port=0)
-        with open("token.json", "w") as token:
+        with open(token_path, "w") as token:
             token.write(creds.to_json())
 
     try:
@@ -45,10 +50,17 @@ def fetch_reservation_data_from_sheets():
             print("No data found.")
             return []
 
-        # Get the latest timestamp from the database
-        latest_timestamp = Reservation.objects.latest('timestamp').timestamp
+        # Get the latest timestamp from the database or set a default value
+        try:
+            latest_timestamp = Reservation.objects.latest('timestamp').timestamp
+        except Reservation.DoesNotExist:
+            latest_timestamp = datetime.now()
+        
+        # Parse date strings from the spreadsheet into datetime objects, skipping the header row
+        values_with_datetime = [(datetime.strptime(row[0], "%m/%d/%Y %H:%M:%S"), *row[1:]) for row in values[1:]]
 
-        new_values = [row for row in values if row[0] > latest_timestamp]
+
+        new_values = [row for row in values_with_datetime if row[0] > latest_timestamp]
 
         return new_values
 

@@ -80,7 +80,7 @@ class UserDeactivateView(generics.RetrieveUpdateAPIView, BaseUserAdmin):
     http_method_names = ['put']
 
     def update(self, request, *args, **kwargs):
-        print("===>Testing the update function==>")
+        # print("===>Testing the update function==>")
         try:
             user = self.get_object()
             # Check if the authenticated user is the owner of the user
@@ -125,8 +125,8 @@ class UserActivateView(generics.UpdateAPIView):
     http_method_names = ['put']
 
 
-    print("===>Testing the update function==>")
-    print("queryset is: ", queryset)
+    # print("===>Testing the update function==>")
+    # print("queryset is: ", queryset)
 
     def update(self, request, *args, **kwargs):
         try:
