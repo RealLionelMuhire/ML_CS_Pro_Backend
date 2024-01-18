@@ -9,6 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 from django.utils.crypto import get_random_string
+from django.utils.timezone import make_aware
 
 
 class CustomUserManager(BaseUserManager):
@@ -234,6 +235,11 @@ class Reservation(models.Model):
     phone_contact = models.CharField(max_length=15)  # You may adjust the max_length according to your needs
     service_title = models.CharField(max_length=255)
     appointment_datetime = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+        # Ensure that timestamp is formatted correctly before saving
+        self.timestamp = self.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.full_name} - {self.appointment_datetime}"
