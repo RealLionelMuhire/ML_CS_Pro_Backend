@@ -166,3 +166,5 @@ backend/credentials.json
 backend/google_sheet/credentials.json
 backend/google_sheet/token.json
 backend/token.json
+serviceAccountKey.json
+backend/serviceAccountKey.json

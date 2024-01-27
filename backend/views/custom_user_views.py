@@ -51,7 +51,8 @@ class RegistrationView(APIView):
 
         # Include additional information in the request data
         request.data['registered_by_id'] = request.user.UserID
-        print(f"The user who is registering has an ID {request.user.UserID}")
+        print(f"The new user has these data: ")
+        print(request.data)
         request.data['registered_by_fullname'] = request.user.FirstName
         print(f"The user who is registering has the name {request.user.FirstName}")
 

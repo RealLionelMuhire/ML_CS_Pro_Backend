@@ -9,6 +9,7 @@ from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from ..models import Reservation, Options
+from dateutil import parser
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SAMPLE_SPREADSHEET_ID = "1c7DCtvZw0zdInkWw57H8Vz0_c0s7ioE9DjvoGKdg-yQ"
@@ -71,9 +72,9 @@ def fetch_reservation_data_from_sheets():
         ]
 
         print("\n\n")
-        print(values_with_datetime[:5])
+        print(values_with_datetime[0][5])
         print("===> Values with Datetime ===>")
-        print(type((values_with_datetime[0][0])))
+        print(type(parser.parse(values_with_datetime[0][5])))
         print("\n\n")
 
 

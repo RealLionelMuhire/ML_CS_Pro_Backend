@@ -65,6 +65,7 @@ class AlertInitiationView(APIView):
                     setter_name=f"{user.FirstName} {user.LastName}",
                     setter_email=user.email,
                     client_name=f"{client.firstName} {client.lastName}",
+                    client_email=client.clientEmail,
                     set_date=timezone.now().date(),
                     # Add other fields as needed
                 )
@@ -91,8 +92,8 @@ class AlertListView(APIView):
 
     def get(self, request, *args, **kwargs):
         """Handle GET requests to list alerts."""
-        # Retrieve all alerts associated with the authenticated user
-        alerts = Alert.objects.filter(user=request.user)
+        # Retrieve all alerts
+        alerts = Alert.objects.order_by('schedule_date')
 
         # Serialize the alerts
         serializer = AlertSerializer(alerts, many=True)
