@@ -12,10 +12,13 @@ class UserSerializer(serializers.ModelSerializer):
     can_grant_permissions = serializers.BooleanField(write_only=True, required=False)
     registrarID = serializers.IntegerField(required=False)
     registrarFirstName = serializers.CharField(max_length=255, required=False)
+    cv_file = serializers.URLField(write_only=True, required=False)
+    contract_file = serializers.URLField(write_only=True, required=False)
+    passport_file = serializers.URLField(write_only=True, required=False)
 
     class Meta:
         model = CustomUser
-        fields = ['UserID', 'UserRoles', 'email', 'FirstName', 'LastName','is_staff', 'NationalID', 'Address', 'isActive', 'can_create_user', 'can_activate_user', 'can_deactivate_user', 'can_grant_permissions', 'registrarID', 'registrarFirstName', 'accessLevel']
+        fields = ['UserID', 'UserRoles', 'email', 'FirstName', 'LastName','is_staff', 'NationalID', 'Address', 'isActive', 'can_create_user', 'can_activate_user', 'can_deactivate_user', 'can_grant_permissions', 'registrarID', 'registrarFirstName', 'accessLevel', 'BirthDate', 'cv_file', 'contract_file', 'passport_file']
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(**validated_data)

@@ -29,6 +29,7 @@ class CustomUserManager(BaseUserManager):
 
         return self.create_user(email, FirstName, password, **extra_fields)
 
+
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     UserID = models.AutoField(primary_key=True)
     UserRoles = models.CharField(max_length=20)
@@ -56,6 +57,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     deactivatorEmail = models.EmailField(null=True, blank=True)
     deactivatorFirstName = models.CharField(max_length=255, null=True, blank=True)
     deactivationDate = models.DateTimeField(null=True, blank=True)
+    cv_file = models.URLField(blank=True, null=True)
+    contract_file = models.URLField(blank=True, null=True)
+    passport_file = models.URLField(blank=True, null=True)
 
     objects = CustomUserManager()
 
@@ -69,6 +73,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         # Check if FirstName and LastName are present before formatting the string
         full_name = f"{self.FirstName} {self.LastName}" if self.FirstName and self.LastName else "N/A"
         return f"{full_name} - {self.email}"
+
 
 
 def create_custom_permissions():
