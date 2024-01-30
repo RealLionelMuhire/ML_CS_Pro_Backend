@@ -17,6 +17,9 @@ from django.http import JsonResponse
 from decimal import Decimal
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from ..serializers import UserSerializer, UserActivationSerializer
+from ..firebase import upload_to_firebase_storage, download_file_from_url
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from io import BytesIO
 
 class HelloWorldView(APIView):
     """
@@ -46,23 +49,70 @@ class RegistrationView(APIView):
     def post(self, request):
         """Handle POST requests for user registration."""
         # Check if the user has the permission to create a user
-        if not request.user.has_perm('auth.can_create_user'):
-            return Response({'message': 'Permission denied. You do not have the required permission to create a user.'}, status=status.HTTP_403_FORBIDDEN)
+        # if not request.user.has_perm('auth.can_create_user'):
+        #     return Response({'message': 'Permission denied. You do not have the required permission to create a user.'}, status=status.HTTP_403_FORBIDDEN)
 
         # Include additional information in the request data
         request.data['registered_by_id'] = request.user.UserID
-        print(f"The new user has these data: ")
-        print(request.data)
         request.data['registered_by_fullname'] = request.user.FirstName
-        print(f"The user who is registering has the name {request.user.FirstName}")
 
-        # Create a user serializer and handle registration
+        # Handle file uploads to Firebase Storage
+        cv_file = request.FILES.get('cv_file')
+        contract_file = request.FILES.get('contract_file')
+
+        cv_link = None
+        contract_link = None
+
+        if cv_file:
+            folder = f"user_files/{request.data['FirstName']}"
+            filename = "cv.pdf"
+
+            # Ensure the content is properly read for InMemoryUploadedFile
+            cv_content = cv_file.read()
+            cv_file_Checksum = request.data.get('cv_file_checksum')
+
+            if isinstance(cv_file, InMemoryUploadedFile):
+                cv_link = upload_to_firebase_storage(folder, filename, cv_content, cv_file_Checksum)
+            else:
+                # Use the temporary file path
+                local_file_path = cv_file.temporary_file_path()
+                cv_link = upload_to_firebase_storage(folder, filename, local_file_path, cv_file_Checksum)
+
+            print("CV Link Before Saving:", cv_link)
+
+        if contract_file:
+            folder = f"user_files/{request.data['FirstName']}"
+            filename = "contract.pdf"
+
+            # Ensure the content is properly read for InMemoryUploadedFile
+            contract_content = contract_file.read()
+            contract_file_Checksum = request.data.get('contract_file_checksum')
+            if isinstance(contract_file, InMemoryUploadedFile):
+                contract_link = upload_to_firebase_storage(folder, filename, contract_content, contract_file_Checksum)
+            else:
+                # Use the temporary file path
+                local_file_path = contract_file.temporary_file_path()
+                contract_link = upload_to_firebase_storage(folder, filename, local_file_path, contract_file_Checksum)
+
+            print("Contract Link Before Saving:", contract_link)
+
+        # Update the request data with the obtained links
+        request.data['cv_link'] = cv_link
+        request.data['contract_link'] = contract_link
+
+        # Create a user serializer
+        print("cv_link Before Serializer:", cv_link)
+        print("contract_link Before Serializer:", contract_link)
+        print("Request Data with Links:", request.data)
         serializer = UserSerializer(data=request.data)
+
         try:
             if serializer.is_valid():
+                # Save the user to the database
                 user = serializer.save()
                 return JsonResponse({'message': 'Registration successful', 'user_id': user.UserID})
             else:
+                print("Serializer errors:", serializer.errors)
                 return Response({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
         except IntegrityError as e:
             print(f"IntegrityError: {e}")

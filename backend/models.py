@@ -16,10 +16,28 @@ class CustomUserManager(BaseUserManager):
     def create_user(self, email, FirstName, password=None, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
+        
+        # Extract custom fields
+        can_create_user = extra_fields.pop('can_create_user', False)
+        can_activate_user = extra_fields.pop('can_activate_user', False)
+        can_deactivate_user = extra_fields.pop('can_deactivate_user', False)
+        can_grant_permissions = extra_fields.pop('can_grant_permissions', False)
+
         email = self.normalize_email(email)
         user = self.model(email=email, FirstName=FirstName, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
+
+        # Handle custom permissions
+        if can_create_user:
+            user.user_permissions.add(Permission.objects.get(codename='can_create_user'))
+        if can_activate_user:
+            user.user_permissions.add(Permission.objects.get(codename='can_activate_user'))
+        if can_deactivate_user:
+            user.user_permissions.add(Permission.objects.get(codename='can_deactivate_user'))
+        if can_grant_permissions:
+            user.user_permissions.add(Permission.objects.get(codename='can_grant_permissions'))
+
         return user
 
     def create_superuser(self, email, FirstName, password=None, **extra_fields):
@@ -57,9 +75,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     deactivatorEmail = models.EmailField(null=True, blank=True)
     deactivatorFirstName = models.CharField(max_length=255, null=True, blank=True)
     deactivationDate = models.DateTimeField(null=True, blank=True)
-    cv_file = models.URLField(blank=True, null=True)
-    contract_file = models.URLField(blank=True, null=True)
-    passport_file = models.URLField(blank=True, null=True)
+    cv_link = models.URLField(blank=True, null=True)
+    contract_link = models.URLField(blank=True, null=True)
+    passport_link = models.URLField(blank=True, null=True)
 
     objects = CustomUserManager()
 

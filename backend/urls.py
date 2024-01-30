@@ -16,6 +16,7 @@ from .views.reservations_view import reservation_data_sheet, options_data_sheet
 urlpatterns = [
 #admin
     path("admin/", admin.site.urls),
+    path('register/', RegistrationView.as_view(), name='user-registration'),
     # path('__debug__/', include('debug_toolbar.urls')),
     path('admin/login/', CustomAdminLoginView.as_view(), name='admin_login'),
     path('api/dashboard-data/', dashboard_data_view, name='dashboard_data'),
