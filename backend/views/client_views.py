@@ -11,6 +11,8 @@ from rest_framework.decorators import api_view, permission_classes
 from django.db import IntegrityError
 from rest_framework import status
 from django.utils import timezone
+from ..firebase import upload_to_firebase_storage, download_file_from_url
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 class ClientRegistrationView(APIView):
     """
@@ -29,6 +31,14 @@ class ClientRegistrationView(APIView):
         # Combine the user data with the client data
         request_data = request.data
         request_data['user'] = user.UserID
+
+        # Handle file uploads to Firebase Storage
+        signature_link = self.handle_file_upload(request, 'signature_file', 'signature.pdf')
+        bankStatement_link = self.handle_file_upload(request, 'bankStatement_file', 'bankStatement.pdf')
+        professionalReference_link = self.handle_file_upload(request, 'professionalReference_file', 'professionalReference.pdf')
+
+        # Update the request data with the obtained links
+        request.data.update({'signature_link': signature_link, 'bankStatement_link': bankStatement_link, 'professionalReference_link': professionalReference_link})
 
         try:
             # Set the registrar information
@@ -49,6 +59,25 @@ class ClientRegistrationView(APIView):
         except IntegrityError as e:
             print(f"IntegrityError: {e}")
             return Response({'message': 'Client registration failed. Duplicate client.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def handle_file_upload(self, request, file_key, file_name):
+        file = request.FILES.get(file_key)
+        file_link = None
+
+        if file:
+            folder = f"client_files/{request.data['firstName']}_{request.data['lastName']}"
+            file_content = file.read()
+            file_checksum = request.data.get(f'{file_key}_checksum')
+
+            if isinstance(file, InMemoryUploadedFile):
+                file_link = upload_to_firebase_storage(folder, file_name, file_content, file_checksum)
+            else:
+                local_file_path = file.temporary_file_path()
+                file_link = upload_to_firebase_storage(folder, file_name, local_file_path, file_checksum)
+
+            print(f"{file_name.capitalize()} Link Before Saving:", file_link)
+
+        return file_link
 
 class ClientDeactivateView(generics.RetrieveUpdateAPIView):
     """

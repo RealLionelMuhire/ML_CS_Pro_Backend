@@ -144,10 +144,14 @@ class Client(models.Model):
     tinNumber = models.CharField(max_length=50)
     citizenship = models.CharField(max_length=50)
     birthDate = models.DateField(null=True, blank=True)
+    countryOfResidence = models.CharField(max_length=50, null=True, blank=True)
     passportIdNumber = models.CharField(max_length=50, unique=True)
     countryOfIssue = models.CharField(max_length=50, null=True, blank=True)
     passportExpiryDate = models.DateField(null=True, blank=True)
-    companyName = models.CharField(max_length=100, null=True, blank=True)
+    NameOfEntity = models.CharField(max_length=100, null=True, blank=True)
+    PrevNameOfEntity = models.CharField(max_length=100, null=True, blank=True)
+    TypeOfEntity = models.CharField(max_length=100, null=True, blank=True)
+    TypeOfLicense = models.CharField(max_length=100, null=True, blank=True)
     sharePercent = models.CharField(max_length=255, null=True, blank=True)
     currentAddress = models.CharField(max_length=150, blank=True)
     clientContact = models.CharField(max_length=20)
@@ -167,11 +171,31 @@ class Client(models.Model):
     deactivatorFirstName = models.CharField(max_length=255, null=True, blank=True)
     deactivationDate = models.DateField(null=True, blank=True)
     designation = models.CharField(max_length=255, null=True, blank=True)
+    
     introducerName = models.CharField(max_length=255, null=True, blank=True)
     introducerEmail = models.EmailField(null=True, blank=True)
+    
     contactPersonName = models.CharField(max_length=255, null=True, blank=True)
     contactPersonEmail = models.EmailField(null=True, blank=True)
     contactPersonPhone = models.CharField(max_length=20, null=True, blank=True)
+
+    authorisedName = models.CharField(max_length=255, null=True, blank=True)
+    authorisedEmail = models.EmailField(null=True, blank=True)
+    authorisedPersonContact = models.CharField(max_length=20, null=True, blank=True)
+    authorisedCurrentAddress = models.CharField(max_length=255, null=True, blank=True)
+    authorisedRelationship = models.CharField(max_length=255, null=True, blank=True)
+
+    isPep = models.CharField(max_length=5, null=True, blank=True)
+
+    signature_link = models.URLField(blank=True, null=True)
+    bankStatement_link = models.URLField(blank=True, null=True)
+    professionalReference_link = models.URLField(blank=True, null=True)
+
+    incorporationDate = models.DateField(null=True, blank=True)
+    countryOfIncorporation = models.CharField(max_length=50, null=True, blank=True)
+    registeredOfficeAddress = models.CharField(max_length=255, null=True, blank=True)
+    businessActivity = models.CharField(max_length=255, null=True, blank=True)
+    countryOfOperation = models.CharField(max_length=50, null=True, blank=True)
 
 
     def __str__(self):

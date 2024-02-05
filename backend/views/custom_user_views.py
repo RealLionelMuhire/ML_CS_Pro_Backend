@@ -48,62 +48,18 @@ class RegistrationView(APIView):
 
     def post(self, request):
         """Handle POST requests for user registration."""
-        # Check if the user has the permission to create a user
-        # if not request.user.has_perm('auth.can_create_user'):
-        #     return Response({'message': 'Permission denied. You do not have the required permission to create a user.'}, status=status.HTTP_403_FORBIDDEN)
-
         # Include additional information in the request data
         request.data['registered_by_id'] = request.user.UserID
         request.data['registered_by_fullname'] = request.user.FirstName
 
         # Handle file uploads to Firebase Storage
-        cv_file = request.FILES.get('cv_file')
-        contract_file = request.FILES.get('contract_file')
-
-        cv_link = None
-        contract_link = None
-
-        if cv_file:
-            folder = f"user_files/{request.data['FirstName']}"
-            filename = "cv.pdf"
-
-            # Ensure the content is properly read for InMemoryUploadedFile
-            cv_content = cv_file.read()
-            cv_file_Checksum = request.data.get('cv_file_checksum')
-
-            if isinstance(cv_file, InMemoryUploadedFile):
-                cv_link = upload_to_firebase_storage(folder, filename, cv_content, cv_file_Checksum)
-            else:
-                # Use the temporary file path
-                local_file_path = cv_file.temporary_file_path()
-                cv_link = upload_to_firebase_storage(folder, filename, local_file_path, cv_file_Checksum)
-
-            print("CV Link Before Saving:", cv_link)
-
-        if contract_file:
-            folder = f"user_files/{request.data['FirstName']}"
-            filename = "contract.pdf"
-
-            # Ensure the content is properly read for InMemoryUploadedFile
-            contract_content = contract_file.read()
-            contract_file_Checksum = request.data.get('contract_file_checksum')
-            if isinstance(contract_file, InMemoryUploadedFile):
-                contract_link = upload_to_firebase_storage(folder, filename, contract_content, contract_file_Checksum)
-            else:
-                # Use the temporary file path
-                local_file_path = contract_file.temporary_file_path()
-                contract_link = upload_to_firebase_storage(folder, filename, local_file_path, contract_file_Checksum)
-
-            print("Contract Link Before Saving:", contract_link)
+        cv_link = self.handle_file_upload(request, 'cv_file', 'cv.pdf')
+        contract_link = self.handle_file_upload(request, 'contract_file', 'contract.pdf')
 
         # Update the request data with the obtained links
-        request.data['cv_link'] = cv_link
-        request.data['contract_link'] = contract_link
+        request.data.update({'cv_link': cv_link, 'contract_link': contract_link})
 
         # Create a user serializer
-        print("cv_link Before Serializer:", cv_link)
-        print("contract_link Before Serializer:", contract_link)
-        print("Request Data with Links:", request.data)
         serializer = UserSerializer(data=request.data)
 
         try:
@@ -117,6 +73,25 @@ class RegistrationView(APIView):
         except IntegrityError as e:
             print(f"IntegrityError: {e}")
             return Response({'message': 'Registration failed. Duplicate user.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def handle_file_upload(self, request, file_key, file_name):
+        file = request.FILES.get(file_key)
+        file_link = None
+
+        if file:
+            folder = f"user_files/{request.data['FirstName']}"
+            file_content = file.read()
+            file_checksum = request.data.get(f'{file_key}_checksum')
+
+            if isinstance(file, InMemoryUploadedFile):
+                file_link = upload_to_firebase_storage(folder, file_name, file_content, file_checksum)
+            else:
+                local_file_path = file.temporary_file_path()
+                file_link = upload_to_firebase_storage(folder, file_name, local_file_path, file_checksum)
+
+            print(f"{file_name.capitalize()} Link Before Saving:", file_link)
+
+        return file_link
 
 class UserDeactivateView(generics.RetrieveUpdateAPIView, BaseUserAdmin):
     """
