@@ -6,7 +6,8 @@ from urllib.parse import urlparse, unquote
 import os
 from .firebase_initializer import initialize_firebase
 import hashlib
-
+from rest_framework.renderers import JSONRenderer
+from io import BytesIO
 
 def calculate_checksum(data):
     sha256 = hashlib.sha256()
@@ -62,6 +63,15 @@ def upload_to_firebase_storage(folder, file_name, file_content, expected_checksu
     return None
 
 
+# class BinaryJSONRenderer(JSONRenderer):
+#     media_type = 'application/json'
+
+#     def render(self, data, accepted_media_type=None, renderer_context=None):
+#         for key, value in data.items():
+#             if isinstance(value, bytes):
+#                 data[key] = value.decode('utf-8', errors='replace')
+#         return super().render(data, accepted_media_type, renderer_context)
+
 def download_file_from_url(file_url):
     try:
         # Make a GET request to the file URL
@@ -72,8 +82,14 @@ def download_file_from_url(file_url):
             # Extract the file name from the URL
             file_name = unquote(os.path.basename(urlparse(file_url).path))
 
+            # Debugging message
+            print(f"Download successful. File name: {file_name}")
+
+            # Create a BytesIO object to handle binary content
+            file_content = BytesIO(response.content)
+
             # Return the file content and file name
-            return file_name, response.content
+            return file_name, file_content
         else:
             print(f"Download failed. Status code: {response.status_code}")
             return None, None

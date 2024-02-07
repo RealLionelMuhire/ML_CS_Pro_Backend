@@ -13,6 +13,13 @@ from rest_framework import status
 from django.utils import timezone
 from ..firebase import upload_to_firebase_storage, download_file_from_url
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from rest_framework.renderers import JSONRenderer
+from django.http import FileResponse, StreamingHttpResponse
+from io import BytesIO
+from django.core.files.base import ContentFile
+import base64
+import tempfile
+
 
 class ClientRegistrationView(APIView):
     """
@@ -169,54 +176,6 @@ def search_clients(request):
 
     return Response(serializer.data)
 
-class ListClientsView(APIView):
-    """
-    API view for listing all clients associated with the authenticated user.
-    Requires authentication for access.
-    Endpoint: GET /list-clients/
-    """
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        """Handle GET requests to list all clients."""
-        clients = Client.objects.all()
-
-        # Serialize the results
-        serializer = ClientSerializer(clients, many=True)
-
-        return Response(serializer.data)
-
-class ClientListByIdView(generics.ListAPIView):
-    """
-    API view for retrieving a list of clients by IDs.
-    Requires authentication for access.
-    Endpoint: GET /clients-list-by-id/?ids=1,2,3
-    """
-
-    serializer_class = ClientSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        # Get the list of client IDs from the query parameters
-        client_ids_str = self.request.query_params.get('ids', '')
-        client_ids = [int(client_id) for client_id in client_ids_str.split(',') if client_id.isdigit()]
-
-        # Filter and retrieve clients based on the provided IDs
-        queryset = Client.objects.filter(id__in=client_ids)
-        return queryset
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serialized_clients = []
-
-        # Serialize the clients and handle not found cases
-        for client_id in [int(client_id) for client_id in self.request.query_params.get('ids', '').split(',')]:
-            client = get_object_or_404(queryset, id=client_id)
-            serializer = self.get_serializer(client)
-            serialized_clients.append(serializer.data)
-
-        return Response(serialized_clients)
 
 class AddFieldToClientView(APIView):
     """
@@ -249,3 +208,113 @@ class AddFieldToClientView(APIView):
             return Response({'message': 'Field added successfully'})
         else:
             return Response({'message': 'Invalid field value'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return file_link
+
+class ListClientsView(APIView):
+    """
+    API view for listing all clients associated with the authenticated user.
+    Requires authentication for access.
+    Endpoint: GET /list-clients/
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Handle GET requests to list all clients."""
+        clients = Client.objects.all()
+
+        # Serialize the results
+        serializer = ClientSerializer(clients, many=True)
+
+        return Response(serializer.data)
+
+class ClientListByIdView(generics.ListAPIView):
+    """
+    API view for retrieving a list of clients by IDs.
+    Requires authentication for access.
+    Endpoint: GET /clients-list-by-id/?ids=1,2,3
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    display_names_map = {
+    'firstName': 'First Name',
+    'lastName': 'Last Name',
+    'taxResidency': 'Tax Residency',
+    'tinNumber': 'TIN Number',
+    'citizenship': 'Citizenship',
+    'birthDate': 'Birth Date',
+    'countryOfResidence': 'Country of Residence',
+    'passportIdNumber': 'Passport ID Number',
+    'countryOfIssue': 'Country of Issue',
+    'passportExpiryDate': 'Passport Expiry Date',
+    'NameOfEntity': 'Name of Entity',
+    'PrevNameOfEntity': 'Previous Name of Entity',
+    'TypeOfEntity': 'Type of Entity',
+    'TypeOfLicense': 'Type of License',
+    'sharePercent': 'Share Percent',
+    'currentAddress': 'Current Address',
+    'clientContact': 'Client Contact',
+    'clientEmail': 'Client Email',
+    'preferredLanguage': 'Preferred Language',
+    'registrarID': 'Registrar ID',
+    'registrarEmail': 'Registrar Email',
+    'registrarFirstName': 'Registrar First Name',
+    'registrationDate': 'Registration Date',
+    'isActive': 'Is Active',
+    'activatorID': 'Activator ID',
+    'activatorEmail': 'Activator Email',
+    'activatorFirstName': 'Activator First Name',
+    'activationDate': 'Activation Date',
+    'deactivatorID': 'Deactivator ID',
+    'deactivatorEmail': 'Deactivator Email',
+    'deactivatorFirstName': 'Deactivator First Name',
+    'deactivationDate': 'Deactivation Date',
+    'designation': 'Designation',
+    'introducerName': 'Introducer Name',
+    'introducerEmail': 'Introducer Email',
+    'contactPersonName': 'Contact Person Name',
+    'contactPersonEmail': 'Contact Person Email',
+    'contactPersonPhone': 'Contact Person Phone',
+    'authorisedName': 'Authorised Name',
+    'authorisedEmail': 'Authorised Email',
+    'authorisedPersonContact': 'Authorised Person Contact',
+    'authorisedCurrentAddress': 'Authorised Current Address',
+    'authorisedRelationship': 'Authorised Relationship',
+    'isPep': 'Is PEP',
+    'signature_link': 'Signature',
+    'bankStatement_link': 'Bank Statement',
+    'professionalReference_link': 'Professional Reference',
+    'incorporationDate': 'Incorporation Date',
+    'countryOfIncorporation': 'Country of Incorporation',
+    'registeredOfficeAddress': 'Registered Office Address',
+    'businessActivity': 'Business Activity',
+    'countryOfOperation': 'Country of Operation',
+    }
+
+    def get_queryset(self):
+        # Get the list of client IDs from the query parameters
+        client_ids_str = self.request.query_params.get('ids', '')
+        client_ids = [int(client_id) for client_id in client_ids_str.split(',') if client_id.isdigit()]
+
+        # Filter and retrieve clients based on the provided IDs
+        queryset = Client.objects.filter(id__in=client_ids)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serialized_clients = []
+
+        for client_id in [int(client_id) for client_id in self.request.query_params.get('ids', '').split(',')]:
+            client = get_object_or_404(queryset, id=client_id)
+            serializer = ClientSerializer(client)
+            serialized_data = serializer.data
+
+            # Rename the keys based on display names map
+            renamed_data = {self.display_names_map.get(key, key): value for key, value in serialized_data.items() if key in self.display_names_map}
+
+            serialized_clients.append(renamed_data)
+
+        return Response(serialized_clients)
+
