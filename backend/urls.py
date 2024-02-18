@@ -11,7 +11,7 @@ from .views.permission_views import UserPermissionsView, AllPermissionsView,Acti
 from .views.events_view import EventDetailView, EventListView, AllEventsListView
 from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView, ActiveAlertsView
 from .views.customAdmin import CustomAdminLoginView
-from .views.reservations_view import reservation_data_sheet, options_data_sheet
+from .views.reservations_view import RegisterReservationView, ListReservedPeriodsView
 
 urlpatterns = [
 #admin
@@ -24,7 +24,7 @@ urlpatterns = [
     path('api/hello/', HelloWorldView.as_view(), name='hello_world'),
     path('api/register/', RegistrationView.as_view(), name='registration'),
     path('api/users/', UserListView.as_view(), name='user-list'),
-    path('api/deactivate-user/<int:pk/', DeactivateUserView.as_view(), name='deactivate_user'),
+    path('api/deactivate-user/<int:pk>/', DeactivateUserView.as_view(), name='deactivate_user'),
     path('api/activate-user/<int:pk>/', ActivateUserView.as_view(), name='activate_user'),
     path('api/user-profile/', UserProfileView.as_view(), name='user-profile'),
     path('api/update-user-profile/', UserProfileUpdateView.as_view(), name='update-user-profile'),
@@ -60,9 +60,9 @@ urlpatterns = [
     path('api/alert-action/<int:alert_id>/', AlertActionView.as_view(), name='alert-action'),
     path('api/alert-detail/',AlertDetailView.as_view(), name='alert-detail'),
     path('api/active-alerts/', ActiveAlertsView.as_view(), name='active-alerts'),
-# reservations and options in google sheets
-    path('api/get-reservations-data/', reservation_data_sheet, name='get_reservations_data'),
-    path('api/get-options-data/', options_data_sheet, name='get_options_data'),
+# reservations
+    path('api/register-reservation/', RegisterReservationView.as_view(), name='register_reservation'),
+    path('api/list-reserved-periods/', ListReservedPeriodsView.as_view(), name='list_reservations'),
 ]
 
 # Enable the toolbar only if DEBUG is True and the current IP is in INTERNAL_IPS.

@@ -276,20 +276,17 @@ class Alert(models.Model):
         return self.title
 
 class Reservation(models.Model):
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(auto_now_add=True)
     email = models.EmailField()
-    full_name = models.CharField(max_length=255)
-    phone_contact = models.CharField(max_length=15)  # You may adjust the max_length according to your needs
-    service_title = models.CharField(max_length=255)
-    appointment_datetime = models.DateTimeField()
-
-    def save(self, *args, **kwargs):
-        # Ensure that timestamp is formatted correctly before saving
-        self.timestamp = self.timestamp.strftime("%Y-%m-%d %H:%M:%S")
-        super().save(*args, **kwargs)
+    fullName = models.CharField(max_length=255)
+    clientContact = models.CharField(max_length=15)
+    servicesToDiscuss = models.TextField()
+    otherServices = models.TextField(blank=True, null=True)
+    startTime = models.DateTimeField(blank=True, null=True)
+    endTime = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.full_name} - {self.appointment_datetime}"
+        return f"Reservation for {self.fullName} - {self.startTime} to {self.endTime}"
 
 class Options(models.Model):
     available_datetime = models.DateTimeField()

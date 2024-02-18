@@ -1,6 +1,6 @@
 # backend/serializers.py
 from rest_framework import serializers
-from .models import CustomUser, Client, Service, UserActionLog, Event, Alert
+from .models import CustomUser, Client, Service, UserActionLog, Event, Alert, Reservation
 from django.contrib.auth.models import Permission
 
 class UserSerializer(serializers.ModelSerializer):
@@ -120,4 +120,13 @@ class AlertSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Alert
+        fields = '__all__'
+
+class ReservationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Reservation model.
+    """
+
+    class Meta:
+        model = Reservation
         fields = '__all__'

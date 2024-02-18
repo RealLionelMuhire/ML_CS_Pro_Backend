@@ -1,46 +1,58 @@
-from ..models import Reservation, Options
-from django.http import HttpResponse
-from ..google_sheet.google_sheets import fetch_options_data_from_sheets, fetch_reservation_data_from_sheets
-from django.utils.timezone import make_aware
+# views.py
 
-def reservation_data_sheet(request):
-    data_from_sheets =  fetch_reservation_data_from_sheets()
-    # print("===>This is data from sheets after importing===>")
-    # print(data_from_sheets)
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import AllowAny
+from ..models import Reservation
+from ..serializers import ReservationSerializer
 
-    # Save data to Reservation model
-    
-    for row in data_from_sheets:
-        try:
-            timestamp = row[0]
-            if timestamp.tzinfo is None or timestamp.tzinfo.utcoffset(timestamp) is None:
-                timestamp = make_aware(timestamp)
-            Reservation.objects.create(
-                timestamp=timestamp,
-                email=row[1],
-                full_name=row[2],
-                phone_contact=row[3],
-                service_title=row[4],
-                appointment_datetime=row[5]
-            )
-        except Exception as e:
-            print(f"Error saving reservation data: {e}")
-            return HttpResponse("Error saving reservation data.")
+class RegisterReservationView(APIView):
+    """
+    API view for registering a reservation.
 
-    
-    return HttpResponse("Data imported successfully.")
+    Requires no authentication for access.
 
-def options_data_sheet(request):
-    data_from_sheets = fetch_options_data_from_sheets()
+    Endpoint: POST /api/register-reservation/
+    """
 
-    # Save data to Options model
-    for row in data_from_sheets:
-        Options.objects.update_or_create(
-            available_datetime=row[0],
-            defaults={
-                'day_of_week': row[1],
-                'status': row[2],
-            }
-        )
+    permission_classes = [AllowAny]
 
-    return HttpResponse("Options data imported successfully.")
+    def post(self, request, format=None):
+        # registering a new reservation
+
+        serializer = ReservationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Reservation registered successfully'})
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ListReservedPeriodsView(APIView):
+    """
+    API view for listing reserved periods with startTime and endTime.
+
+    Requires no authentication for access.
+
+    Endpoint: GET /api/list-reserved-periods/
+    """
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        """
+        Get a list of reserved periods with startTime and endTime.
+
+        Returns:
+        - Success: Returns a list of reserved periods
+        - Failure: Returns an error message
+        """
+
+        reservations = Reservation.objects.all()
+        serializer = ReservationSerializer(reservations, many=True)
+
+        # Extract only the required fields
+        extracted_data = [{'startTime': item['startTime'], 'endTime': item['endTime']} for item in serializer.data]
+
+        return Response({'reserved_periods': extracted_data})
