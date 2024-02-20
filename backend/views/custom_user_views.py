@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
 from rest_framework import status
-from ..serializers import UserSerializer, CustomUserSerializer, UserProfileUpdateSerializer
+from ..serializers import UserSerializer, CustomUserSerializer, UserProfileUpdateSerializer, Reservation
 from django.db import IntegrityError
 from rest_framework.decorators import api_view, permission_classes
 from ..models import CustomUser, Service, Client
@@ -231,6 +231,7 @@ def dashboard_data_view(request):
     1. Total Services, New Services in the current month
     2. Total Clients, New Clients in the current month
     3. A list of 10 recent services with client_name, date, and total cost
+    4. A list of 10 oldest reservations with name, email, phone contact, service to discuss, other services, start time, end time
 
     Returns a JSON response containing the requested data.
     """
@@ -240,7 +241,6 @@ def dashboard_data_view(request):
     new_services_current_month = Service.objects.filter(start_time__gte=start_of_month).count()
     increase_rate_services = (total_services - new_services_current_month) / total_services
     increase_rate_services_percentage = increase_rate_services * 100
-    
 
 
     # 2. Total Clients, New Clients in the current month
@@ -248,6 +248,13 @@ def dashboard_data_view(request):
     new_clients_current_month = Client.objects.filter(registrationDate__gte=start_of_month).count()
     increase_rate_clients = (total_clients - new_clients_current_month) / total_clients
     increase_rate_clients_percentage = increase_rate_clients * 100
+
+    # 3. Total Reservations, New Reservations in the current month
+    total_reservations = Reservation.objects.count()
+    start_of_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)  
+    new_reservations_current_month = Reservation.objects.filter(startTime__gte=start_of_month).count()
+    increase_rate_reservations = (total_reservations - new_reservations_current_month) / total_reservations
+    increase_rate_reservations_percentage = increase_rate_reservations * 100
 
     # 3. A list of 10 recent services with client_name, date, and total cost
     recent_services = Service.objects.order_by('-start_time')[:10]
@@ -262,6 +269,25 @@ def dashboard_data_view(request):
         for service in recent_services
     ]
 
+    # 4. A list of 10 oldest reservations with name, email, phone contact, service to discuss, other services, start time, end time
+    oldest_reservations = Reservation.objects.filter(startTime__gte=timezone.now()).order_by('startTime')[:10]
+    oldest_reservations_data = [
+        {
+            'name': reservation.fullName,
+            'email': reservation.email,
+            'phone_contact': reservation.clientContact,
+            'service_to_discuss': reservation.servicesToDiscuss,
+            'other_services': reservation.otherServices,
+            'start_time': reservation.startTime.strftime('%Y-%m-%d %H:%M:%S'),
+            'end_time': reservation.endTime.strftime('%Y-%m-%d %H:%M:%S'),
+            'reserved_period': f"{reservation.startTime.strftime('%a %d, %b %Y at %I %p')} - {reservation.endTime.strftime('%I %p')}",
+        }
+        for reservation in oldest_reservations
+    ]
+
+    
+
+
     # Prepare the response data
     response_data = {
         'total_services': total_services,
@@ -273,6 +299,12 @@ def dashboard_data_view(request):
         'increase_rate_clients': increase_rate_clients,
         'increase_rate_clients_percentage': increase_rate_clients_percentage,
         'recent_services': recent_services_data,
+        'oldest_reservations': oldest_reservations_data,
+        'total_reservations': total_reservations,
+        'new_reservations_current_month': new_reservations_current_month,
+        'increase_rate_reservations': increase_rate_reservations,
+        'increase_rate_reservations_percentage': increase_rate_reservations_percentage,
+
     }
 
     return JsonResponse(response_data)
