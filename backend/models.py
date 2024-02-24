@@ -282,11 +282,11 @@ class Reservation(models.Model):
     clientContact = models.CharField(max_length=15)
     servicesToDiscuss = models.TextField()
     otherServices = models.TextField(blank=True, null=True)
-    startTime = models.DateTimeField(blank=True, null=True)
-    endTime = models.DateTimeField(blank=True, null=True)
+    startTime = models.DateTimeField(blank=True, null=True, unique=True)
+    endTime = models.DateTimeField(blank=True, null=True, unique=True)
 
     def __str__(self):
-        return f"Reservation for {self.fullName} - {self.startTime} to {self.endTime}"
+        return f"{self.startTime} - {self.endTime}"
 
 class Options(models.Model):
     available_datetime = models.DateTimeField()

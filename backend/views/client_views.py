@@ -13,12 +13,6 @@ from rest_framework import status
 from django.utils import timezone
 from ..firebase import upload_to_firebase_storage, download_file_from_url
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from rest_framework.renderers import JSONRenderer
-from django.http import FileResponse, StreamingHttpResponse
-from io import BytesIO
-from django.core.files.base import ContentFile
-import base64
-import tempfile
 
 
 class ClientRegistrationView(APIView):
