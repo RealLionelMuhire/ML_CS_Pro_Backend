@@ -11,7 +11,7 @@ from .views.permission_views import UserPermissionsView, AllPermissionsView,Acti
 from .views.events_view import EventDetailView, EventListView, AllEventsListView
 from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView, ActiveAlertsView
 from .views.customAdmin import CustomAdminLoginView
-from .views.reservations_view import RegisterReservationView, ListReservedPeriodsView, ListReservationsStartingTodayView, ListPastReservationsView
+from .views.reservations_view import RegisterReservationView, ListReservedPeriodsView, ListReservationsStartingTodayView, ListPastReservationsView, ListAllReservationsView, UserRegisterReservationView, ReservationDetailView
 
 urlpatterns = [
 #admin
@@ -65,6 +65,11 @@ urlpatterns = [
     path('api/list-reserved-periods/', ListReservedPeriodsView.as_view(), name='list_reservations'),
     path('api/reservations-future/', ListReservationsStartingTodayView.as_view(), name='list_reservations_starting_today'),
     path('api/reservations-past/', ListPastReservationsView.as_view(), name='list_past_reservations'),
+    path('api/list-reservations/', ListAllReservationsView.as_view(), name='list_all_reservations'),
+    path('api/user-register-reservation/', UserRegisterReservationView.as_view(), name='user_register_reservation'),
+    path('api/reservations/', ReservationDetailView.as_view(), name='reservation_list'),
+    path('api/reservations/<int:pk>/', ReservationDetailView.as_view(), name='reservation_detail'),
+    path('api/reservations/<int:pk>/update/', ReservationDetailView.as_view(), name='reservation_update'),
 ]
 
 # Enable the toolbar only if DEBUG is True and the current IP is in INTERNAL_IPS.
