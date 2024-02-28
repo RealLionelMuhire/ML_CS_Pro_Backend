@@ -88,7 +88,22 @@ class ListReservationsStartingTodayView(APIView):
         # Add 'reserved_period' to each reservation and append it to serialized data
         serialized_data = []
         for reservation in reservations:
-            reserved_period = f"{timezone.localtime(reservation.startTime).strftime('%a %d, %b %Y at %I %p')} - {timezone.localtime(reservation.endTime).strftime('%I %p')}"
+            local_start_time = timezone.localtime(reservation.startTime)
+            local_end_time = timezone.localtime(reservation.endTime)
+
+            if local_start_time.date() != local_end_time.date():
+                # Different days, format accordingly
+                reserved_period = (
+                    f"{local_start_time.strftime('%a %d, %b %Y at %I %p')} - "
+                    f"{local_end_time.strftime('%a %d, %b %Y at %I %p')}"
+                )
+            else:
+                # Same day
+                reserved_period = (
+                    f"{local_start_time.strftime('%a %d, %b %Y at %I %p')} - "
+                    f"{local_end_time.strftime('%I %p')}"
+                )
+
             serialized_item = ReservationSerializer(reservation).data
             serialized_item['reserved_period'] = reserved_period
             serialized_data.append(serialized_item)
@@ -121,7 +136,22 @@ class ListPastReservationsView(APIView):
 
         serialized_data = []
         for reservation in past_reservations:
-            reserved_period = f"{timezone.localtime(reservation.startTime).strftime('%a %d, %b %Y at %I %p')} - {timezone.localtime(reservation.endTime).strftime('%I %p')}"
+            local_start_time = timezone.localtime(reservation.startTime)
+            local_end_time = timezone.localtime(reservation.endTime)
+
+            if local_start_time.date() != local_end_time.date():
+                # Different days, format accordingly
+                reserved_period = (
+                    f"{local_start_time.strftime('%a %d, %b %Y at %I %p')} - "
+                    f"{local_end_time.strftime('%a %d, %b %Y at %I %p')}"
+                )
+            else:
+                # Same day
+                reserved_period = (
+                    f"{local_start_time.strftime('%a %d, %b %Y at %I %p')} - "
+                    f"{local_end_time.strftime('%I %p')}"
+                )
+
             serialized_item = ReservationSerializer(reservation).data
             serialized_item['reserved_period'] = reserved_period
             serialized_data.append(serialized_item)
@@ -153,7 +183,22 @@ class ListAllReservationsView(APIView):
 
         serialized_data = []
         for reservation in reservations:
-            reserved_period = f"{timezone.localtime(reservation.startTime).strftime('%a %d, %b %Y at %I %p')} - {timezone.localtime(reservation.endTime).strftime('%I %p')}"
+            local_start_time = timezone.localtime(reservation.startTime)
+            local_end_time = timezone.localtime(reservation.endTime)
+
+            if local_start_time.date() != local_end_time.date():
+                # Different days, format accordingly
+                reserved_period = (
+                    f"{local_start_time.strftime('%a %d, %b %Y at %I %p')} - "
+                    f"{local_end_time.strftime('%a %d, %b %Y at %I %p')}"
+                )
+            else:
+                # Same day
+                reserved_period = (
+                    f"{local_start_time.strftime('%a %d, %b %Y at %I %p')} - "
+                    f"{local_end_time.strftime('%I %p')}"
+                )
+
             serialized_item = ReservationSerializer(reservation).data
             serialized_item['reserved_period'] = reserved_period
             serialized_data.append(serialized_item)

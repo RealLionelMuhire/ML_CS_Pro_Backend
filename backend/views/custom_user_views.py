@@ -51,7 +51,7 @@ class RegistrationView(APIView):
         # Include additional information in the request data
         request.data['registered_by_id'] = request.user.UserID
         request.data['registered_by_fullname'] = request.user.FirstName
-
+        
         # Handle file uploads to Firebase Storage
         cv_link = self.handle_file_upload(request, 'cv_file', 'cv.pdf')
         contract_link = self.handle_file_upload(request, 'contract_file', 'contract.pdf')
@@ -222,6 +222,24 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
+def format_reserved_period(start_time, end_time):
+    local_start_time = timezone.localtime(start_time)
+    local_end_time = timezone.localtime(end_time)
+
+    if local_start_time.date() != local_end_time.date():
+        # Different days, format accordingly
+        reserved_period = (
+            f"{local_start_time.strftime('%a %d, %b %Y at %I %p')} - "
+            f"{local_end_time.strftime('%a %d, %b %Y at %I %p')}"
+        )
+    else:
+        # Same day
+        reserved_period = (
+            f"{local_start_time.strftime('%a %d, %b %Y at %I %p')} - "
+            f"{local_end_time.strftime('%I %p')}"
+        )
+
+    return reserved_period
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -280,7 +298,7 @@ def dashboard_data_view(request):
             'other_services': reservation.otherServices,
             'start_time': reservation.startTime.strftime('%Y-%m-%d %H:%M:%S'),
             'end_time': reservation.endTime.strftime('%Y-%m-%d %H:%M:%S'),
-            'reserved_period': f"{reservation.startTime.strftime('%a %d, %b %Y at %I %p')} - {reservation.endTime.strftime('%I %p')}",
+            'reserved_period': format_reserved_period(reservation.startTime, reservation.endTime),
         }
         for reservation in oldest_reservations
     ]
