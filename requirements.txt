@@ -14,4 +14,7 @@ python-dateutil
 firebase-admin
 google-cloud-storage
 google-auth
+dj-database-url
+psycopg2
+python-decouple
 

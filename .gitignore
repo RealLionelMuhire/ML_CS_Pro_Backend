@@ -168,3 +168,6 @@ backend/google_sheet/token.json
 backend/token.json
 serviceAccountKey.json
 backend/serviceAccountKey.json
+ML_CS_Pro_Backend/.env
+backend/.env
+.env
