@@ -257,22 +257,20 @@ def dashboard_data_view(request):
     total_services = Service.objects.count()
     start_of_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     new_services_current_month = Service.objects.filter(start_time__gte=start_of_month).count()
-    increase_rate_services = (total_services - new_services_current_month) / total_services
-    increase_rate_services_percentage = increase_rate_services * 100
-
+    increase_rate_services = 0 if total_services == 0 else round((total_services - new_services_current_month) / total_services, 2)
+    increase_rate_services_percentage = round(increase_rate_services * 100, 1)
 
     # 2. Total Clients, New Clients in the current month
     total_clients = Client.objects.count()
     new_clients_current_month = Client.objects.filter(registrationDate__gte=start_of_month).count()
-    increase_rate_clients = (total_clients - new_clients_current_month) / total_clients
-    increase_rate_clients_percentage = increase_rate_clients * 100
+    increase_rate_clients = 0 if total_clients == 0 else round((total_clients - new_clients_current_month) / total_clients, 2)
+    increase_rate_clients_percentage = round(increase_rate_clients * 100, 1)
 
     # 3. Total Reservations, New Reservations in the current month
     total_reservations = Reservation.objects.count()
-    start_of_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)  
     new_reservations_current_month = Reservation.objects.filter(startTime__gte=start_of_month).count()
-    increase_rate_reservations = (total_reservations - new_reservations_current_month) / total_reservations
-    increase_rate_reservations_percentage = increase_rate_reservations * 100
+    increase_rate_reservations = 0 if total_reservations == 0 else round((total_reservations - new_reservations_current_month) / total_reservations, 2)
+    increase_rate_reservations_percentage = round(increase_rate_reservations * 100, 1)
 
     # 3. A list of 10 recent services with client_name, date, and total cost
     recent_services = Service.objects.order_by('-start_time')[:10]
@@ -303,9 +301,6 @@ def dashboard_data_view(request):
         for reservation in oldest_reservations
     ]
 
-    
-
-
     # Prepare the response data
     response_data = {
         'total_services': total_services,
@@ -322,7 +317,6 @@ def dashboard_data_view(request):
         'new_reservations_current_month': new_reservations_current_month,
         'increase_rate_reservations': increase_rate_reservations,
         'increase_rate_reservations_percentage': increase_rate_reservations_percentage,
-
     }
 
     return JsonResponse(response_data)
