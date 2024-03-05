@@ -11,14 +11,14 @@ class UserSerializer(serializers.ModelSerializer):
     can_deactivate_user = serializers.BooleanField(write_only=True, required=False)
     can_grant_permissions = serializers.BooleanField(write_only=True, required=False)
     registrarID = serializers.IntegerField(required=False)
-    registrarFirstName = serializers.CharField(max_length=255, required=False)
+    registrarName = serializers.CharField(max_length=255, required=False)
     cv_link = serializers.URLField(write_only=True, required=False)
     contract_link = serializers.URLField(write_only=True, required=False)
     passport_link = serializers.URLField(write_only=True, required=False)
 
     class Meta:
         model = CustomUser
-        fields = ['UserID', 'UserRoles', 'email', 'FirstName', 'LastName','is_staff', 'NationalID', 'Address', 'isActive', 'can_create_user', 'can_activate_user', 'can_deactivate_user', 'can_grant_permissions', 'registrarID', 'registrarFirstName', 'accessLevel', 'BirthDate', 'cv_link', 'contract_link', 'passport_link']
+        fields = ['UserID', 'UserRoles', 'email', 'FirstName', 'LastName','is_staff', 'NationalID', 'Address', 'isActive', 'can_create_user', 'can_activate_user', 'can_deactivate_user', 'can_grant_permissions', 'registrarID', 'registrarName', 'accessLevel', 'BirthDate', 'cv_link', 'contract_link', 'passport_link', 'contact']
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(**validated_data)
@@ -80,7 +80,7 @@ class EventSerializer(serializers.ModelSerializer):
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['UserID', 'UserRoles', 'email', 'contact', 'FirstName', 'LastName', 'NationalID', 'Address', 'registrarFirstName', 'accessLevel', 'BirthDate']
+        fields = ['UserID', 'UserRoles', 'email', 'contact', 'FirstName', 'LastName', 'NationalID', 'Address', 'registrarName', 'accessLevel', 'BirthDate']
 
 class UserActivationSerializer(serializers.ModelSerializer):
     class Meta:

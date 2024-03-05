@@ -102,9 +102,8 @@ DATABASES = {
 }
 
 
-DATABASES['default'] = dj_database_url.parse(config('DATABASE_URL'))
+# DATABASES['default'] = dj_database_url.parse(config('DATABASE_URL'))
 
-# postgres://mlcs_database_user:R1cAUYY7CUPiSoJ0cKzeltkCDKyJGZfb@dpg-cngf9qljm4es73a9d6q0-a.oregon-postgres.render.com/mlcs_database
 
 
 # Password validation
