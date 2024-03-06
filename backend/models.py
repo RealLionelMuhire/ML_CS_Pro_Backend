@@ -50,13 +50,13 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     UserID = models.AutoField(primary_key=True)
-    UserRoles = models.CharField(max_length=20)
+    UserRoles = models.CharField(max_length=40)
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=255, null=True, blank=True)
     contact = models.CharField(max_length=255)
     FirstName = models.CharField(max_length=255, blank=True, null=True)
     LastName = models.CharField(max_length=255, blank=True, null=True)
-    NationalID = models.CharField(max_length=25, unique=True)
+    NationalID = models.CharField(max_length=35, unique=True)
     Address = models.CharField(max_length=150, blank=True)
     isActive = models.BooleanField(default=True, null=True, blank=True)
     registrarID = models.CharField(max_length=25)

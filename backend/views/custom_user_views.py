@@ -19,7 +19,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from ..serializers import UserSerializer, UserActivationSerializer
 from ..firebase import upload_to_firebase_storage, download_file_from_url
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from io import BytesIO
+from ..user_permissions import IsSuperuserOrManagerAdmin
 
 class HelloWorldView(APIView):
     """
@@ -28,7 +28,7 @@ class HelloWorldView(APIView):
     Endpoint: GET /hello-world/
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
 
     def get(self, request):
         """Handle GET requests and return a JSON response with a 'Hello, World!' message."""
@@ -49,8 +49,8 @@ class RegistrationView(APIView):
     def post(self, request):
         """Handle POST requests for user registration."""
         # Include additional information in the request data
-        request.data['registered_by_id'] = request.user.UserID
-        request.data['registered_by_fullname'] = request.user.FirstName
+        request.data['registrarID'] = request.user.UserID
+        request.data['registrarName'] = f"{request.user.FirstName} {request.user.LastName}"
         
         # Handle file uploads to Firebase Storage
         cv_link = self.handle_file_upload(request, 'cv_file', 'cv.pdf')
@@ -73,6 +73,38 @@ class RegistrationView(APIView):
         except IntegrityError as e:
             print(f"IntegrityError: {e}")
             return Response({'message': 'Registration failed. Duplicate user.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def update(self, request, *args, **kwargs):
+        print("===>Testing the update function==>")
+        try:
+            user = self.get_object()
+            # Check if the authenticated user is the owner of the user
+            if request.user != user:
+                return Response({'message': 'You do not have permission to deactivate this user.'}, status=status.HTTP_403_FORBIDDEN)
+
+            # Check if the user is already deactivated
+            if not user.isActive:
+                return Response({'message': 'User is already deactivated'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Deactivate the user
+            user.isActive = False
+            user.is_staff = False
+            user.deactivatorID = request.user.UserID
+            user.deactivatorEmail = request.user.email
+            user.deactivatorFirstName = request.user.FirstName
+            user.deactivationDate = timezone.now()
+            user.save()
+
+            # Update deactivator fields in CustomUser model
+            request.user.deactivatorID = request.user.UserID
+            request.user.deactivatorEmail = request.user.email
+            request.user.deactivatorFirstName = request.user.FirstName
+            request.user.deactivationDate = timezone.now()
+            request.user.save()
+
+            return Response({'message': 'User deactivated successfully'})
+        except CustomUser.DoesNotExist:
+            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def handle_file_upload(self, request, file_key, file_name):
         file = request.FILES.get(file_key)
@@ -93,7 +125,7 @@ class RegistrationView(APIView):
 
         return file_link
 
-class UserDeactivateView(generics.RetrieveUpdateAPIView, BaseUserAdmin):
+class UserDeactivateView(generics.UpdateAPIView, BaseUserAdmin):
     """
     API view for deactivating a user associated with the authenticated user.
     Requires authentication for access.
@@ -103,10 +135,10 @@ class UserDeactivateView(generics.RetrieveUpdateAPIView, BaseUserAdmin):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ['put']
+    # http_method_names = ['put']
 
     def update(self, request, *args, **kwargs):
-        # print("===>Testing the update function==>")
+        print("===>Testing the update function==>")
         try:
             user = self.get_object()
             # Check if the authenticated user is the owner of the user
@@ -126,7 +158,7 @@ class UserDeactivateView(generics.RetrieveUpdateAPIView, BaseUserAdmin):
             user.deactivationDate = timezone.now()
             user.save()
 
-            # Update activator fields in CustomUser model
+            # Update deactivator fields in CustomUser model
             request.user.deactivatorID = request.user.UserID
             request.user.deactivatorEmail = request.user.email
             request.user.deactivatorFirstName = request.user.FirstName

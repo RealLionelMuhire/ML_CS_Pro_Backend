@@ -18,10 +18,17 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['UserID', 'UserRoles', 'email', 'FirstName', 'LastName','is_staff', 'NationalID', 'Address', 'isActive', 'can_create_user', 'can_activate_user', 'can_deactivate_user', 'can_grant_permissions', 'registrarID', 'registrarName', 'accessLevel', 'BirthDate', 'cv_link', 'contract_link', 'passport_link', 'contact']
+        # fields = ['UserID', 'UserRoles', 'email', 'FirstName', 'LastName','is_staff', 'NationalID', 'Address', 'isActive', 'can_create_user', 'can_activate_user', 'can_deactivate_user', 'can_grant_permissions', 'registrarID', 'registrarName', 'accessLevel', 'BirthDate', 'cv_link', 'contract_link', 'passport_link', 'contact']
+        fields = '__all__'
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(**validated_data)
+
+        registrar_id = validated_data.get('registrarID')
+        if registrar_id is not None and registrar_id != '':
+            user.registrarID = registrar_id
+        else:
+            user.registrarID = None
 
         # Handle custom permissions
         if validated_data.get('can_create_user'):

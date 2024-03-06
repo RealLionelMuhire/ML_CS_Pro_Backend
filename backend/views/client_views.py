@@ -13,6 +13,7 @@ from rest_framework import status
 from django.utils import timezone
 from ..firebase import upload_to_firebase_storage, download_file_from_url
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from ..user_permissions import IsSuperuserOrManagerAdmin
 
 
 class ClientRegistrationView(APIView):
@@ -96,8 +97,8 @@ class ClientDeactivateView(generics.RetrieveUpdateAPIView):
         try:
             client = self.get_object()
             # Check if the authenticated user is the owner of the client
-            if request.user != client.user:
-                return Response({'message': 'You do not have permission to deactivate this client.'}, status=status.HTTP_403_FORBIDDEN)
+            # if request.user != client.user:
+            #     return Response({'message': 'You do not have permission to deactivate this client.'}, status=status.HTTP_403_FORBIDDEN)
 
             # Check if the client is already deactivated
             if not client.isActive:
@@ -131,8 +132,8 @@ class ClientActivateView(generics.RetrieveUpdateAPIView):
         try:
             client = self.get_object()
             # Check if the authenticated user is the owner of the client
-            if request.user != client.user:
-                return Response({'message': 'You do not have permission to activate this client.'}, status=status.HTTP_403_FORBIDDEN)
+            # if request.user != client.user:
+            #     return Response({'message': 'You do not have permission to activate this client.'}, status=status.HTTP_403_FORBIDDEN)
 
             # Check if the client is already activated
             if client.isActive:
