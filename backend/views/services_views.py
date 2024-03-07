@@ -122,11 +122,12 @@ class ServiceListView(APIView):
 
     def get(self, request, *args, **kwargs):
         """Handle GET requests to list services."""
-        services = Service.objects.all()
+        # Order services by the most recent start_time
+        services = Service.objects.all().order_by('-start_time')
 
         serializer = ServiceSerializer(services, many=True)
 
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ServiceListByIdView(generics.ListAPIView):
     """
