@@ -23,6 +23,9 @@ from ..serializers import UserSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from decimal import Decimal
+from decouple import AutoConfig
+
+config = AutoConfig()
 
 User = get_user_model()
 
@@ -123,8 +126,8 @@ class ForgotPasswordView(APIView):
         # Construct the reset link
         reset_link = reverse('reset-password', kwargs={'uidb64': uid, 'token': token})
 
-        # For localhost testing, prepend the link with http://localhost:8000
-        reset_link = 'http://localhost:8000' + reset_link
+        # For localhost testing, prepend the link
+        reset_link = config('EMAIL_LINK') + reset_link
 
         # Save the token to the database
         token_obj = PasswordResetToken.objects.create(user=user, token=token, expiration_time=timezone.now() + timedelta(days=1))
