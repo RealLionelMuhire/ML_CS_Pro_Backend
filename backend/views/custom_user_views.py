@@ -21,6 +21,7 @@ from ..firebase import upload_to_firebase_storage, download_file_from_url
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from ..user_permissions import IsSuperuserOrManagerAdmin
 from django.shortcuts import get_object_or_404
+import re
 
 class HelloWorldView(APIView):
     """
@@ -216,8 +217,46 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserProfileUpdateSerializer
     permission_classes = [IsAuthenticated]
+
     def get_object(self):
         return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        # Ensure that certain fields are not updated if they are empty
+        exclude_empty_fields = ['FirstName', 'LastName', 'Address', 'NationalID', 'contact', 'email']
+
+        # Exclude empty fields from request.data
+        data_to_update = {key: value for key, value in request.data.items() if value or key not in exclude_empty_fields}
+
+        # Validate and update other fields
+        serializer = self.get_serializer(instance=self.get_object(), data=data_to_update, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        # Validate specific conditions for other fields
+        if 'NationalID' in data_to_update and len(str(data_to_update['NationalID'])) < 5:
+            return Response({'error': 'NationalID should be at least 5 digits.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if 'contact' in data_to_update and not self.is_valid_contact(data_to_update['contact']):
+            return Response({'error': 'Invalid contact number.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if 'email' in data_to_update and not self.is_valid_email(data_to_update['email']):
+            return Response({'error': 'Invalid email address.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Perform the update
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
+
+    def is_valid_contact(self, contact):
+        # Your contact validation logic using regex
+        phone_pattern = re.compile(r'^((\+[1-9]{1,4}[ -]?)|(\([0-9]{2,3}\)[ -]?)|([0-9]{2,4})[ -]?)*?[0-9]{3,4}[ -]?[0-9]{3,4}$')
+        return bool(re.match(phone_pattern, contact))
+
+    def is_valid_email(self, email):
+        # Your email validation logic
+        email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+        return bool(re.match(email_pattern, email))
+
 
 def format_reserved_period(start_time, end_time):
     local_start_time = timezone.localtime(start_time)
