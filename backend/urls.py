@@ -24,10 +24,11 @@ urlpatterns = [
     path('api/hello/', HelloWorldView.as_view(), name='hello_world'),
     path('api/register/', RegistrationView.as_view(), name='registration'),
     path('api/users/', UserListView.as_view(), name='user-list'),
-    path('api/deactivate-user/<int:pk>/', RegistrationView.as_view(), name='deactivate_user'),
+    path('api/deactivate-user/<int:pk>/', DeactivateUserView.as_view(), name='deactivate_user'),
     path('api/activate-user/<int:pk>/', ActivateUserView.as_view(), name='activate_user'),
     path('api/user-profile/', UserProfileView.as_view(), name='user-profile'),
     path('api/update-user-profile/', UserProfileUpdateView.as_view(), name='update-user-profile'),
+
 # clients
     path('api/register-client/', ClientRegistrationView.as_view(), name='register-client'),
     path('api/deactivate-client/<int:pk>/', ClientDeactivateView.as_view(), name='deactivate-client'),

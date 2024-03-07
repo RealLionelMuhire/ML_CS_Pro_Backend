@@ -20,6 +20,7 @@ from ..serializers import UserSerializer, UserActivationSerializer
 from ..firebase import upload_to_firebase_storage, download_file_from_url
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from ..user_permissions import IsSuperuserOrManagerAdmin
+from django.shortcuts import get_object_or_404
 
 class HelloWorldView(APIView):
     """
@@ -44,13 +45,14 @@ class RegistrationView(APIView):
     Additional information (registered_by_id and registered_by_fullname) is added to the request data.
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
 
     def post(self, request):
         """Handle POST requests for user registration."""
         # Include additional information in the request data
         request.data['registrarID'] = request.user.UserID
         request.data['registrarName'] = f"{request.user.FirstName} {request.user.LastName}"
+        request.data['isActive'] = True
         
         # Handle file uploads to Firebase Storage
         cv_link = self.handle_file_upload(request, 'cv_file', 'cv.pdf')
@@ -74,37 +76,7 @@ class RegistrationView(APIView):
             print(f"IntegrityError: {e}")
             return Response({'message': 'Registration failed. Duplicate user.'}, status=status.HTTP_400_BAD_REQUEST)
     
-    def update(self, request, *args, **kwargs):
-        print("===>Testing the update function==>")
-        try:
-            user = self.get_object()
-            # Check if the authenticated user is the owner of the user
-            if request.user != user:
-                return Response({'message': 'You do not have permission to deactivate this user.'}, status=status.HTTP_403_FORBIDDEN)
-
-            # Check if the user is already deactivated
-            if not user.isActive:
-                return Response({'message': 'User is already deactivated'}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Deactivate the user
-            user.isActive = False
-            user.is_staff = False
-            user.deactivatorID = request.user.UserID
-            user.deactivatorEmail = request.user.email
-            user.deactivatorFirstName = request.user.FirstName
-            user.deactivationDate = timezone.now()
-            user.save()
-
-            # Update deactivator fields in CustomUser model
-            request.user.deactivatorID = request.user.UserID
-            request.user.deactivatorEmail = request.user.email
-            request.user.deactivatorFirstName = request.user.FirstName
-            request.user.deactivationDate = timezone.now()
-            request.user.save()
-
-            return Response({'message': 'User deactivated successfully'})
-        except CustomUser.DoesNotExist:
-            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    
 
     def handle_file_upload(self, request, file_key, file_name):
         file = request.FILES.get(file_key)
@@ -132,42 +104,35 @@ class UserDeactivateView(generics.UpdateAPIView, BaseUserAdmin):
     Endpoint: PUT /user-deactivate/<int:pk>/
     """
 
-    queryset = CustomUser.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
-    # http_method_names = ['put']
+    def patch(self, request, user_id):
+        user = get_object_or_404(CustomUser, id=user_id)
 
-    def update(self, request, *args, **kwargs):
-        print("===>Testing the update function==>")
-        try:
-            user = self.get_object()
-            # Check if the authenticated user is the owner of the user
-            if request.user != user:
-                return Response({'message': 'You do not have permission to deactivate this user.'}, status=status.HTTP_403_FORBIDDEN)
+        # Check if the authenticated user is the owner of the user
+        # if request.user != user:
+        #     return Response({'message': 'You do not have permission to deactivate this user.'}, status=status.HTTP_403_FORBIDDEN)
 
-            # Check if the user is already deactivated
-            if not user.isActive:
-                return Response({'message': 'User is already deactivated'}, status=status.HTTP_400_BAD_REQUEST)
+        # Check if the user is already deactivated
+        if not user.is_active:
+            return Response({'message': 'User is already deactivated'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Deactivate the user
-            user.isActive = False
-            user.is_staff = False
-            user.deactivatorID = request.user.UserID
-            user.deactivatorEmail = request.user.email
-            user.deactivatorFirstName = request.user.FirstName
-            user.deactivationDate = timezone.now()
-            user.save()
+        # Deactivate the user
+        user.is_active = False
+        user.is_staff = False
+        user.deactivatorID = request.user.id
+        user.deactivatorEmail = request.user.email
+        user.deactivatorFirstName = request.user.first_name
+        user.deactivationDate = timezone.now()
+        user.save()
 
-            # Update deactivator fields in CustomUser model
-            request.user.deactivatorID = request.user.UserID
-            request.user.deactivatorEmail = request.user.email
-            request.user.deactivatorFirstName = request.user.FirstName
-            request.user.deactivationDate = timezone.now()
-            request.user.save()
+        # Update deactivator fields in CustomUser model
+        request.user.deactivatorID = request.user.id
+        request.user.deactivatorEmail = request.user.email
+        request.user.deactivatorFirstName = request.user.first_name
+        request.user.deactivationDate = timezone.now()
+        request.user.save()
 
-            return Response({'message': 'User deactivated successfully'})
-        except CustomUser.DoesNotExist:
-            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'message': 'User deactivated successfully'}, status=status.HTTP_200_OK)
+
 
 
 class UserActivateView(generics.UpdateAPIView):
@@ -225,7 +190,7 @@ class UserListView(APIView):
     API view to retrieve a list of users.
     Endpoint: GET /api/users/
     """
-
+    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
     def get(self, request):
         """Handle GET requests for retrieving a list of users."""
         users = CustomUser.objects.all()

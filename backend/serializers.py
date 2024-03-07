@@ -22,27 +22,20 @@ class UserSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        user = CustomUser.objects.create_user(**validated_data)
+        groups_data = validated_data.pop('groups', None)
+        user_permissions_data = validated_data.pop('user_permissions', None)
 
-        registrar_id = validated_data.get('registrarID')
-        if registrar_id is not None and registrar_id != '':
-            user.registrarID = registrar_id
-        else:
-            user.registrarID = None
+        user = CustomUser.objects.create_user(**validated_data)
 
         # Handle custom permissions
         if validated_data.get('can_create_user'):
             user.user_permissions.add(Permission.objects.get(codename='can_create_user'))
-            UserActionLog.objects.create(user=user, action_type='Create User', permission=user.user_permissions.last())
         if validated_data.get('can_activate_user'):
             user.user_permissions.add(Permission.objects.get(codename='can_activate_user'))
-            UserActionLog.objects.create(user=user, action_type='Activate User', permission=user.user_permissions.last())
         if validated_data.get('can_deactivate_user'):
             user.user_permissions.add(Permission.objects.get(codename='can_deactivate_user'))
-            UserActionLog.objects.create(user=user, action_type='Deactivate User', permission=user.user_permissions.last())
         if validated_data.get('can_grant_permissions'):
             user.user_permissions.add(Permission.objects.get(codename='can_grant_permissions'))
-            UserActionLog.objects.create(user=user, action_type='Grant Permissions', permission=user.user_permissions.last())
 
         return user
 

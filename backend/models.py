@@ -58,7 +58,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     LastName = models.CharField(max_length=255, blank=True, null=True)
     NationalID = models.CharField(max_length=35, unique=True)
     Address = models.CharField(max_length=150, blank=True)
-    isActive = models.BooleanField(default=True, null=True, blank=True)
+    isActive = models.BooleanField(default=True)
     registrarID = models.CharField(max_length=25)
     registrarName = models.CharField(max_length=255)
     registrationDate = models.DateTimeField(auto_now_add=True)

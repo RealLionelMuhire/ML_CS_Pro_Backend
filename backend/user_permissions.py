@@ -2,7 +2,7 @@ from rest_framework.permissions import BasePermission
 
 class IsSuperuserOrManagerAdmin(BasePermission):
     """
-    Custom permission class to allow only superusers, managers, and admins to register users.
+    Custom permission class to allow only superusers, managers, and admins to register and modify other users.
     """
 
     def has_permission(self, request, view):
