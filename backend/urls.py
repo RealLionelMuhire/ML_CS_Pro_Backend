@@ -12,12 +12,14 @@ from .views.events_view import EventDetailView, EventListView, AllEventsListView
 from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView, ActiveAlertsView
 from .views.customAdmin import CustomAdminLoginView
 from .views.reservations_view import RegisterReservationView, ListReservedPeriodsView, ListReservationsStartingTodayView, ListPastReservationsView, ListAllReservationsView, UserRegisterReservationView, ReservationDetailView
+from django.conf.urls.static import static
+
 
 urlpatterns = [
 #admin
     path("admin/", admin.site.urls),
     path('register/', RegistrationView.as_view(), name='user-registration'),
-    # path('__debug__/', include('debug_toolbar.urls')),
+    path('__debug__/', include('debug_toolbar.urls')),
     path('admin/login/', CustomAdminLoginView.as_view(), name='admin_login'),
     path('api/dashboard-data/', dashboard_data_view, name='dashboard_data'),
 # users
@@ -72,6 +74,7 @@ urlpatterns = [
     path('api/reservations/<int:pk>/', ReservationDetailView.as_view(), name='reservation_detail'),
     path('api/reservations/<int:pk>/update/', ReservationDetailView.as_view(), name='reservation_update'),
 ]
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Enable the toolbar only if DEBUG is True and the current IP is in INTERNAL_IPS.
 if settings.DEBUG:

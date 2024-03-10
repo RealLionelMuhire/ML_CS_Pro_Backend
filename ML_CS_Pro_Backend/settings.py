@@ -179,7 +179,5 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
 INTERNAL_IPS = [
-    # ...
     '127.0.0.1',
-    # ...
 ]
