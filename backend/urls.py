@@ -74,7 +74,7 @@ urlpatterns = [
     path('api/reservations/<int:pk>/', ReservationDetailView.as_view(), name='reservation_detail'),
     path('api/reservations/<int:pk>/update/', ReservationDetailView.as_view(), name='reservation_update'),
 ]
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+# urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Enable the toolbar only if DEBUG is True and the current IP is in INTERNAL_IPS.
 if settings.DEBUG:
