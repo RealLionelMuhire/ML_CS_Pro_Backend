@@ -12,7 +12,7 @@ from .views.events_view import EventDetailView, EventListView, AllEventsListView
 from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView, ActiveAlertsView
 from .views.customAdmin import CustomAdminLoginView
 from .views.reservations_view import RegisterReservationView, ListReservedPeriodsView, ListReservationsStartingTodayView, ListPastReservationsView, ListAllReservationsView, UserRegisterReservationView, ReservationDetailView
-from django.conf.urls.static import static
+# from django.conf.urls.static import static
 
 
 urlpatterns = [
