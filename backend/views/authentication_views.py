@@ -50,7 +50,6 @@ def login_view(request):
 
         # Generate a new token with a 45-minute expiration time
         token, created = Token.objects.get_or_create(user=user)
-        expiration_time = timezone.now() + timedelta(minutes=1)  # Adjust as needed
         token.created = timezone.now()
         token.save()
 
@@ -58,10 +57,9 @@ def login_view(request):
         serializer = UserSerializer(user)
         user_data = serializer.data
 
-        return Response({'message': 'Login successful', 'user_id': user_data['UserID'], 'token': token.key})
+        return Response({'message': 'Login successful', 'user_id': user_data['UserID'], 'token': token.key, 'first_name': user_data['FirstName'], 'last_name': user_data['LastName']}, status=status.HTTP_200_OK)
     else:
         return Response({'message': 'Login failed'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
