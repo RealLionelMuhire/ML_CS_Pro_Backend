@@ -19,9 +19,10 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from ..serializers import UserSerializer, UserActivationSerializer
 from ..firebase import upload_to_firebase_storage, download_file_from_url
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from ..user_permissions import IsSuperuserOrManagerAdmin
+from ..user_permissions import IsSuperuserOrManagerAdmin, IsSuperuserOrManagerAdminOrReadOnly
 from django.shortcuts import get_object_or_404
 import re
+
 
 class HelloWorldView(APIView):
     """
@@ -46,10 +47,11 @@ class RegistrationView(APIView):
     Additional information (registered_by_id and registered_by_fullname) is added to the request data.
     """
 
-    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
+    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin, IsSuperuserOrManagerAdminOrReadOnly]
 
     def post(self, request):
         """Handle POST requests for user registration."""
+        # print((request.data))
         # Include additional information in the request data
         request.data['registrarID'] = request.user.UserID
         request.data['registrarName'] = f"{request.user.FirstName} {request.user.LastName}"
@@ -74,7 +76,7 @@ class RegistrationView(APIView):
                 print("Serializer errors:", serializer.errors)
                 return Response({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
         except IntegrityError as e:
-            print(f"IntegrityError: {e}")
+            # print(f"IntegrityError: {e}")
             return Response({'message': 'Registration failed. Duplicate user.'}, status=status.HTTP_400_BAD_REQUEST)
     
     
@@ -86,15 +88,14 @@ class RegistrationView(APIView):
         if file:
             folder = f"user_files/{request.data['FirstName']}"
             file_content = file.read()
-            file_checksum = request.data.get(f'{file_key}_checksum')
 
             if isinstance(file, InMemoryUploadedFile):
-                file_link = upload_to_firebase_storage(folder, file_name, file_content, file_checksum)
+                file_link = upload_to_firebase_storage(folder, file_name, file_content, )
             else:
                 local_file_path = file.temporary_file_path()
-                file_link = upload_to_firebase_storage(folder, file_name, local_file_path, file_checksum)
+                file_link = upload_to_firebase_storage(folder, file_name, local_file_path, )
 
-            print(f"{file_name.capitalize()} Link Before Saving:", file_link)
+            # print(f"{file_name.capitalize()} Link Before Saving:", file_link)
 
         return file_link
 
@@ -104,6 +105,7 @@ class UserDeactivateView(generics.UpdateAPIView, BaseUserAdmin):
     Requires authentication for access.
     Endpoint: PUT /user-deactivate/<int:pk>/
     """
+    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin, IsSuperuserOrManagerAdminOrReadOnly]
 
     def patch(self, request, user_id):
         user = get_object_or_404(CustomUser, id=user_id)
@@ -145,7 +147,7 @@ class UserActivateView(generics.UpdateAPIView):
 
     queryset = CustomUser.objects.all()
     serializer_class = UserActivationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin, IsSuperuserOrManagerAdminOrReadOnly]
     http_method_names = ['put']
 
 

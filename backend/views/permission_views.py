@@ -64,7 +64,7 @@ class DeactivateUserView(APIView):
     Requires 'auth.can_deactivate_user' permission.
     Endpoint: POST /deactivate-user/<int:user_id>/
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, permission_required('auth.can_deactivate_user', raise_exception=True)]
 
     @method_decorator(permission_required('auth.can_deactivate_user', raise_exception=True))
     @require_POST

@@ -12,11 +12,13 @@ from .views.events_view import EventDetailView, EventListView, AllEventsListView
 from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView, ActiveAlertsView
 from .views.customAdmin import CustomAdminLoginView
 from .views.reservations_view import RegisterReservationView, ListReservedPeriodsView, ListReservationsStartingTodayView, ListPastReservationsView, ListAllReservationsView, UserRegisterReservationView, ReservationDetailView
+from .views.client_self_view import ClientSelfRegistrationView
 # from django.conf.urls.static import static
 
 
 urlpatterns = [
 #admin
+    # path("", admin.site.urls),
     path("admin/", admin.site.urls),
     path('register/', RegistrationView.as_view(), name='user-registration'),
     path('__debug__/', include('debug_toolbar.urls')),
@@ -39,6 +41,10 @@ urlpatterns = [
     path('api/list-clients/', ListClientsView.as_view(), name='list-clients'),
     path('api/clients-list-by-id/', ClientListByIdView.as_view(), name='clients-list-by-id'),
     path('api/add-field-to-client/<int:client_id>/', AddFieldToClientView.as_view(), name='add-field-to-client'),
+
+# clients self views
+    path('api/self-register-client/', ClientSelfRegistrationView.as_view(), name='self-register-client'),
+    
 # services
     path('api/initiate-service/<int:client_id>/', InitiateServiceView.as_view(), name='initiate-service'),
     path('api/close-service/<int:service_id>/', CloseServiceView.as_view(), name='close-service'),

@@ -13,7 +13,6 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.utils import timezone
-from django.core.mail import send_mail
 from django.views import View
 from datetime import timedelta
 from ..models import PasswordResetToken, Service, CustomUser
@@ -105,7 +104,7 @@ class ForgotPasswordView(APIView):
 
     def post(self, request, *args, **kwargs):
         """Handle POST requests for password reset."""
-        print('==> Start Trying Forgot PWD ==>')
+        # print('==> Start Trying Forgot PWD ==>')
         # Get user email from request.data
         email = request.data.get('email')
 
@@ -119,7 +118,7 @@ class ForgotPasswordView(APIView):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
 
-        print('==> User Found ==>')
+        # print('==> User Found ==>')
 
         # Construct the reset link
         reset_link = reverse('reset-password', kwargs={'uidb64': uid, 'token': token})

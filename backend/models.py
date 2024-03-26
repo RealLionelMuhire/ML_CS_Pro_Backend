@@ -9,7 +9,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 from django.utils.crypto import get_random_string
-from django.utils.timezone import make_aware
 
 
 class CustomUserManager(BaseUserManager):
@@ -75,8 +74,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     deactivatorEmail = models.EmailField(null=True, blank=True)
     deactivatorFirstName = models.CharField(max_length=255, null=True, blank=True)
     deactivationDate = models.DateTimeField(null=True, blank=True)
+    
     cv_link = models.URLField(blank=True, null=True)
     contract_link = models.URLField(blank=True, null=True)
+    national_id_link = models.URLField(blank=True, null=True)
     passport_link = models.URLField(blank=True, null=True)
 
     objects = CustomUserManager()
@@ -92,6 +93,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         full_name = f"{self.FirstName} {self.LastName}" if self.FirstName and self.LastName else "N/A"
         return f"{full_name} - {self.email}"
 
+
+class Transaction(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    expiration_time = models.DateTimeField()
+
+    def __str__(self):
+        return f"Transaction for {self.user.email}"
 
 
 def create_custom_permissions():

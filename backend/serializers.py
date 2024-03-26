@@ -12,9 +12,9 @@ class UserSerializer(serializers.ModelSerializer):
     can_grant_permissions = serializers.BooleanField(write_only=True, required=False)
     registrarID = serializers.IntegerField(required=False)
     registrarName = serializers.CharField(max_length=255, required=False)
-    cv_link = serializers.URLField(write_only=True, required=False)
-    contract_link = serializers.URLField(write_only=True, required=False)
-    passport_link = serializers.URLField(write_only=True, required=False)
+    # cv_link = serializers.URLField(write_only=True, required=False)
+    # passport_link = serializers.URLField(write_only=True, required=False)
+    # contract_link = serializers.URLField(write_only=True, required=False)
 
     class Meta:
         model = CustomUser
