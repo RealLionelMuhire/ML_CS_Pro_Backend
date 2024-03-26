@@ -12,7 +12,8 @@ from .views.events_view import EventDetailView, EventListView, AllEventsListView
 from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView, ActiveAlertsView
 from .views.customAdmin import CustomAdminLoginView
 from .views.reservations_view import RegisterReservationView, ListReservedPeriodsView, ListReservationsStartingTodayView, ListPastReservationsView, ListAllReservationsView, UserRegisterReservationView, ReservationDetailView
-from .views.client_self_view import ClientSelfRegistrationView
+from .main_client_views.client_self_view import ClientSelfRegistrationView
+from .main_client_views.client_auth import client_login_view, client_logout_view, Client_ForgotPasswordView, Client_ResetPasswordView
 # from django.conf.urls.static import static
 
 
@@ -43,7 +44,7 @@ urlpatterns = [
     path('api/add-field-to-client/<int:client_id>/', AddFieldToClientView.as_view(), name='add-field-to-client'),
 
 # clients self views
-    path('api/self-register-client/', ClientSelfRegistrationView.as_view(), name='self-register-client'),
+    path('client/self-register-client/', ClientSelfRegistrationView.as_view(), name='self-register-client'),
     
 # services
     path('api/initiate-service/<int:client_id>/', InitiateServiceView.as_view(), name='initiate-service'),
@@ -79,6 +80,15 @@ urlpatterns = [
     path('api/reservations/', ReservationDetailView.as_view(), name='reservation_list'),
     path('api/reservations/<int:pk>/', ReservationDetailView.as_view(), name='reservation_detail'),
     path('api/reservations/<int:pk>/update/', ReservationDetailView.as_view(), name='reservation_update'),
+
+# clients self views
+    path('client/self-register-client/', ClientSelfRegistrationView.as_view(), name='self-register-client'),
+
+# client authentication
+    path('client/logout/', client_logout_view, name='api_logout'),
+    path('client/login/', client_login_view, name='login'),
+    path('client/forgot-password/', Client_ForgotPasswordView.as_view(), name='forgot-password'),
+    path('client/reset-password/<str:uidb64>/<str:token>/', Client_ResetPasswordView.as_view(), name='reset-password'),
 ]
 # urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

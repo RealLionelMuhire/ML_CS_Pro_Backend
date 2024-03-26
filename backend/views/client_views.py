@@ -15,7 +15,6 @@ from ..firebase import upload_to_firebase_storage, download_file_from_url
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from ..user_permissions import IsSuperuserOrManagerAdmin
 
-
 class ClientRegistrationView(APIView):
     """
     API view for registering a client associated with the authenticated user.
@@ -23,7 +22,7 @@ class ClientRegistrationView(APIView):
     Endpoint: POST /client-registration/
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
 
     def post(self, request):
         """Handle POST requests for client registration."""
