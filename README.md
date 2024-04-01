@@ -15,6 +15,7 @@ Or download and run [`setup_project.sh`](./setup_project.sh)
 - Python 3.x
 - Django
 - MySQL Database
+- Set up environmentak variables
 
 ### Installing
 
