@@ -30,4 +30,4 @@ class IsClient(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return request.user.accessLevel in ['client']
+        return request.user.accessLevel in ['Client']

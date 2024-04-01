@@ -65,6 +65,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     BirthDate = models.DateField(null=True, blank=True)
     is_staff = models.BooleanField(default=False)
 
+    tinNumber = models.CharField(max_length=50, null=True, blank=True)
+
     activatorID = models.IntegerField(null=True, blank=True)
     activatorEmail = models.EmailField(null=True, blank=True)
     activatorFirstName = models.CharField(max_length=255, null=True, blank=True)
@@ -79,6 +81,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     contract_link = models.URLField(blank=True, null=True)
     national_id_link = models.URLField(blank=True, null=True)
     passport_link = models.URLField(blank=True, null=True)
+    registrationCertificate_link = models.URLField(blank=True, null=True)
 
     objects = CustomUserManager()
 
@@ -195,9 +198,12 @@ class Client(models.Model):
 
     isPep = models.CharField(max_length=5, null=True, blank=True)
 
+    registrationCertificate_link = models.URLField(blank=True, null=True)
     signature_link = models.URLField(blank=True, null=True)
     bankStatement_link = models.URLField(blank=True, null=True)
     professionalReference_link = models.URLField(blank=True, null=True)
+    national_id_link = models.URLField(blank=True, null=True)
+    passport_link = models.URLField(blank=True, null=True)
 
     incorporationDate = models.DateField(null=True, blank=True)
     countryOfIncorporation = models.CharField(max_length=50, null=True, blank=True)

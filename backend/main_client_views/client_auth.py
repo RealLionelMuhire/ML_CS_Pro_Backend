@@ -23,7 +23,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from decimal import Decimal
 from decouple import AutoConfig
-from user_permissions import IsClient
+from ..user_permissions import IsClient
 
 config = AutoConfig()
 
@@ -33,20 +33,20 @@ User = get_user_model()
 @permission_classes([AllowAny])
 def client_login_view(request):
     """Handle user login."""
-    # Extract username (email) and password from the request data
-    # print("testing login")
     email = request.data.get('email').strip()
     password = request.data.get('password').strip()
-    # print(f"This is in login_view, Email from frontend before calling authenticate is : {email}, Password: {password}")
 
-    # Perform authentication using the email
-    # user = authenticate(request, email=email, password=password)
+    # Authenticate the user
     user = authenticate(request, username=email, password=password)
 
-    # print(f"This is in login_view, User from backend after email after calling authenticate is: {user}")
     if user is not None:
+        # Check if the user has the 'isClient' permission
+
         # Log in the user
-        login(request, user)
+        if user.accessLevel == 'Client':
+            login(request, user)
+        else:
+            return Response({'message': 'Login failed, Unauthorized'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Generate a new token with a 45-minute expiration time
         token, created = Token.objects.get_or_create(user=user)
@@ -60,6 +60,7 @@ def client_login_view(request):
         return Response({'message': 'Login successful', 'user_id': user_data['UserID'], 'token': token.key, 'first_name': user_data['FirstName'], 'last_name': user_data['LastName']}, status=status.HTTP_200_OK)
     else:
         return Response({'message': 'Login failed'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsClient])
@@ -137,7 +138,7 @@ class client_ForgotPasswordView(APIView):
 
 
 User = get_user_model()
-class ResetPasswordView(APIView):
+class client_ResetPasswordView(APIView):
     """
     API view for handling password reset.
     Requires AllowAny permission.

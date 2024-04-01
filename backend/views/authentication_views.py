@@ -36,18 +36,20 @@ def login_view(request):
     # print("testing login")
     email = request.data.get('email').strip()
     password = request.data.get('password').strip()
-    # print(f"This is in login_view, Email from frontend before calling authenticate is : {email}, Password: {password}")
-
+    
     # Perform authentication using the email
     # user = authenticate(request, email=email, password=password)
     user = authenticate(request, username=email, password=password)
 
-    # print(f"This is in login_view, User from backend after email after calling authenticate is: {user}")
     if user is not None:
         # Log in the user
-        login(request, user)
-
-        # Generate a new token with a 45-minute expiration time
+        
+        if user.accessLevel == 'admin' or user.accessLevel == 'manager' or user.accessLevel == 'user':
+            login(request, user)
+        else:
+            return Response({'message': 'Login failed, Unauthorized'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Generate a new token
         token, created = Token.objects.get_or_create(user=user)
         token.created = timezone.now()
         token.save()
@@ -56,7 +58,7 @@ def login_view(request):
         serializer = UserSerializer(user)
         user_data = serializer.data
 
-        return Response({'message': 'Login successful', 'user_id': user_data['UserID'], 'token': token.key, 'first_name': user_data['FirstName'], 'last_name': user_data['LastName']}, status=status.HTTP_200_OK)
+        return Response({'message': 'Login successful', 'user_id': user_data['UserID'], 'token': token.key, 'first_name': user_data['FirstName'], 'last_name': user_data['LastName'], 'userType':user_data['accessLevel']}, status=status.HTTP_200_OK)
     else:
         return Response({'message': 'Login failed'}, status=status.HTTP_400_BAD_REQUEST)
 

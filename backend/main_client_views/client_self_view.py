@@ -15,6 +15,8 @@ from django.db.models import F
 from ..models import Transaction
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from ..firebase import upload_to_firebase_storage
+from ..views.client_views import ClientRegistrationView
+from rest_framework.request import Request
 
 class ClientSelfRegistrationView(APIView):
     """
@@ -50,12 +52,41 @@ class ClientSelfRegistrationView(APIView):
         try:
             if serializer.is_valid():
                 user = serializer.save()
-                return JsonResponse({'message': 'Registration successful', 'user_id': user.UserID})
+                # Prepare request data for client registration
+                client_request_data = {
+                    'user': user.UserID,
+                    'firstName': user.FirstName,
+                    'lastName': user.LastName,
+                    'clientEmail': user.email,
+                    'clientContact': user.contact,
+                    'tinNumber': user.tinNumber,
+                    'isActive': False,
+                    'registrarID': user.UserID,
+                    'registrarName': f'{user.FirstName} {user.LastName}',
+                    'registrationCertificate_link': user.registrationCertificate_link,
+                    'national_id_link': user.national_id_link,
+                    'passport_link': user.passport_link,
+                    # Add more data if needed
+                }
+
+                # Execute ClientRegistrationView
+                client_registration_view = ClientRegistrationView.as_view()
+
+                request._request.data = client_request_data
+
+                response = client_registration_view(request._request)
+                
+                if response.status_code == status.HTTP_201_CREATED:
+                    # Registration was successful
+                    return JsonResponse({'message': 'User and client registration successful', 'user_id': user.UserID, 'client_id': response.data.get('client_id', None)})
+                else:
+                    # Registration failed
+                    return JsonResponse({'message': 'User registration successful but client registration failed'}, status=400)
             else:
-                # print("Serializer errors:", serializer.errors)
+                # User registration failed
                 return Response({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
         except IntegrityError as e:
-            # print(f"IntegrityError: {e}")
+            # IntegrityError occurred
             return Response({'message': 'Registration failed. Duplicate registration.'}, status=status.HTTP_400_BAD_REQUEST)
     
     
@@ -72,7 +103,5 @@ class ClientSelfRegistrationView(APIView):
             else:
                 local_file_path = file.temporary_file_path()
                 file_link = upload_to_firebase_storage(folder, file_name, local_file_path)
-
-            # print(f"{file_name.capitalize()} Link Before Saving:", file_link)
 
         return file_link
