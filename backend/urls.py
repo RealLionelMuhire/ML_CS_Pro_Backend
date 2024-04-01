@@ -12,11 +12,14 @@ from .views.events_view import EventDetailView, EventListView, AllEventsListView
 from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView, ActiveAlertsView
 from .views.customAdmin import CustomAdminLoginView
 from .views.reservations_view import RegisterReservationView, ListReservedPeriodsView, ListReservationsStartingTodayView, ListPastReservationsView, ListAllReservationsView, UserRegisterReservationView, ReservationDetailView
-# from django.conf.urls.static import static
+from .main_client_views.client_self_view import ClientSelfRegistrationView
+from .main_client_views.client_auth import client_login_view, client_logout_view, client_ForgotPasswordView, client_ResetPasswordView
+
 
 
 urlpatterns = [
 #admin
+    # path("", admin.site.urls),
     path("admin/", admin.site.urls),
     path('register/', RegistrationView.as_view(), name='user-registration'),
     path('__debug__/', include('debug_toolbar.urls')),
@@ -39,11 +42,7 @@ urlpatterns = [
     path('api/list-clients/', ListClientsView.as_view(), name='list-clients'),
     path('api/clients-list-by-id/', ClientListByIdView.as_view(), name='clients-list-by-id'),
     path('api/add-field-to-client/<int:client_id>/', AddFieldToClientView.as_view(), name='add-field-to-client'),
-# services
-    path('api/initiate-service/<int:client_id>/', InitiateServiceView.as_view(), name='initiate-service'),
-    path('api/close-service/<int:service_id>/', CloseServiceView.as_view(), name='close-service'),
-    path('api/list-services/', ServiceListView.as_view(), name='list-service'),
-    path('api/services-list-by-id/', ServiceListByIdView.as_view(), name='services-list-by-id'),
+
 # authentication
     path('api/logout/', logout_view, name='api_logout'),
     path('api/login/', login_view, name='login'),
@@ -73,8 +72,16 @@ urlpatterns = [
     path('api/reservations/', ReservationDetailView.as_view(), name='reservation_list'),
     path('api/reservations/<int:pk>/', ReservationDetailView.as_view(), name='reservation_detail'),
     path('api/reservations/<int:pk>/update/', ReservationDetailView.as_view(), name='reservation_update'),
+
+# clients self views
+    path('api/client/self-register-client/', ClientSelfRegistrationView.as_view(), name='self-register-client'),
+
+# client authentication
+    path('api/client/logout/', client_logout_view, name='client_api_logout'),
+    path('api/client/login/', client_login_view, name='client_login'),
+    path('api/client/forgot-password/',  client_ForgotPasswordView.as_view(), name='client_forgot-password'),
+    path('api/client/reset-password/<str:uidb64>/<str:token>/', client_ResetPasswordView.as_view(), name='client_reset-password'),
 ]
-# urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Enable the toolbar only if DEBUG is True and the current IP is in INTERNAL_IPS.
 if settings.DEBUG:

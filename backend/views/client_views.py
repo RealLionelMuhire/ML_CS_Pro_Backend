@@ -23,11 +23,12 @@ class ClientRegistrationView(APIView):
     Endpoint: POST /client-registration/
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
 
     def post(self, request):
         """Handle POST requests for client registration."""
         # Retrieve the user from the authenticated request
+        # print(request)
         user = request.user
 
         # Combine the user data with the client data

@@ -12,13 +12,9 @@ class UserSerializer(serializers.ModelSerializer):
     can_grant_permissions = serializers.BooleanField(write_only=True, required=False)
     registrarID = serializers.IntegerField(required=False)
     registrarName = serializers.CharField(max_length=255, required=False)
-    cv_link = serializers.URLField(write_only=True, required=False)
-    contract_link = serializers.URLField(write_only=True, required=False)
-    passport_link = serializers.URLField(write_only=True, required=False)
 
     class Meta:
         model = CustomUser
-        # fields = ['UserID', 'UserRoles', 'email', 'FirstName', 'LastName','is_staff', 'NationalID', 'Address', 'isActive', 'can_create_user', 'can_activate_user', 'can_deactivate_user', 'can_grant_permissions', 'registrarID', 'registrarName', 'accessLevel', 'BirthDate', 'cv_link', 'contract_link', 'passport_link', 'contact']
         fields = '__all__'
 
     def create(self, validated_data):
@@ -45,10 +41,6 @@ class ClientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ServiceSerializer(serializers.ModelSerializer):
-    # client_name = serializers.CharField(read_only=True)
-    # client_email = serializers.EmailField(read_only=True)
-    # provider_name = serializers.CharField(read_only=True)
-    # provider_email = serializers.EmailField(read_only=True)
 
     class Meta:
         model = Service

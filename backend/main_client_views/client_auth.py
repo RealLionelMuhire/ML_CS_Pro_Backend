@@ -1,4 +1,4 @@
-# views/authentication_views.py
+# main client views/authentication_views.py
 
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from rest_framework.response import Response
@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import render
 from django.urls import reverse
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import HttpResponseBadRequest
 from django.middleware.csrf import get_token
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -23,6 +23,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from decimal import Decimal
 from decouple import AutoConfig
+from ..user_permissions import IsClient
 
 config = AutoConfig()
 
@@ -30,26 +31,24 @@ User = get_user_model()
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def login_view(request):
+def client_login_view(request):
     """Handle user login."""
-    # Extract username (email) and password from the request data
-    # print("testing login")
     email = request.data.get('email').strip()
     password = request.data.get('password').strip()
-    
-    # Perform authentication using the email
-    # user = authenticate(request, email=email, password=password)
+
+    # Authenticate the user
     user = authenticate(request, username=email, password=password)
 
     if user is not None:
+        # Check if the user has the 'isClient' permission
+
         # Log in the user
-        
-        if user.accessLevel == 'admin' or user.accessLevel == 'manager' or user.accessLevel == 'user':
+        if user.accessLevel == 'Client':
             login(request, user)
         else:
             return Response({'message': 'Login failed, Unauthorized'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Generate a new token
+
+        # Generate a new token with a 45-minute expiration time
         token, created = Token.objects.get_or_create(user=user)
         token.created = timezone.now()
         token.save()
@@ -58,13 +57,14 @@ def login_view(request):
         serializer = UserSerializer(user)
         user_data = serializer.data
 
-        return Response({'message': 'Login successful', 'user_id': user_data['UserID'], 'token': token.key, 'first_name': user_data['FirstName'], 'last_name': user_data['LastName'], 'userType':user_data['accessLevel']}, status=status.HTTP_200_OK)
+        return Response({'message': 'Login successful', 'user_id': user_data['UserID'], 'token': token.key, 'first_name': user_data['FirstName'], 'last_name': user_data['LastName']}, status=status.HTTP_200_OK)
     else:
         return Response({'message': 'Login failed'}, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def logout_view(request):
+@permission_classes([IsAuthenticated, IsClient])
+def client_logout_view(request):
     """Handle user logout."""
     # Log out the user and invalidate the token
     user = request.user
@@ -96,7 +96,7 @@ def send_password_reset_email(user_email, reset_link):
 
     send_mail(subject, message, from_email, recipient_list, fail_silently=False)
 
-class ForgotPasswordView(APIView):
+class client_ForgotPasswordView(APIView):
     """
     API view for initiating the password reset process.
     Requires AllowAny permission.
@@ -138,7 +138,7 @@ class ForgotPasswordView(APIView):
 
 
 User = get_user_model()
-class ResetPasswordView(APIView):
+class client_ResetPasswordView(APIView):
     """
     API view for handling password reset.
     Requires AllowAny permission.

@@ -9,12 +9,8 @@ import hashlib
 from rest_framework.renderers import JSONRenderer
 from io import BytesIO
 
-def calculate_checksum(data):
-    sha256 = hashlib.sha256()
-    sha256.update(data)
-    return sha256.hexdigest()
 
-def upload_to_firebase_storage(folder, file_name, file_content, expected_checksum):
+def upload_to_firebase_storage(folder, file_name, file_content):
     initialize_firebase()
     service_account_key_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "serviceAccountKey.json"))
 
@@ -33,25 +29,12 @@ def upload_to_firebase_storage(folder, file_name, file_content, expected_checksu
         # Specify the destination blob (file) in the storage
         destination_blob_name = f"{folder}/{file_name}"
 
-        # Calculate checksum of the file content
-        calculated_checksum = calculate_checksum(file_content)
-        # print(f"Calculated checksum: {calculated_checksum}")
-        # print(f"Expected checksum: {expected_checksum}")
+        blob = bucket.blob(destination_blob_name)
+        blob.upload_from_string(file_content)
+        blob.make_public()
 
-        # Compare the computed checksum with the expected_checksum
-        if calculated_checksum == expected_checksum:
-            # Upload the file content to Cloud Storage
-            # print(f"Uploading file to {destination_blob_name}...")
-            blob = bucket.blob(destination_blob_name)
-            blob.upload_from_string(file_content)  # Use upload_from_string for content in bytes
-            blob.make_public()
-
-            # Get public URL
-            public_url = blob.public_url
-            print(f"File uploaded successfully. Public URL: {public_url}")
-            return public_url
-        else:
-            print("Error: Checksum verification failed. Aborting upload.")
+        public_url = blob.public_url
+        return public_url
 
     except FileNotFoundError as e:
         print(f"Error: {e.filename} not found.")
@@ -63,14 +46,6 @@ def upload_to_firebase_storage(folder, file_name, file_content, expected_checksu
     return None
 
 
-# class BinaryJSONRenderer(JSONRenderer):
-#     media_type = 'application/json'
-
-#     def render(self, data, accepted_media_type=None, renderer_context=None):
-#         for key, value in data.items():
-#             if isinstance(value, bytes):
-#                 data[key] = value.decode('utf-8', errors='replace')
-#         return super().render(data, accepted_media_type, renderer_context)
 
 def download_file_from_url(file_url):
     try:

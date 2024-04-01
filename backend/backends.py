@@ -15,7 +15,7 @@ class CustomUserBackend(ModelBackend):
         # print(f"This is backend.py in <authenticatte function> User from backend after email authentication is: {user}")
 
         if user and user.check_password(password):
-            print(f"User {user} authenticated successfully.")
+            # print(f"User {user} authenticated successfully.")
             return user  # Return only the user object
 
         # print("Authentication error: User not found or incorrect password.")
