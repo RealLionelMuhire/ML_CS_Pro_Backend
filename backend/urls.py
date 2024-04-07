@@ -43,6 +43,12 @@ urlpatterns = [
     path('api/clients-list-by-id/', ClientListByIdView.as_view(), name='clients-list-by-id'),
     path('api/add-field-to-client/<int:client_id>/', AddFieldToClientView.as_view(), name='add-field-to-client'),
 
+# services
+    path('api/initiate-service/', InitiateServiceView.as_view(), name='initiate-service'),
+    path('api/close-service/<int:service_id>/', CloseServiceView.as_view(), name='close-service'),
+    path('api/services/', ServiceListView.as_view(), name='service-list'),
+    path('api/services/<int:pk>/', ServiceListByIdView.as_view(), name='service-list-by-id'),
+
 # authentication
     path('api/logout/', logout_view, name='api_logout'),
     path('api/login/', login_view, name='login'),
