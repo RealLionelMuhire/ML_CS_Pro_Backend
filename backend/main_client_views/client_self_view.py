@@ -5,23 +5,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.http import JsonResponse
-from ..serializers import UserSerializer
-from django.core.mail import send_mail, BadHeaderError
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.utils import timezone
-from django.db.models import F
-from ..models import Transaction
+from ..serializers import UserSerializer, ClientSerializer
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from ..firebase import upload_to_firebase_storage
-from ..views.client_views import ClientRegistrationView
-from rest_framework.request import Request
 
 class ClientSelfRegistrationView(APIView):
     """
     API view for user registration, requiring authentication and permission to create a user.
-    Endpoint: POST /register/
+    Endpoint: POST /client/self-register-client/
     Request Payload: Requires 'auth.can_create_user' permission for access.
     Additional information (registered_by_id and registered_by_fullname) is added to the request data.
     """
@@ -47,13 +38,18 @@ class ClientSelfRegistrationView(APIView):
         request.data.update({'cv_link': cv_link, 'contract_link': contract_link, 'national_id_link': national_id_link, 'passport_link': passport_link})
 
         # Create a user serializer
-        serializer = UserSerializer(data=request.data)
+        user_serializer = UserSerializer(data=request.data)
 
         try:
-            if serializer.is_valid():
-                user = serializer.save()
-                # Prepare request data for client registration
-                client_request_data = {
+            if user_serializer.is_valid():
+                try:
+                    user = user_serializer.save()
+                except Exception as e:
+                    return Response({'message': 'User registration failed', 'errors': str(e)}, status=400)
+
+
+                # Create a client serializer
+                client_data = {
                     'user': user.UserID,
                     'firstName': user.FirstName,
                     'lastName': user.LastName,
@@ -66,25 +62,27 @@ class ClientSelfRegistrationView(APIView):
                     'registrationCertificate_link': user.registrationCertificate_link,
                     'national_id_link': user.national_id_link,
                     'passport_link': user.passport_link,
-                    # Add more data if needed
+                    'taxResidency': user.taxResidency,
+                    'citizenship' : user.citizenship,
+                    'passportIdNumber': user.passportIdNumber,
+                    'preferredLanguage': user.preferredLanguage
                 }
+                client_serializer = ClientSerializer(data=client_data)
 
-                # Execute ClientRegistrationView
-                client_registration_view = ClientRegistrationView.as_view()
-
-                request._request.data = client_request_data
-
-                response = client_registration_view(request._request)
-                
-                if response.status_code == status.HTTP_201_CREATED:
-                    # Registration was successful
-                    return JsonResponse({'message': 'User and client registration successful', 'user_id': user.UserID, 'client_id': response.data.get('client_id', None)})
+                if client_serializer.is_valid():
+                    client_serializer.save()
+                    return JsonResponse({'message': 'User and client registration successful', 'user_id': user.UserID})
                 else:
-                    # Registration failed
-                    return JsonResponse({'message': 'User registration successful but client registration failed'}, status=400)
+                    # Client registration failed
+                    if user:
+                        try:
+                            user.delete()
+                        except Exception as e:
+                            print(f"Error occurred while deleting user: {e}")
+                    return Response({'message': 'Client registration failed', 'errors': client_serializer.errors}, status=400)
             else:
                 # User registration failed
-                return Response({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
+                return Response({'message': 'User registration failed', 'errors': user_serializer.errors}, status=400)
         except IntegrityError as e:
             # IntegrityError occurred
             return Response({'message': 'Registration failed. Duplicate registration.'}, status=status.HTTP_400_BAD_REQUEST)
