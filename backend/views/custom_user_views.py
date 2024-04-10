@@ -200,6 +200,7 @@ class UserListView(APIView):
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
+
 class UserProfileView(generics.RetrieveAPIView):
     """
     API view for retrieving the demographic data of the authenticated user.
@@ -211,9 +212,36 @@ class UserProfileView(generics.RetrieveAPIView):
     serializer_class = CustomUserSerializer
     permission_classes = [IsAuthenticated]
 
+    display_names_map = {
+        'FirstName': 'First Name',
+        'LastName': 'Last Name',
+        'NationalID': 'National ID',
+        'contact': 'Contact',
+        'email': 'Email',
+        'Address': 'Address',
+        'contract_link': 'National ID LINK',
+        'BirthDate': 'Date of Birth',
+    }
+
     def get_object(self):
-        # Retrieve the authenticated user
-        return self.request.user
+        return self.request.user  # Retrieve the profile of the authenticated user
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        
+        # Filter serializer data based on display_names_map
+        user_data = {}
+        for key, value in serializer.data.items():
+            if key in self.display_names_map:
+                user_data[self.display_names_map[key]] = value
+
+        return Response(user_data)
+
+
+    # def get_object(self):
+    #     # Retrieve the authenticated user
+    #     return self.request.user
 
 class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
     queryset = CustomUser.objects.all()

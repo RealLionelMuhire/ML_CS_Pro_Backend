@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission
+from .models import CustomUser, Client
 
 class IsSuperuserOrManagerAdmin(BasePermission):
     """
@@ -31,3 +32,32 @@ class IsClient(BasePermission):
 
     def has_permission(self, request, view):
         return request.user.accessLevel in ['Client']
+
+class IsClientActivated(BasePermission):
+    """
+    Custom permission to check if a user is an activated client.
+    """
+
+    def has_permission(self, request, view):
+        # Check if user is authenticated
+        if not request.user.is_authenticated:
+            return False
+
+        # Check if the user type is "Client"
+        if request.user.accessLevel != 'Client':
+            return False
+
+        # Get the user's ID and Tin number
+        user_id = request.user.UserID
+        user_tin_number = request.user.tinNumber
+
+        # Check if there's a corresponding client with the same registrar ID and Tin number
+        try:
+            client = Client.objects.get(registrarID=user_id, tinNumber=user_tin_number)
+            # Check if the client is active
+            if client.isActive:
+                return True
+        except Client.DoesNotExist:
+            pass
+
+        return False

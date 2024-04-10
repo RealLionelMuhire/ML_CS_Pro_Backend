@@ -66,6 +66,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
 
     tinNumber = models.CharField(max_length=50, null=True, blank=True)
+    taxResidency = models.CharField(max_length=255, null=True, blank=True)
+    citizenship = models.CharField(max_length=50, null=True, blank=True)
+    passportIdNumber = models.CharField(max_length=50, null=True, blank=True)
+    preferredLanguage = models.CharField(max_length=50, null=True, blank=True)
+
+
+
 
     activatorID = models.IntegerField(null=True, blank=True)
     activatorEmail = models.EmailField(null=True, blank=True)
@@ -88,7 +95,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['FirstName']
 
-    groups = models.ManyToManyField('auth.Group', related_name='custom_user_set', blank=True)
+    groups = models.ManyToManyField('auth.Group', related_name='customci_user_set', blank=True)
     user_permissions = models.ManyToManyField('auth.Permission', related_name='custom_user_set', blank=True)
 
     def __str__(self):
@@ -156,7 +163,7 @@ class Client(models.Model):
     citizenship = models.CharField(max_length=50)
     birthDate = models.DateField(null=True, blank=True)
     countryOfResidence = models.CharField(max_length=50, null=True, blank=True)
-    passportIdNumber = models.CharField(max_length=50, unique=True)
+    passportIdNumber = models.CharField(max_length=50, unique=True, null=True, blank=True)
     countryOfIssue = models.CharField(max_length=50, null=True, blank=True)
     passportExpiryDate = models.DateField(null=True, blank=True)
     NameOfEntity = models.CharField(max_length=100, null=True, blank=True)

@@ -15,7 +15,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from django.views import View
 from datetime import timedelta
-from ..models import PasswordResetToken, Service, CustomUser
+from ..models import PasswordResetToken, Service, CustomUser, Client
 from rest_framework import status
 from django.contrib.auth.hashers import make_password
 from ..serializers import UserSerializer
@@ -23,7 +23,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from decimal import Decimal
 from decouple import AutoConfig
-from ..user_permissions import IsClient
+from ..user_permissions import IsClient, IsClientActivated
 
 config = AutoConfig()
 
@@ -207,3 +207,11 @@ class client_ResetPasswordView(APIView):
         else:
             print(f"Token data not found for user: {user.email}")
             return HttpResponseBadRequest('Invalid token or user not found.')
+
+
+class CheckClientActivationView(APIView):
+    permission_classes = [IsAuthenticated, IsClientActivated]
+
+    def get(self, request):
+        # If permission is satisfied, return true
+        return Response({'is_client_activated': True})
