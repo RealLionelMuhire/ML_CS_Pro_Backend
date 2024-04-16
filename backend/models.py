@@ -49,13 +49,13 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     UserID = models.AutoField(primary_key=True)
-    UserRoles = models.CharField(max_length=40)
+    UserRoles = models.CharField(max_length=40, null=True, blank=True)
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=255, null=True, blank=True)
     contact = models.CharField(max_length=255)
     FirstName = models.CharField(max_length=255, blank=True, null=True)
     LastName = models.CharField(max_length=255, blank=True, null=True)
-    NationalID = models.CharField(max_length=35, unique=True)
+    NationalID = models.CharField(max_length=35)
     Address = models.CharField(max_length=150, blank=True)
     isActive = models.BooleanField(default=True)
     registrarID = models.CharField(max_length=25)
@@ -64,6 +64,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     accessLevel = models.CharField(max_length=20)
     BirthDate = models.DateField(null=True, blank=True)
     is_staff = models.BooleanField(default=False)
+    countryOfResidence = models.CharField(max_length=50, null=True, blank=True)
+
 
     tinNumber = models.CharField(max_length=50, null=True, blank=True)
     taxResidency = models.CharField(max_length=255, null=True, blank=True)
@@ -88,7 +90,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     contract_link = models.URLField(blank=True, null=True)
     national_id_link = models.URLField(blank=True, null=True)
     passport_link = models.URLField(blank=True, null=True)
-    registrationCertificate_link = models.URLField(blank=True, null=True)
+    registration_certificate_link = models.URLField(blank=True, null=True)
 
     objects = CustomUserManager()
 
@@ -189,6 +191,7 @@ class Client(models.Model):
     deactivatorFirstName = models.CharField(max_length=255, null=True, blank=True)
     deactivationDate = models.DateField(null=True, blank=True)
     designation = models.CharField(max_length=255, null=True, blank=True)
+    NationalID = models.CharField(unique=True, max_length=255, null=True, blank=True)
     
     introducerName = models.CharField(max_length=255, null=True, blank=True)
     introducerEmail = models.EmailField(null=True, blank=True)
@@ -205,7 +208,7 @@ class Client(models.Model):
 
     isPep = models.CharField(max_length=5, null=True, blank=True)
 
-    registrationCertificate_link = models.URLField(blank=True, null=True)
+    registration_certificate_link = models.URLField(blank=True, null=True)
     signature_link = models.URLField(blank=True, null=True)
     bankStatement_link = models.URLField(blank=True, null=True)
     professionalReference_link = models.URLField(blank=True, null=True)

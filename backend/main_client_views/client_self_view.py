@@ -27,15 +27,22 @@ class ClientSelfRegistrationView(APIView):
         request.data['isActive'] = False
         request.data['is_staff'] = False
         request.data['accessLevel'] = 'Client'
+
+        if request.data['citizenship'] == 'Other':
+            request.data['citizenship'] = request.data['specifiedCitizenship']
+        
+        if 'NationalID' not in request.data:
+            request.data['NationalID'] = request.data['passportIdNumber']
         
         # Handle file uploads to Firebase Storage
         cv_link = self.handle_file_upload(request, 'cv_file', 'cv.pdf')
         contract_link = self.handle_file_upload(request, 'contract_file', 'contract.pdf')
         national_id_link = self.handle_file_upload(request, 'national_id_file', 'national_id.pdf')
         passport_link = self.handle_file_upload(request, 'passport_file', 'passport.pdf')
+        registration_certificate_link = self.handle_file_upload(request, 'registration_certificate', 'registration_certificate.pdf')
 
         # Update the request data with the obtained links
-        request.data.update({'cv_link': cv_link, 'contract_link': contract_link, 'national_id_link': national_id_link, 'passport_link': passport_link})
+        request.data.update({'cv_link': cv_link, 'contract_link': contract_link, 'national_id_link': national_id_link, 'passport_link': passport_link, 'registration_certificate_link':registration_certificate_link})
 
         # Create a user serializer
         user_serializer = UserSerializer(data=request.data)
@@ -59,13 +66,17 @@ class ClientSelfRegistrationView(APIView):
                     'isActive': False,
                     'registrarID': user.UserID,
                     'registrarName': f'{user.FirstName} {user.LastName}',
-                    'registrationCertificate_link': user.registrationCertificate_link,
+                    # 'registration_certificate_link': user.registration_certificate_link,
                     'national_id_link': user.national_id_link,
                     'passport_link': user.passport_link,
                     'taxResidency': user.taxResidency,
                     'citizenship' : user.citizenship,
                     'passportIdNumber': user.passportIdNumber,
-                    'preferredLanguage': user.preferredLanguage
+                    'preferredLanguage': user.preferredLanguage,
+                    'registration_certificate_link': user.registration_certificate_link,
+                    'countryOfResidence': user.countryOfResidence,
+                    'NationalID': user.NationalID,
+                    'birthDate': user.BirthDate,
                 }
                 client_serializer = ClientSerializer(data=client_data)
 
@@ -101,5 +112,6 @@ class ClientSelfRegistrationView(APIView):
             else:
                 local_file_path = file.temporary_file_path()
                 file_link = upload_to_firebase_storage(folder, file_name, local_file_path)
+                print(f"File link: {file_link}")
 
         return file_link

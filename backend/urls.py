@@ -80,7 +80,7 @@ urlpatterns = [
     path('api/reservations/<int:pk>/update/', ReservationDetailView.as_view(), name='reservation_update'),
 
 # clients self views
-    path('api/client/self-register-client/', ClientSelfRegistrationView.as_view(), name='self-register-client'),
+    path('api/client/register/', ClientSelfRegistrationView.as_view(), name='self-register-client'),
 
 # client authentication
     path('api/client/logout/', client_logout_view, name='client_api_logout'),
