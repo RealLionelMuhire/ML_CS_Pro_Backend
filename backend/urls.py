@@ -46,7 +46,7 @@ urlpatterns = [
 # services
     path('api/initiate-service/', InitiateServiceView.as_view(), name='initiate-service'),
     path('api/close-service/<int:service_id>/', CloseServiceView.as_view(), name='close-service'),
-    path('api/services/', ServiceListView.as_view(), name='service-list'),
+    path('api/list-services/', ServiceListView.as_view(), name='service-list'),
     path('api/services/<int:pk>/', ServiceListByIdView.as_view(), name='service-list-by-id'),
 
 # authentication

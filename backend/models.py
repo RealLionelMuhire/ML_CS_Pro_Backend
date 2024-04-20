@@ -92,6 +92,36 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     passport_link = models.URLField(blank=True, null=True)
     registration_certificate_link = models.URLField(blank=True, null=True)
 
+#     In django I want to create a fields in models of these data from the frontend table:"financialForecast: [
+#       {
+#         id: 0,
+#         description: "Currency",
+#         year1: "",
+#         year2: "",
+#         year3: "",
+#       },
+#       {
+#         id: 1,
+#         description: "Initial Investment",
+#         year1: "",
+#         year2: "",
+#         year3: "",
+#       },
+#       {
+#         id: 2,
+#         description: "Income from Business Activities",
+#         year1: "",
+#         year2: "",
+#         year3: "",
+#       },
+#       { id: 3, description: "Expenses", year1: "", year2: "", year3: "" },
+#       { id: 4, description: "Net Profit", year1: "", year2: "", year3: "" },
+#     ],
+#   };"
+
+    financialForecast = models.JSONField(null=True, blank=True)
+    
+
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
@@ -221,6 +251,51 @@ class Client(models.Model):
     businessActivity = models.CharField(max_length=255, null=True, blank=True)
     countryOfOperation = models.CharField(max_length=50, null=True, blank=True)
 
+    changeName = models.CharField(max_length=55, null=True, blank=True)
+    similarApplicationDetailsName = models.CharField(max_length=55, null=True, blank=True)
+    financialServicesBusiness = models.CharField(max_length=55, null=True, blank=True)
+    jurisdictionName = models.CharField(max_length=55, null=True, blank=True)
+    jurisdictionAddress = models.CharField(max_length=55, null=True, blank=True)
+    similarApplication = models.CharField(max_length=55, null=True, blank=True)
+    similarApplicationDetailsPartner = models.CharField(max_length=55, null=True, blank=True)
+    criticised = models.CharField(max_length=55, null=True, blank=True)
+    similarApplicationDetailsJurisdictions = models.CharField(max_length=55, null=True, blank=True)
+
+    bankruptcyApplication = models.CharField(max_length=55, null=True, blank=True)
+    similarApplicationDetailsForfeit = models.CharField(max_length=55, null=True, blank=True)
+    receiverAppointed = models.CharField(max_length=55, null=True, blank=True)
+    similarApplicationDetailsReceiver = models.CharField(max_length=55, null=True, blank=True)
+    civilProceedings = models.CharField(max_length=55, null=True, blank=True)
+    similarApplicationDetailsFinancial = models.CharField(max_length=55, null=True, blank=True)
+    convicted = models.CharField(max_length=55, null=True, blank=True)
+    similarApplicationDetailsOffence = models.CharField(max_length=55, null=True, blank=True)
+    directorConvicted = models.CharField(max_length=55, null=True, blank=True)
+    similarApplicationDetailsDirector = models.CharField(max_length=55, null=True, blank=True)
+
+    RemittingParty = models.CharField(max_length=55, null=True, blank=True)
+    ModeOfPayment = models.CharField(max_length=55, null=True, blank=True)
+    RelationshipWithApplicant = models.CharField(max_length=55, null=True, blank=True)
+    ProposedNameOption1 = models.CharField(max_length=55, null=True, blank=True)
+    ProposedNameOption2 = models.CharField(max_length=55, null=True, blank=True)
+    ProposedNameOption3 = models.CharField(max_length=55, null=True, blank=True)
+
+    proposedActivity = models.CharField(max_length=55, null=True, blank=True)
+    targetSectors = models.CharField(max_length=55, null=True, blank=True)
+    targetedCountries = models.CharField(max_length=55, null=True, blank=True)
+    specialLicense = models.CharField(max_length=55, null=True, blank=True)
+    secretary = models.CharField(max_length=55, null=True, blank=True)
+    productService = models.CharField(max_length=55, null=True, blank=True)
+    businessAddress = models.CharField(max_length=55, null=True, blank=True)
+
+    sourceOfFunds = models.CharField(max_length=155, null=True, blank=True)
+    otherSourceOfFunds = models.CharField(max_length=55, null=True, blank=True)
+    countrySourceFunds = models.CharField(max_length=55, null=True, blank=True)
+    netAnnualIncome = models.CharField(max_length=55, null=True, blank=True)
+    estimatedNetWorth = models.CharField(max_length=55, null=True, blank=True)
+    sourceOfWealth = models.CharField(max_length=155, null=True, blank=True)
+    otherSourceOfWealth = models.CharField(max_length=55, null=True, blank=True)
+    countrySourceWealth = models.CharField(max_length=55, null=True, blank=True)
+    bankInvolvedWealth = models.CharField(max_length=55, null=True, blank=True)
 
     def __str__(self):
         return f"{self.firstName} {self.lastName}"

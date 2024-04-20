@@ -115,3 +115,4 @@ class ClientSelfRegistrationView(APIView):
                 print(f"File link: {file_link}")
 
         return file_link
+
