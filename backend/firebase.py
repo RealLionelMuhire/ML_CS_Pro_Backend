@@ -1,29 +1,35 @@
-from firebase_admin import credentials, initialize_app
 from google.cloud import storage
-from google.cloud.exceptions import GoogleCloudError
 import requests
 from urllib.parse import urlparse, unquote
 import os
 from .firebase_initializer import initialize_firebase
-import hashlib
-from rest_framework.renderers import JSONRenderer
 from io import BytesIO
-
+from urllib.parse import urlparse
+from decouple import config
 
 def upload_to_firebase_storage(folder, file_name, file_content):
     initialize_firebase()
-    service_account_key_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "serviceAccountKey.json"))
 
+    service_account_key = {
+    "type": config("FIREBASE_TYPE"),
+    "project_id": config("FIREBASE_PROJECT_ID"),
+    "private_key_id": config("FIREBASE_PRIVATE_KEY_ID"),
+    "private_key": config("FIREBASE_PRIVATE_KEY").replace('\\n', '\n'),
+    "client_email": config("FIREBASE_CLIENT_EMAIL"),
+    "client_id": config("FIREBASE_CLIENT_ID"),
+    "auth_uri": config("FIREBASE_AUTH_URI"),
+    "token_uri": config("FIREBASE_TOKEN_URI"),
+    "auth_provider_x509_cert_url": config("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
+    "client_x509_cert_url": config("FIREBASE_CLIENT_X509_CERT_URL"),
+}
     try:
         # Specify your Firebase Storage bucket name
-        bucket_name = "mlcs-de102.appspot.com"
+        bucket_name = "mlcs-4f26e.appspot.com"
 
         # Create a storage client with the explicit service account key
-        # print("Creating storage client...")
-        client = storage.Client.from_service_account_json(service_account_key_path)
+        client = storage.Client.from_service_account_info(service_account_key)
 
         # Get the bucket
-        # print(f"Getting bucket: {bucket_name}")
         bucket = client.bucket(bucket_name)
 
         # Specify the destination blob (file) in the storage
@@ -38,14 +44,55 @@ def upload_to_firebase_storage(folder, file_name, file_content):
 
     except FileNotFoundError as e:
         print(f"Error: {e.filename} not found.")
-    except GoogleCloudError as e:
+    except storage.exceptions.GoogleCloudError as e:
         print(f"Google Cloud Error: {e}")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
     return None
 
+def delete_firebase_file(public_url):
+    initialize_firebase()
+    firebase_credentials = {
+    "type": config("FIREBASE_TYPE"),
+    "project_id": config("FIREBASE_PROJECT_ID"),
+    "private_key_id": config("FIREBASE_PRIVATE_KEY_ID"),
+    "private_key": config("FIREBASE_PRIVATE_KEY").replace('\\n', '\n'),
+    "client_email": config("FIREBASE_CLIENT_EMAIL"),
+    "client_id": config("FIREBASE_CLIENT_ID"),
+    "auth_uri": config("FIREBASE_AUTH_URI"),
+    "token_uri": config("FIREBASE_TOKEN_URI"),
+    "auth_provider_x509_cert_url": config("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
+    "client_x509_cert_url": config("FIREBASE_CLIENT_X509_CERT_URL"),
+}
+    service_account_key = firebase_credentials
 
+    try:
+        # Create a storage client with the explicit service account key
+        client = storage.Client.from_service_account_info(service_account_key)
+
+        # Parse the public URL to get the bucket name and blob name
+        parsed_url = urlparse(public_url)
+        bucket_name = parsed_url.netloc
+        blob_name = parsed_url.path.lstrip('/')
+
+        # Get the bucket
+        bucket = client.bucket(bucket_name)
+
+        # Specify the blob to be deleted
+        blob = bucket.blob(blob_name)
+
+        # Delete the blob
+        blob.delete()
+
+        print(f"File {blob_name} deleted successfully.")
+
+    except storage.exceptions.NotFound:
+        print(f"File {blob_name} not found.")
+    except storage.exceptions.GoogleCloudError as e:
+        print(f"Google Cloud Error: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
 def download_file_from_url(file_url):
     try:

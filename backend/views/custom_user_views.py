@@ -51,7 +51,7 @@ class RegistrationView(APIView):
 
     def post(self, request):
         """Handle POST requests for user registration."""
-        # print((request.data))
+        print((request.data))
         # Include additional information in the request data
         request.data['registrarID'] = request.user.UserID
         request.data['registrarName'] = f"{request.user.FirstName} {request.user.LastName}"
