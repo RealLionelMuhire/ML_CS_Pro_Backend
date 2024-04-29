@@ -22,7 +22,7 @@ from ..serializers import UserSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from decimal import Decimal
-from decouple import AutoConfig
+from decouple import AutoConfig, config
 
 config = AutoConfig()
 
@@ -91,8 +91,10 @@ def logout_view(request):
 def send_password_reset_email(user_email, reset_link):
     subject = 'Password Reset'
     message = f'Click the following link to reset your password: {reset_link}'
-    from_email = 'muhirelionel@gmail.com'  # replace with your email
+    from_email = config("EMAIL_HOST_USER")
     recipient_list = [user_email]
+
+    # print(from_email)
 
     send_mail(subject, message, from_email, recipient_list, fail_silently=False)
 
@@ -133,6 +135,7 @@ class ForgotPasswordView(APIView):
 
         # Send the email with the reset link
         send_password_reset_email(email, reset_link)
+        # print('==> Password reset sent ===>')
 
         return Response({'message': 'Password reset email sent'})
 
