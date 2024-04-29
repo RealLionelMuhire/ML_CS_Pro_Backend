@@ -2,6 +2,8 @@
 
 from django.conf import settings
 from django.urls import include, path
+from django.conf.urls.static import static
+
 from django.contrib import admin
 from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView, UserProfileView, UserProfileUpdateView
 from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView
@@ -87,7 +89,7 @@ urlpatterns = [
     path('api/client/login/', client_login_view, name='client_login'),
     path('api/client/forgot-password/',  client_ForgotPasswordView.as_view(), name='client_forgot-password'),
     path('api/client/reset-password/<str:uidb64>/<str:token>/', client_ResetPasswordView.as_view(), name='client_reset-password'),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Enable the toolbar only if DEBUG is True and the current IP is in INTERNAL_IPS.
 if settings.DEBUG:
