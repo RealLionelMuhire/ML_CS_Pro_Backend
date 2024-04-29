@@ -3,6 +3,8 @@
 from django.conf import settings
 from django.urls import include, path
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
+from django.urls import path
 
 from django.contrib import admin
 from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView, UserProfileView, UserProfileUpdateView
