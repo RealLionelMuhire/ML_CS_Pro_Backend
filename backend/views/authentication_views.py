@@ -26,6 +26,8 @@ from decouple import AutoConfig, config
 
 config = AutoConfig()
 
+
+
 User = get_user_model()
 
 @api_view(['POST'])

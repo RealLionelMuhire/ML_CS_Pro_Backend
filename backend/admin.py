@@ -70,4 +70,6 @@ admin.site.register(PasswordResetToken)
 admin.site.register(Event)
 admin.site.register(Alert)
 
-admin.site.site_header = 'Admin Dashboard'
+admin.site.site_header = 'MLCS Admin Dashboard'
+admin.site.site_title = 'MLCS Admin Dashboard'
+

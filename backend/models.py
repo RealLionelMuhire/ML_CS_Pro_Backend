@@ -65,6 +65,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     BirthDate = models.DateField(null=True, blank=True)
     is_staff = models.BooleanField(default=False)
     countryOfResidence = models.CharField(max_length=50, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
 
 
     tinNumber = models.CharField(max_length=50, null=True, blank=True)
@@ -91,33 +92,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     national_id_link = models.URLField(blank=True, null=True)
     passport_link = models.URLField(blank=True, null=True)
     registration_certificate_link = models.URLField(blank=True, null=True)
-
-#     In django I want to create a fields in models of these data from the frontend table:"financialForecast: [
-#       {
-#         id: 0,
-#         description: "Currency",
-#         year1: "",
-#         year2: "",
-#         year3: "",
-#       },
-#       {
-#         id: 1,
-#         description: "Initial Investment",
-#         year1: "",
-#         year2: "",
-#         year3: "",
-#       },
-#       {
-#         id: 2,
-#         description: "Income from Business Activities",
-#         year1: "",
-#         year2: "",
-#         year3: "",
-#       },
-#       { id: 3, description: "Expenses", year1: "", year2: "", year3: "" },
-#       { id: 4, description: "Net Profit", year1: "", year2: "", year3: "" },
-#     ],
-#   };"
 
     financialForecast = models.JSONField(null=True, blank=True)
     
