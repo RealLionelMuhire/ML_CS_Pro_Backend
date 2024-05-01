@@ -10,7 +10,7 @@ from django.contrib import admin
 from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView, UserProfileView, UserProfileUpdateView
 from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView
 from .views.services_views import InitiateServiceView, CloseServiceView, ServiceListView, ServiceListByIdView
-from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView
+from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView, CustomPasswordResetDoneView
 from .views.permission_views import UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
 from .views.events_view import EventDetailView, EventListView, AllEventsListView
 from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView, ActiveAlertsView
@@ -59,19 +59,23 @@ urlpatterns = [
     path('api/forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
     path('api/reset-password/<str:uidb64>/<str:token>/', ResetPasswordView.as_view(), name='reset-password'),
     path('api/reset_password/', auth_views.PasswordResetView.as_view(), name='reset_password'),
+    path('api/reset_password_sent/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
 
     path('reset_password/',
-         auth_views.PasswordResetView.as_view(template_name='accounts/password_reset.html'),
+         auth_views.PasswordResetView.as_view(),
          name='reset_password'),
     path('reset_password_sent/',
-         auth_views.PasswordResetDoneView.as_view(template_name='accounts/password_reset_sent.html'),
+         auth_views.PasswordResetDoneView.as_view(),
          name='password_reset_done'),
     path('reset/<uidb64>/<token>/',
-         auth_views.PasswordResetConfirmView.as_view(template_name='accounts/password_reset_form.html'),
+         auth_views.PasswordResetConfirmView.as_view(),
          name='password_reset_confirm'),
+
     path('reset_password_complete/',
-         auth_views.PasswordResetCompleteView.as_view(template_name='accounts/password_reset_complete.html'),
+         auth_views.PasswordResetCompleteView.as_view(template_name='accounts/password_reset_done.html'),
          name='password_reset_complete'),
+    # path('reset_password_complete/', CustomPasswordResetDoneView.as_view(template_name='accounts/password_reset_done.html'),
+    #      name='password_reset_complete'),
 
 # permissions
     path('api/user-permissions/', UserPermissionsView.as_view(), name='user_permissions'),

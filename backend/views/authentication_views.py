@@ -23,6 +23,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from decimal import Decimal
 from decouple import AutoConfig, config
+from django.contrib.auth.views import PasswordResetCompleteView
+from django.shortcuts import render
 
 config = AutoConfig()
 
@@ -212,3 +214,12 @@ class ResetPasswordView(APIView):
         else:
             print(f"Token data not found for user: {user.email}")
             return HttpResponseBadRequest('Invalid token or user not found.')
+
+
+# new auth reset password custom view
+
+class CustomPasswordResetDoneView(PasswordResetCompleteView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['login_link'] = config('FRONTEND_LINK', '')
+        return context
