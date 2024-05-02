@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, auth
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.urls import path
 from django.http import JsonResponse
@@ -70,6 +70,6 @@ admin.site.register(PasswordResetToken)
 admin.site.register(Event)
 admin.site.register(Alert)
 
-admin.site.site_header = 'MLCS Admin Dashboard'
-admin.site.site_title = 'MLCS Admin Dashboard'
+admin.site.site_header = 'ML Corporate Services Admin'
+admin.site.site_title = 'ML Corporate Services'
 
