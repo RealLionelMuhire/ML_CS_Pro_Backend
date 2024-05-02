@@ -2,9 +2,9 @@
 from django.contrib import admin, auth
 from django.urls import include, path
 
-admin.site.site_header = "MLCS Admin"
-admin.site.site_title = "MLCS Admin"
-admin.site.index_title = "Welcome to MLCS Admin"
+# admin.site.site_header = "MLCS Admin"
+# admin.site.site_title = "MLCS Admin"
+# admin.site.index_title = "Welcome to MLCS Admin"
 
 
 
