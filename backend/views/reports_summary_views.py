@@ -11,6 +11,7 @@ from ..helpers.firebase import upload_to_firebase_storage
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from ..models import Client, Reports
 from ..serializers import ReportsSerializer
+from django.shortcuts import get_object_or_404
 
 class ReportsListView(APIView):
     """
@@ -73,3 +74,52 @@ class ReportsListView(APIView):
             return Client.objects.get(id=client_id)
         except Client.DoesNotExist:
             raise Http404("Client does not exist or is not registered")
+
+class ReportListView(APIView):
+    """
+    API view for listing reports
+    requires authentication for access
+    endpoint: GET /reports/
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        """Handle GET requests to list reports."""
+        # Retrieve all reports
+        reports = Reports.objects.order_by('-created_at')
+
+        # Serialize the reports
+        serializer = ReportsSerializer(reports, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ReportDetailView(generics.ListAPIView):
+    """
+    API view for retrieving a report by ID.
+    requires authentication for access
+    endpoint: GET /report-detail/?id=1
+    """
+    serializer_class = ReportsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Get the list of report IDs from the query parameters
+        report_ids_str = self.request.query_params.get('ids', '')
+        report_ids = [int(report_id) for report_id in report_ids_str.split(',') if report_id.isdigit()]
+
+        # Retrieve reports based on the provided IDs
+        queryset = Reports.objects.filter(id__in=report_ids)
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        """Handle GET requests to list reports."""
+        queryset = self.get_queryset()
+        serialized_reports = []
+
+        # Serialize the reports and handle not found cases
+        for report_id in [int(report_id) for report_id in self.request.query_params.get('ids', '').split(',')]:
+            report = get_object_or_404(queryset, id=report_id)
+            serializer = self.get_serializer(report)
+            serialized_reports.append(serializer.data)
+
+        return Response(serialized_reports, status=status.HTTP_200_OK)
