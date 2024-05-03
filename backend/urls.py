@@ -16,6 +16,7 @@ from .views.events_view import EventDetailView, EventListView, AllEventsListView
 from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView, ActiveAlertsView
 from .views.customAdmin import CustomAdminLoginView
 from .views.reservations_view import RegisterReservationView, ListReservedPeriodsView, ListReservationsStartingTodayView, ListPastReservationsView, ListAllReservationsView, UserRegisterReservationView, ReservationDetailView
+from .views.reports_summary_views import ReportsCrateView, ReportListView, ReportDetailView
 from .main_client_views.client_self_view import ClientSelfRegistrationView
 from .main_client_views.client_auth import client_login_view, client_logout_view, client_ForgotPasswordView, client_ResetPasswordView
 
@@ -76,6 +77,11 @@ urlpatterns = [
          name='password_reset_complete'),
     # path('reset_password_complete/', CustomPasswordResetDoneView.as_view(template_name='accounts/password_reset_done.html'),
     #      name='password_reset_complete'),
+
+#   reports
+    path('api/create-report/', ReportsCrateView.as_view(), name='create-report'),
+    path('api/list-reports/', ReportListView.as_view(), name='list-reports'),
+    path('api/report-detail/<int:pk>/', ReportDetailView.as_view(), name='report-detail'),
 
 # permissions
     path('api/user-permissions/', UserPermissionsView.as_view(), name='user_permissions'),

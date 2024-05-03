@@ -14,7 +14,7 @@ from ..serializers import ReportsSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 
-class ReportsListView(APIView):
+class ReportsCrateView(APIView):
     """
     API view for Creating a report
     requires authentication for access
