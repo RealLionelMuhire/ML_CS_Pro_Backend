@@ -12,6 +12,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from ..models import Client, Reports
 from ..serializers import ReportsSerializer
 from django.shortcuts import get_object_or_404
+from rest_framework import generics
 
 class ReportsListView(APIView):
     """
