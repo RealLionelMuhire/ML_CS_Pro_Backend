@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view, permission_classes
 from django.db import IntegrityError
 from rest_framework import status
 from django.utils import timezone
-from ..firebase import upload_to_firebase_storage, download_file_from_url
+from ..helpers.firebase import upload_to_firebase_storage, download_file_from_url
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from ..user_permissions import IsSuperuserOrManagerAdmin
 
@@ -270,7 +270,7 @@ class ClientRegistrationView(APIView):
                 local_file_path = file.temporary_file_path()
                 file_link = upload_to_firebase_storage(folder, file_name, local_file_path, file_checksum)
 
-            print(f"{file_name.capitalize()} Link Before Saving:", file_link)
+            # print(f"{file_name.capitalize()} Link Before Saving:", file_link)
 
         return file_link
 

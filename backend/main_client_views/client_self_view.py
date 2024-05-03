@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from django.http import JsonResponse
 from ..serializers import UserSerializer, ClientSerializer
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from ..firebase import upload_to_firebase_storage
+from ..helpers.firebase import upload_to_firebase_storage
 
 class ClientSelfRegistrationView(APIView):
     """

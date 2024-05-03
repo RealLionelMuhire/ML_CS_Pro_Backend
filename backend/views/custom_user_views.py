@@ -17,7 +17,7 @@ from django.http import JsonResponse
 from decimal import Decimal
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from ..serializers import UserSerializer, UserActivationSerializer
-from ..firebase import upload_to_firebase_storage, download_file_from_url
+from ..helpers.firebase import upload_to_firebase_storage, download_file_from_url
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from ..user_permissions import IsSuperuserOrManagerAdmin, IsSuperuserOrManagerAdminOrReadOnly, IsUser
 from django.shortcuts import get_object_or_404

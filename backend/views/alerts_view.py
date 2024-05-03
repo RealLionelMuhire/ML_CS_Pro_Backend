@@ -67,7 +67,6 @@ class AlertInitiationView(APIView):
                     client_name=f"{client.firstName} {client.lastName}",
                     client_email=client.clientEmail,
                     set_date=timezone.now().date(),
-                    # Add other fields as needed
                 )
 
                 return Response({
