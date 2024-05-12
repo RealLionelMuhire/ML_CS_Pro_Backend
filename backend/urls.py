@@ -7,8 +7,8 @@ from django.contrib.auth import views as auth_views
 from django.urls import path
 
 from django.contrib import admin
-from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView, UserProfileView, UserProfileUpdateView
-from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView
+from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView, UserProfileView, UserProfileUpdateView, UserDataView
+from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView, UncompletedClientRegistrationView
 from .views.services_views import InitiateServiceView, CloseServiceView, ServiceListView, ServiceListByIdView
 from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView, CustomPasswordResetDoneView
 from .views.permission_views import UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
@@ -16,7 +16,7 @@ from .views.events_view import EventDetailView, EventListView, AllEventsListView
 from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView, ActiveAlertsView
 from .views.customAdmin import CustomAdminLoginView
 from .views.reservations_view import RegisterReservationView, ListReservedPeriodsView, ListReservationsStartingTodayView, ListPastReservationsView, ListAllReservationsView, UserRegisterReservationView, ReservationDetailView
-from .views.reports_summary_views import ReportsCrateView, ReportListView, ReportDetailView
+from .views.reports_summary_views import ReportsCreateView, ReportListView, ReportDetailView
 from .main_client_views.client_self_view import ClientSelfRegistrationView
 from .main_client_views.client_auth import client_login_view, client_logout_view, client_ForgotPasswordView, client_ResetPasswordView
 
@@ -38,6 +38,7 @@ urlpatterns = [
     path('api/activate-user/<int:pk>/', ActivateUserView.as_view(), name='activate_user'),
     path('api/user-profile/', UserProfileView.as_view(), name='user-profile'),
     path('api/update-user-profile/', UserProfileUpdateView.as_view(), name='update-user-profile'),
+    path('api/user-self-data/', UserDataView.as_view(), name='user-data'),
 
 # clients
     path('api/register-client/', ClientRegistrationView.as_view(), name='register-client'),
@@ -47,6 +48,7 @@ urlpatterns = [
     path('api/list-clients/', ListClientsView.as_view(), name='list-clients'),
     path('api/clients-list-by-id/', ClientListByIdView.as_view(), name='clients-list-by-id'),
     path('api/add-field-to-client/<int:client_id>/', AddFieldToClientView.as_view(), name='add-field-to-client'),
+    path('api/uncompleted-client/<int:client_id>', UncompletedClientRegistrationView.as_view(), name='uncompleted-client'),
 
 # services
     path('api/initiate-service/', InitiateServiceView.as_view(), name='initiate-service'),
@@ -79,7 +81,7 @@ urlpatterns = [
     #      name='password_reset_complete'),
 
 #   reports
-    path('api/create-report/', ReportsCrateView.as_view(), name='create-report'),
+    path('api/create-report/', ReportsCreateView.as_view(), name='create-report'),
     path('api/list-reports/', ReportListView.as_view(), name='list-reports'),
     path('api/report-detail/<int:pk>/', ReportDetailView.as_view(), name='report-detail'),
 

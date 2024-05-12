@@ -7,16 +7,16 @@ class CustomUserBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         UserModel = get_user_model()
 
-        # print(f"This is backend.py in <authenticatte function> Email from login_view is: {username}, Password: {password}")
-
-        # Check if the provided username or email is a valid email
         user = UserModel.objects.filter(Q(email__iexact=username) | Q(username__iexact=username)).first()
+        messages = []
 
-        # print(f"This is backend.py in <authenticatte function> User from backend after email authentication is: {user}")
+        if not user:
+            messages.append("User not found.")
 
-        if user and user.check_password(password):
-            # print(f"User {user} authenticated successfully.")
-            return user  # Return only the user object
+        elif not user.check_password(password):
+            messages.append("Incorrect password.")
 
-        # print("Authentication error: User not found or incorrect password.")
-        return None
+        if messages:
+            return (None, messages)
+
+        return user, []

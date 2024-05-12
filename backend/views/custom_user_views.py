@@ -17,11 +17,97 @@ from django.http import JsonResponse
 from decimal import Decimal
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from ..serializers import UserSerializer, UserActivationSerializer
-from ..helpers.firebase import upload_to_firebase_storage, download_file_from_url
+from ..helpers.firebase import upload_to_firebase_storage, delete_firebase_file
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from ..user_permissions import IsSuperuserOrManagerAdmin, IsSuperuserOrManagerAdminOrReadOnly, IsUser
 from django.shortcuts import get_object_or_404
 import re
+
+
+class RegistrationView(APIView):
+    """
+    API view for user registration, requiring authentication and permission to create a user.
+    Endpoint: POST /register/
+    Request Payload: Requires 'auth.can_create_user' permission for access.
+    Additional information (registered_by_id and registered_by_fullname) is added to the request data.
+    """
+
+    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin, IsSuperuserOrManagerAdminOrReadOnly]
+
+    def post(self, request):
+        """Handle POST requests for user registration."""
+        # Include additional information in the request data
+        request.data['registrarID'] = request.user.UserID
+        request.data['registrarName'] = f"{request.user.FirstName} {request.user.LastName}"
+        request.data['isActive'] = True
+        
+        # Handle file uploads to Firebase Storage
+        cv_link, cv_msg = self.handle_file_upload(request, 'cv_file', 'cv.pdf')
+        contract_link, contract_msg = self.handle_file_upload(request, 'contract_file', 'contract.pdf')
+        national_id_link, national_id_msg = self.handle_file_upload(request, 'national_id_file', 'national_id.pdf')
+
+        # Check if any file upload failed
+        if any(link is None for link in [cv_link, contract_link, national_id_link]):
+            # Delete uploaded files (if any) to avoid clutter in storage
+            if cv_link:
+                delete_firebase_file(cv_link)
+            if contract_link:
+                delete_firebase_file(contract_link)
+            if national_id_link:
+                delete_firebase_file(national_id_link)
+            # Return failure message
+            return Response({'message': 'File upload failed. Please try again.', 'errors': [cv_msg, contract_msg, national_id_msg]}, status=400)
+
+        # Update the request data with the obtained links
+        request.data.update({'cv_link': cv_link, 'contract_link': contract_link, 'national_id_link': national_id_link})
+
+        # Create a user serializer
+        serializer = UserSerializer(data=request.data)
+
+        try:
+            if serializer.is_valid():
+                # Save the user to the database
+                user = serializer.save()
+                return JsonResponse({'message': 'Registration successful', 'user_id': user.UserID})
+            else:
+                print("Serializer errors:", serializer.errors)
+                # Delete uploaded files (if any) to avoid clutter in storage
+                if cv_link:
+                    delete_firebase_file(cv_link)
+                if contract_link:
+                    delete_firebase_file(contract_link)
+                if national_id_link:
+                    delete_firebase_file(national_id_link)
+                return JsonResponse({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
+        except Exception as e:
+            # Delete uploaded files (if any) to avoid clutter in storage
+            if cv_link:
+                delete_firebase_file(cv_link)
+            if contract_link:
+                delete_firebase_file(contract_link)
+            if national_id_link:
+                delete_firebase_file(national_id_link)
+            return JsonResponse({'message': 'Registration failed', 'error': str(e)}, status=500)
+    
+    
+
+    def handle_file_upload(self, request, file_key, file_name):
+        file = request.FILES.get(file_key)
+        file_link = None
+
+        if file:
+            folder = f"user_files/{request.data['FirstName']}"
+            file_content = file.read()
+
+            if isinstance(file, InMemoryUploadedFile):
+                file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
+            else:
+                local_file_path = file.temporary_file_path()
+                file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
+
+            return file_link, msg
+        else:
+            return None, f"No file found for {file_name} upload."
 
 
 class HelloWorldView(APIView):
@@ -39,65 +125,20 @@ class HelloWorldView(APIView):
         return Response(content)
 
 
-class RegistrationView(APIView):
+class UserDataView(APIView):
     """
-    API view for user registration, requiring authentication and permission to create a user.
-    Endpoint: POST /register/
-    Request Payload: Requires 'auth.can_create_user' permission for access.
-    Additional information (registered_by_id and registered_by_fullname) is added to the request data.
+    API view for retrieving authenticated user's data.
+    Endpoint: GET /user-self-data/
+    Requires authentication.
     """
 
-    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin, IsSuperuserOrManagerAdminOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        """Handle POST requests for user registration."""
-        print((request.data))
-        # Include additional information in the request data
-        request.data['registrarID'] = request.user.UserID
-        request.data['registrarName'] = f"{request.user.FirstName} {request.user.LastName}"
-        request.data['isActive'] = True
-        
-        # Handle file uploads to Firebase Storage
-        cv_link = self.handle_file_upload(request, 'cv_file', 'cv.pdf')
-        contract_link = self.handle_file_upload(request, 'contract_file', 'contract.pdf')
-
-        # Update the request data with the obtained links
-        request.data.update({'cv_link': cv_link, 'contract_link': contract_link})
-
-        # Create a user serializer
-        serializer = UserSerializer(data=request.data)
-
-        try:
-            if serializer.is_valid():
-                # Save the user to the database
-                user = serializer.save()
-                return JsonResponse({'message': 'Registration successful', 'user_id': user.UserID})
-            else:
-                print("Serializer errors:", serializer.errors)
-                return Response({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
-        except IntegrityError as e:
-            # print(f"IntegrityError: {e}")
-            return Response({'message': 'Registration failed. Duplicate user.'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    
-
-    def handle_file_upload(self, request, file_key, file_name):
-        file = request.FILES.get(file_key)
-        file_link = None
-
-        if file:
-            folder = f"user_files/{request.data['FirstName']}"
-            file_content = file.read()
-
-            if isinstance(file, InMemoryUploadedFile):
-                file_link = upload_to_firebase_storage(folder, file_name, file_content, )
-            else:
-                local_file_path = file.temporary_file_path()
-                file_link = upload_to_firebase_storage(folder, file_name, local_file_path, )
-
-            # print(f"{file_name.capitalize()} Link Before Saving:", file_link)
-
-        return file_link
+    def get(self, request):
+        """Handle GET requests to retrieve authenticated user's data."""
+        user = request.user  # Retrieve the authenticated user
+        serializer = UserSerializer(user)  # Serialize the user data
+        return Response(serializer.data)
 
 class UserDeactivateView(generics.UpdateAPIView, BaseUserAdmin):
     """
@@ -221,6 +262,7 @@ class UserProfileView(generics.RetrieveAPIView):
         'Address': 'Address',
         'contract_link': 'National ID LINK',
         'BirthDate': 'Date of Birth',
+        'accessLevel': 'Access Level',
     }
 
     def get_object(self):
@@ -238,10 +280,6 @@ class UserProfileView(generics.RetrieveAPIView):
 
         return Response(user_data)
 
-
-    # def get_object(self):
-    #     # Retrieve the authenticated user
-    #     return self.request.user
 
 class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
     queryset = CustomUser.objects.all()

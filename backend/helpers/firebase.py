@@ -11,17 +11,17 @@ def upload_to_firebase_storage(folder, file_name, file_content):
     initialize_firebase()
 
     service_account_key = {
-    "type": config("FIREBASE_TYPE"),
-    "project_id": config("FIREBASE_PROJECT_ID"),
-    "private_key_id": config("FIREBASE_PRIVATE_KEY_ID"),
-    "private_key": config("FIREBASE_PRIVATE_KEY").replace('\\n', '\n'),
-    "client_email": config("FIREBASE_CLIENT_EMAIL"),
-    "client_id": config("FIREBASE_CLIENT_ID"),
-    "auth_uri": config("FIREBASE_AUTH_URI"),
-    "token_uri": config("FIREBASE_TOKEN_URI"),
-    "auth_provider_x509_cert_url": config("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
-    "client_x509_cert_url": config("FIREBASE_CLIENT_X509_CERT_URL"),
-}
+        "type": config("FIREBASE_TYPE"),
+        "project_id": config("FIREBASE_PROJECT_ID"),
+        "private_key_id": config("FIREBASE_PRIVATE_KEY_ID"),
+        "private_key": config("FIREBASE_PRIVATE_KEY").replace('\\n', '\n'),
+        "client_email": config("FIREBASE_CLIENT_EMAIL"),
+        "client_id": config("FIREBASE_CLIENT_ID"),
+        "auth_uri": config("FIREBASE_AUTH_URI"),
+        "token_uri": config("FIREBASE_TOKEN_URI"),
+        "auth_provider_x509_cert_url": config("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
+        "client_x509_cert_url": config("FIREBASE_CLIENT_X509_CERT_URL"),
+    }
     try:
         # Specify your Firebase Storage bucket name
         bucket_name = "mlcs-4f26e.appspot.com"
@@ -40,31 +40,27 @@ def upload_to_firebase_storage(folder, file_name, file_content):
         blob.make_public()
 
         public_url = blob.public_url
-        return public_url
+        return (public_url, f"File uploaded successfully to {public_url}")
 
     except FileNotFoundError as e:
-        print(f"Error: {e.filename} not found.")
-    except storage.exceptions.GoogleCloudError as e:
-        print(f"Google Cloud Error: {e}")
+        return (None, f"Error: {e.filename} not found.")
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-
-    return None
+        return (None, f"An unexpected error occurred: {e}")
 
 def delete_firebase_file(public_url):
     initialize_firebase()
     firebase_credentials = {
-    "type": config("FIREBASE_TYPE"),
-    "project_id": config("FIREBASE_PROJECT_ID"),
-    "private_key_id": config("FIREBASE_PRIVATE_KEY_ID"),
-    "private_key": config("FIREBASE_PRIVATE_KEY").replace('\\n', '\n'),
-    "client_email": config("FIREBASE_CLIENT_EMAIL"),
-    "client_id": config("FIREBASE_CLIENT_ID"),
-    "auth_uri": config("FIREBASE_AUTH_URI"),
-    "token_uri": config("FIREBASE_TOKEN_URI"),
-    "auth_provider_x509_cert_url": config("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
-    "client_x509_cert_url": config("FIREBASE_CLIENT_X509_CERT_URL"),
-}
+        "type": config("FIREBASE_TYPE"),
+        "project_id": config("FIREBASE_PROJECT_ID"),
+        "private_key_id": config("FIREBASE_PRIVATE_KEY_ID"),
+        "private_key": config("FIREBASE_PRIVATE_KEY").replace('\\n', '\n'),
+        "client_email": config("FIREBASE_CLIENT_EMAIL"),
+        "client_id": config("FIREBASE_CLIENT_ID"),
+        "auth_uri": config("FIREBASE_AUTH_URI"),
+        "token_uri": config("FIREBASE_TOKEN_URI"),
+        "auth_provider_x509_cert_url": config("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
+        "client_x509_cert_url": config("FIREBASE_CLIENT_X509_CERT_URL"),
+    }
     service_account_key = firebase_credentials
 
     try:
@@ -85,14 +81,10 @@ def delete_firebase_file(public_url):
         # Delete the blob
         blob.delete()
 
-        print(f"File {blob_name} deleted successfully.")
-
-    except storage.exceptions.NotFound:
-        print(f"File {blob_name} not found.")
-    except storage.exceptions.GoogleCloudError as e:
-        print(f"Google Cloud Error: {e}")
+        return (public_url, f"File {blob_name} deleted successfully.")
+    
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        return (None, f"An unexpected error occurred: {e}")
 
 def download_file_from_url(file_url):
     try:

@@ -1,6 +1,6 @@
 # backend/serializers.py
 from rest_framework import serializers
-from .models import CustomUser, Client, Service, Reports, Event, Alert, Reservation
+from .models import CustomUser, Client, Service, Reports, Event, Alert, Reservation, UncompletedClient
 from django.contrib.auth.models import Permission
 
 class UserSerializer(serializers.ModelSerializer):
@@ -38,6 +38,11 @@ class UserSerializer(serializers.ModelSerializer):
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
+        fields = '__all__'
+    
+class UncompletedClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UncompletedClient
         fields = '__all__'
 
 class ServiceSerializer(serializers.ModelSerializer):

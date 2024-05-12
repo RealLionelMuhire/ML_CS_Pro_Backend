@@ -13,8 +13,9 @@ from ..models import Client, Reports
 from ..serializers import ReportsSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
+from django.db import IntegrityError
 
-class ReportsCrateView(APIView):
+class ReportsCreateView(APIView):
     """
     API view for Creating a report
     requires authentication for access
@@ -29,14 +30,15 @@ class ReportsCrateView(APIView):
         """
         user = request.user
         request_data = request.data
-        request_data['user'] = user.UserID
+        # request_data['user'] = user.UserID
+        print("request data are", request.data)
         report_link = self.handle_file_upload(request, 'report_file', 'report.pdf')
 
         # Check if client_id is present and not empty in the request data
         client_id = request_data.get('client_id')
         if client_id:
             client = self.get_client_or_404(client_id)
-            request_data.update({
+            request.data.update({
                 'client_reportee_id': client.id,
                 'client_reportee_email': client.email,
                 'client_reportee_name': client.name
@@ -49,24 +51,38 @@ class ReportsCrateView(APIView):
             'reporter_id': user.UserID,
             'reporter_email': user.email,
             'reporter_name': f"{user.FirstName} {user.LastName}",
-        }) 
+        })
+        print(request.data)
 
-        # Your existing code for handling file upload goes here
+        try:
+            serializer = ReportsSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'Report created successfully'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError as e:
+            return Response({'message': str(e)}, status=status.HTTP_409_CONFLICT)
+
+        # return Response({'message': 'Report created successfully'}, status=status.HTTP_201_CREATED)
 
     def handle_file_upload(self, request, file_key, file_name):
         file = request.FILES.get(file_key)
         file_link = None
 
         if file:
+            print("the file is present now!")
             folder = f"reports_files/{request.data['FirstName']}_{request.data['LastName']}"
             file_content = file.read()
             file_checksum = request.data.get(f'{file_key}_checksum')
 
             if isinstance(file, InMemoryUploadedFile):
                 file_link = upload_to_firebase_storage(folder, file_name, file_content, file_checksum)
+                print("there is the file in memory, file link in handle file uplaod:", file_link)
             else:
                 local_file_path = file.temporary_file_path()
                 file_link = upload_to_firebase_storage(folder, file_name, local_file_path, file_checksum)
+                print("there is the file in temporary path, file link in handle file uplaod:", file_link)
 
         return file_link
 

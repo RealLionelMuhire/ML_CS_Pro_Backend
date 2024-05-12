@@ -4,7 +4,7 @@ from django.urls import path
 from django.http import JsonResponse
 from django.contrib import messages
 from .views.custom_user_views import RegistrationView, UserDeactivateView, UserActivateView
-from .models import CustomUser, UserActionLog, Client, Service, PasswordResetToken, Event, Alert
+from .models import CustomUser, UserActionLog, Client, Service, PasswordResetToken, Event, Alert, Reservation, Reports
 
 class UserActionLogAdmin(admin.ModelAdmin):
     list_display = ('user', 'action_time', 'action_type', 'permission', 'granted_by', 'granted_by_fullname')
@@ -69,6 +69,8 @@ admin.site.register(Service)
 admin.site.register(PasswordResetToken)
 admin.site.register(Event)
 admin.site.register(Alert)
+admin.site.register(Reservation)
+admin.site.register(Reports)
 
 admin.site.site_header = 'ML Corporate Services Admin'
 admin.site.site_title = 'ML Corporate Services'
