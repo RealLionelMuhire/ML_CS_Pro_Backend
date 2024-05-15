@@ -7,7 +7,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import path
 
 from django.contrib import admin
-from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView, UserProfileView, UserProfileUpdateView, UserDataView
+from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView, UserProfileView, UserProfileUpdateView, UserProfileDetailView
 from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView, UncompletedClientRegistrationView
 from .views.services_views import InitiateServiceView, CloseServiceView, ServiceListView, ServiceListByIdView
 from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView, CustomPasswordResetDoneView
@@ -38,7 +38,7 @@ urlpatterns = [
     path('api/activate-user/<int:pk>/', ActivateUserView.as_view(), name='activate_user'),
     path('api/user-profile/', UserProfileView.as_view(), name='user-profile'),
     path('api/update-user-profile/', UserProfileUpdateView.as_view(), name='update-user-profile'),
-    path('api/user-self-data/', UserDataView.as_view(), name='user-data'),
+    path('api/user-self-data/', UserProfileDetailView.as_view(), name='user-data'),
 
 # clients
     path('api/register-client/', ClientRegistrationView.as_view(), name='register-client'),

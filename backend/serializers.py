@@ -88,7 +88,19 @@ class UserActivationSerializer(serializers.ModelSerializer):
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['contact', 'Address', 'BirthDate', 'FirstName', 'LastName', 'email']
+        fields = [
+            'UserID', 'registrarID', 'registrarName', 'password', 'last_login', 
+            'is_superuser', 'UserRoles', 'email', 'username', 'contact', 
+            'FirstName', 'LastName', 'NationalID', 'Address', 'isActive', 
+            'registrationDate', 'accessLevel', 'BirthDate', 'is_staff', 
+            'countryOfResidence', 'is_active', 'tinNumber', 'taxResidency', 
+            'citizenship', 'passportIdNumber', 'preferredLanguage', 'activatorID', 
+            'activatorEmail', 'activatorFirstName', 'activationDate', 'deactivatorID', 
+            'deactivatorEmail', 'deactivatorFirstName', 'deactivationDate', 
+            'cv_link', 'contract_link', 'national_id_link', 'passport_link', 
+            'registration_certificate_link', 'financialForecast', 'groups', 
+            'user_permissions'
+        ]
         # Make fields optional
         extra_kwargs = {
             'contact': {'required': False},
@@ -97,6 +109,8 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
             'FirstName': {'required': False},
             'LastName': {'required': False},
             'email': {'required': False},
+            'national_id_link': {'required': False},
+            'cv_link': {'required': False},
         }
 
     def to_internal_value(self, data):

@@ -17,11 +17,17 @@ from django.http import JsonResponse
 from decimal import Decimal
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from ..serializers import UserSerializer, UserActivationSerializer
-from ..helpers.firebase import upload_to_firebase_storage, delete_firebase_file
+from ..helpers.firebase import upload_to_firebase_storage, delete_firebase_file, download_file_from_url
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from ..user_permissions import IsSuperuserOrManagerAdmin, IsSuperuserOrManagerAdminOrReadOnly, IsUser
 from django.shortcuts import get_object_or_404
+from django.core.files.base import ContentFile
 import re
+from urllib.parse import unquote, urlparse
+import base64
+import requests
+from io import BytesIO
+import os
 
 
 class RegistrationView(APIView):
@@ -125,21 +131,63 @@ class HelloWorldView(APIView):
         return Response(content)
 
 
-class UserDataView(APIView):
-    """
-    API view for retrieving authenticated user's data.
-    Endpoint: GET /user-self-data/
-    Requires authentication.
-    """
-
+class UserProfileDetailView(generics.RetrieveAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserProfileUpdateSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        """Handle GET requests to retrieve authenticated user's data."""
-        user = request.user  # Retrieve the authenticated user
-        serializer = UserSerializer(user)  # Serialize the user data
-        return Response(serializer.data)
+    def get_object(self):
+        return self.request.user
 
+    def retrieve(self, request, *args, **kwargs):
+        user = self.get_object()
+        serializer = self.get_serializer(user)
+
+        # Initialize files data dictionary
+        files_data = {}
+
+        # Download the CV file if the link exists
+        if user.cv_link:
+            print("Downloading CV")
+            cv_file_name, cv_file_content = self.download_file_from_url(user.cv_link)
+            if cv_file_content:
+                files_data['cv_file'] = {
+                    'file_name': cv_file_name,
+                    'file_content': base64.b64encode(cv_file_content.getvalue()).decode('utf-8')
+                }
+
+        # Download the National ID file if the link exists
+        if user.national_id_link:
+            print("Downloading National ID")
+            national_id_file_name, national_id_file_content = self.download_file_from_url(user.national_id_link)
+            if national_id_file_content:
+                files_data['national_id_file'] = {
+                    'file_name': national_id_file_name,
+                    'file_content': base64.b64encode(national_id_file_content.getvalue()).decode('utf-8')
+                }
+
+        # Combine user data and files data
+        response_data = serializer.data
+        response_data.update(files_data)
+
+        return Response(response_data)
+
+    def download_file_from_url(self, file_url):
+        try:
+            response = requests.get(file_url)
+            if response.status_code == 200:
+                file_name = unquote(os.path.basename(urlparse(file_url).path))
+                file_content = BytesIO(response.content)
+                print(f"downloading file.....")
+                if file_name:
+                    print(f"File name: {file_name} download complete")
+                return file_name, file_content
+            else:
+                print(f"Download failed. Status code: {response.status_code}")
+                return None, None
+        except requests.RequestException as e:
+            print(f"Error during download: {e}")
+            return None, None
 class UserDeactivateView(generics.UpdateAPIView, BaseUserAdmin):
     """
     API view for deactivating a user associated with the authenticated user.
@@ -296,6 +344,27 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
         # Exclude empty fields from request.data
         data_to_update = {key: value for key, value in request.data.items() if value or key not in exclude_empty_fields}
 
+        # print("requests data are:", request.data)
+        # print("request files:", request.FILES)
+
+        # Check if there are files to be updated
+        if 'national_id_file' in request.FILES:
+            national_id_file = request.FILES['national_id_file']
+            national_id_file_link, national_id_file_msg = self.handle_file_upload(request, 'national_id_file', 'national_id.pdf')
+            if national_id_file_link:
+                data_to_update['national_id_link'] = national_id_file_link
+            else:
+                return Response({'error': national_id_file_msg}, status=status.HTTP_400_BAD_REQUEST)
+
+        if 'cv_file' in request.FILES:
+            cv_file = request.FILES['cv_file']
+            cv_file_link, cv_file_msg = self.handle_file_upload(request, 'cv_file', 'cv.pdf')
+            if cv_file_link:
+                data_to_update['cv_link'] = cv_file_link
+            else:
+                return Response({'error': cv_file_msg}, status=status.HTTP_400_BAD_REQUEST)
+        
+
         # Validate and update other fields
         serializer = self.get_serializer(instance=self.get_object(), data=data_to_update, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -314,6 +383,26 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
         self.perform_update(serializer)
 
         return Response(serializer.data)
+
+    def handle_file_upload(self, request, file_key, file_name):
+        file = request.FILES.get(file_key)
+        file_link = None
+
+        if file:
+            folder = f"user_files{request.data['FirstName']}"
+            file_content = file.read()
+
+            if isinstance(file, InMemoryUploadedFile):
+                file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
+            else:
+                local_file_path = file.temporary_file_path()
+                file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
+            # print(f"File link:  {file_link} and message is: {msg} ")
+
+            return file_link, msg
+        else:
+            return None, f"No file found for {file_name} upload."
+
 
     def is_valid_contact(self, contact):
         # Your contact validation logic using regex
