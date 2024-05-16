@@ -76,7 +76,7 @@ class RegistrationView(APIView):
                 user = serializer.save()
                 return JsonResponse({'message': 'Registration successful', 'user_id': user.UserID})
             else:
-                print("Serializer errors:", serializer.errors)
+                # print("Serializer errors:", serializer.errors)
                 # Delete uploaded files (if any) to avoid clutter in storage
                 if cv_link:
                     delete_firebase_file(cv_link)
