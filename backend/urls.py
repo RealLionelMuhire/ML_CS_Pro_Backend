@@ -8,7 +8,7 @@ from django.urls import path
 
 from django.contrib import admin
 from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView, UserProfileView, UserProfileUpdateView, UserProfileDetailView
-from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView, UncompletedClientRegistrationView, UncompletedClientDisoplayView, AllIncompleteClientsView
+from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView, UncompletedClientRegistrationView, UncompletedClientDisoplayView, AllIncompleteClientsView, ClientDeleteView
 from .views.services_views import InitiateServiceView, CloseServiceView, ServiceListView, ServiceListByIdView
 from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView, CustomPasswordResetDoneView
 from .views.permission_views import UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
@@ -42,6 +42,7 @@ urlpatterns = [
 
 # clients
     path('api/register-client/', ClientRegistrationView.as_view(), name='register-client'),
+    path('api/register-client/<int:client_id>/', ClientDeleteView.as_view(), name='register-client'),
     path('api/deactivate-client/<int:pk>/', ClientDeactivateView.as_view(), name='deactivate-client'),
     path('api/activate-client/<int:pk>/', ClientActivateView.as_view(), name='activate-client'),
     path('api/search-clients/', search_clients, name='search-clients'),

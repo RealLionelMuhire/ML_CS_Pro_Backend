@@ -42,6 +42,9 @@ class RegistrationView(APIView):
 
     def post(self, request):
         """Handle POST requests for user registration."""
+        # Make request.data mutable
+        request.data._mutable = True
+        
         # Include additional information in the request data
         request.data['registrarID'] = request.user.UserID
         request.data['registrarName'] = f"{request.user.FirstName} {request.user.LastName}"
@@ -67,6 +70,9 @@ class RegistrationView(APIView):
         # Update the request data with the obtained links
         request.data.update({'cv_link': cv_link, 'contract_link': contract_link, 'national_id_link': national_id_link})
 
+        # Make request.data immutable again
+        request.data._mutable = False
+
         # Create a user serializer
         serializer = UserSerializer(data=request.data)
 
@@ -76,7 +82,6 @@ class RegistrationView(APIView):
                 user = serializer.save()
                 return JsonResponse({'message': 'Registration successful', 'user_id': user.UserID})
             else:
-                # print("Serializer errors:", serializer.errors)
                 # Delete uploaded files (if any) to avoid clutter in storage
                 if cv_link:
                     delete_firebase_file(cv_link)
@@ -94,8 +99,6 @@ class RegistrationView(APIView):
             if national_id_link:
                 delete_firebase_file(national_id_link)
             return JsonResponse({'message': 'Registration failed', 'error': str(e)}, status=500)
-    
-    
 
     def handle_file_upload(self, request, file_key, file_name):
         file = request.FILES.get(file_key)
