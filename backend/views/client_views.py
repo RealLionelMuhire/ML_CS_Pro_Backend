@@ -35,62 +35,186 @@ class ClientRegistrationView(APIView):
 
     def post(self, request):
         """Handle POST requests for client registration."""
+        # Retrieve the user from the authenticated request
+        # print(request)
         user = request.user
-        request_data = deepcopy(request.data)
+
+        # Combine the user data with the client data
+        request_data = request.data
         request_data['user'] = user.UserID
 
-        uploaded_files = {}
-
         # Handle file uploads to Firebase Storage
-        files_to_upload = [
-            'signature_file', 'bankStatement_file', 'professionalReference_file', 'confirmationLetter_file',
-            'custody_accounts_file', 'source_of_funds_file', 'payslips_file', 'due_diligence_file',
-            'financial_statements_file', 'proof_of_ownership_file', 'lease_agreement_file', 'documentary_evidence_file',
-            'bank_statement_proceeds_file', 'bank_statement_file', 'cdd_documents_file', 'bank_statements_file',
-            'bank_statements_proceeds_file', 'notarised_documents_file', 'letter_from_donor_file',
-            'donor_source_of_wealth_file', 'donor_bank_statement_file', 'letter_from_relevant_org_file',
-            'lottery_bank_statement_file', 'creditor_agreement_file', 'creditor_cdd_file', 'creditor_bank_statement_file',
-            'legal_document_file', 'notary_letter_file', 'executor_letter_file', 'loan_agreement_file',
-            'loan_bank_statement_file', 'related_third_party_loan_agreement_file', 'related_third_party_cdd_file',
-            'related_third_party_bank_statement_file', 'unrelated_third_party_loan_agreement_file',
-            'unrelated_third_party_cdd_file', 'unrelated_third_party_bank_statement_file', 'signed_letter_from_notary_file',
-            'property_contract_file', 'insurance_pay_out_file', 'retirement_annuity_fund_statement_file', 'passport_file',
-            'utility_file', 'wealth_file', 'cv_file', 'funds_file', 'source_of_wealth_file', 'principals_identification_file',
-            'shareholders_file', 'declaration_of_trust_file', 'certificate_of_registration_file', 'deed_of_retirement_file',
-            'business_plan_file', 'registered_office_file', 'register_of_trustee_file', 'proof_of_source_of_funds_file',
-            'proof_of_source_of_wealth_file', 'latest_accounts_or_bank_statements_file', 'licence_file',
-            'certificate_of_incumbency_file', 'charter_file', 'latest_accounts_file',
-            'identification_documents_of_the_principals_of_the_foundation_file'
-        ]
+        signature_link = self.handle_file_upload(request, 'signature_file', 'signature.pdf')
+        bankStatement_link = self.handle_file_upload(request, 'bankStatement_file', 'bankStatement.pdf')
+        professionalReference_link = self.handle_file_upload(request, 'professionalReference_file', 'professionalReference.pdf')
 
-        for file_key in files_to_upload:
-            file_link = self.handle_file_upload(request, file_key, file_key + '.pdf')
-            if file_link:
-                link_key = file_key.replace('_file', '_link')
-                request_data[link_key] = file_link
-                uploaded_files[link_key] = file_link
+        confirmationLetter_link = self.handle_file_upload(request, 'confirmationLetter_file', 'confirmationLetter.pdf')
+        custody_accounts_link = self.handle_file_upload(request, 'custody_accounts_file', 'custody_accounts.pdf')
+        source_of_funds_link = self.handle_file_upload(request, 'source_of_funds_file', 'source_of_funds.pdf')
+        payslips_link = self.handle_file_upload(request, 'payslips_file', 'payslips.pdf')
+        due_diligence_link = self.handle_file_upload(request, 'due_diligence_file', 'due_diligence.pdf')
+        financial_statements_link = self.handle_file_upload(request, 'financial_statements_file', 'financial_statements.pdf')
+        proof_of_ownership_link = self.handle_file_upload(request, 'proof_of_ownership_file', 'proof_of_ownership.pdf')
+        lease_agreement_link = self.handle_file_upload(request, 'lease_agreement_file', 'lease_agreement.pdf')
+        documentary_evidence_link = self.handle_file_upload(request, 'documentary_evidence_file', 'documentary_evidence.pdf')
+        bank_statement_proceeds_link = self.handle_file_upload(request, 'bank_statement_proceeds_file', 'bank_statement_proceeds.pdf')
+        bank_statement_link = self.handle_file_upload(request, 'bank_statement_file', 'bank_statement.pdf')
+        cdd_documents_link = self.handle_file_upload(request, 'cdd_documents_file', 'cdd_documents.pdf')
+        bank_statements_link = self.handle_file_upload(request, 'bank_statements_file', 'bank_statements.pdf')
+        bank_statements_proceeds_link = self.handle_file_upload(request, 'bank_statements_proceeds_file', 'bank_statements_proceeds.pdf')
 
-        try:
-            request_data.update({
-                'registrarID': user.UserID,
-                'registrarEmail': user.email,
-                'registrarFirstName': user.FirstName
+        notarised_documents_link = self.handle_file_upload(request, 'notarised_documents_file', 'notarised_documents.pdf')
+        letter_from_donor_link = self.handle_file_upload(request, 'letter_from_donor_file', 'letter_from_donor.pdf')
+        donor_source_of_wealth_link = self.handle_file_upload(request, 'donor_source_of_wealth_file', 'donor_source_of_wealth.pdf')
+        donor_bank_statement_link = self.handle_file_upload(request, 'donor_bank_statement_file', 'donor_bank_statement.pdf')
+        letter_from_relevant_org_link = self.handle_file_upload(request, 'letter_from_relevant_org_file', 'letter_from_relevant_org.pdf')
+        lottery_bank_statement_link = self.handle_file_upload(request, 'lottery_bank_statement_file', 'lottery_bank_statement.pdf')
+        creditor_agreement_link = self.handle_file_upload(request, 'creditor_agreement_file', 'creditor_agreement.pdf')
+        creditor_cdd_link = self.handle_file_upload(request, 'creditor_cdd_file', 'creditor_cdd.pdf')
+        creditor_bank_statement_link = self.handle_file_upload(request, 'creditor_bank_statement_file', 'creditor_bank_statement.pdf')
+        legal_document_link = self.handle_file_upload(request, 'legal_document_file', 'legal_document.pdf')
+        notary_letter_link = self.handle_file_upload(request, 'notary_letter_file', 'notary_letter.pdf')
+        executor_letter_link = self.handle_file_upload(request, 'executor_letter_file', 'executor_letter.pdf')
+        loan_agreement_link = self.handle_file_upload(request, 'loan_agreement_file', 'loan_agreement.pdf')
+        loan_bank_statement_link = self.handle_file_upload(request, 'loan_bank_statement_file', 'loan_bank_statement.pdf')
+        related_third_party_loan_agreement_link = self.handle_file_upload(request, 'related_third_party_loan_agreement_file', 'related_third_party_loan_agreement.pdf')
+        related_third_party_cdd_link = self.handle_file_upload(request, 'related_third_party_cdd_file', 'related_third_party_cdd.pdf')
+        related_third_party_bank_statement_link = self.handle_file_upload(request, 'related_third_party_bank_statement_file', 'related_third_party_bank_statement.pdf')
+        unrelated_third_party_loan_agreement_link = self.handle_file_upload(request, 'unrelated_third_party_loan_agreement_file', 'unrelated_third_party_loan_agreement.pdf')
+        unrelated_third_party_cdd_link = self.handle_file_upload(request, 'unrelated_third_party_cdd_file', 'unrelated_third_party_cdd.pdf')
+        unrelated_third_party_bank_statement_link = self.handle_file_upload(request, 'unrelated_third_party_bank_statement_file', 'unrelated_third_party_bank_statement.pdf')
+        signed_letter_from_notary_link = self.handle_file_upload(request, 'signed_letter_from_notary_file', 'signed_letter_from_notary.pdf')
+        property_contract_link = self.handle_file_upload(request, 'property_contract_file', 'property_contract.pdf')
+        insurance_pay_out_link = self.handle_file_upload(request, 'insurance_pay_out_file', 'insurance_pay_out.pdf')
+        retirement_annuity_fund_statement_link = self.handle_file_upload(request, 'retirement_annuity_fund_statement_file', 'retirement_annuity_fund_statement.pdf')
+        passport_link = self.handle_file_upload(request, 'passport_file', 'passport.pdf')
+        utility_link = self.handle_file_upload(request, 'utility_file', 'utility.pdf')
+        wealth_link = self.handle_file_upload(request, 'wealth_file', 'wealth.pdf')
+        cv_link = self.handle_file_upload(request, 'cv_file', 'cv.pdf')
+        funds_link = self.handle_file_upload(request, 'funds_file', 'funds.pdf')
+        source_of_wealth_link = self.handle_file_upload(request, 'source_of_wealth_file', 'source_of_wealth.pdf')
+        principals_identification_link = self.handle_file_upload(request, 'principals_identification_file', 'principals_identification.pdf')
+        shareholders_link = self.handle_file_upload(request, 'shareholders_file', 'shareholders.pdf')
+        declaration_of_trust_link = self.handle_file_upload(request, 'declaration_of_trust_file', 'declaration_of_trust.pdf')
+        certificate_of_registration_link = self.handle_file_upload(request, 'certificate_of_registration_file', 'certificate_of_registration.pdf')
+        deed_of_retirement_link = self.handle_file_upload(request, 'deed_of_retirement_file', 'deed_of_retirement.pdf')
+        business_plan_link = self.handle_file_upload(request, 'business_plan_file', 'business_plan.pdf')
+        registered_office_link = self.handle_file_upload(request, 'registered_office_file', 'registered_office.pdf')
+        register_of_trustee_link = self.handle_file_upload(request, 'register_of_trustee_file', 'register_of_trustee.pdf')
+        proof_of_source_of_funds_link = self.handle_file_upload(request, 'proof_of_source_of_funds_file', 'proof_of_source_of_funds.pdf')
+        proof_of_source_of_wealth_link = self.handle_file_upload(request, 'proof_of_source_of_wealth_file', 'proof_of_source_of_wealth.pdf')
+        latest_accounts_or_bank_statements_link = self.handle_file_upload(request, 'latest_accounts_or_bank_statements_file', 'latest_accounts_or_bank_statements.pdf')
+        licence_link = self.handle_file_upload(request, 'licence_file', 'licence.pdf')
+        certificate_of_incumbency_link = self.handle_file_upload(request, 'certificate_of_incumbency_file', 'certificate_of_incumbency.pdf')
+        charter_link = self.handle_file_upload(request, 'charter_file', 'charter.pdf')
+        latest_accounts_link = self.handle_file_upload(request, 'latest_accounts_file', 'latest_accounts.pdf')
+        identification_documents_of_the_principals_of_the_foundation_link = self.handle_file_upload(request, 'identification_documents_of_the_principals_of_the_foundation_file', 'identification_documents_of_the_principals_of_the_foundation.pdf')
+
+        # Update the request data with the obtained links
+        request.data.update({
+            'signature_link': signature_link,
+            'bankStatement_link': bankStatement_link,
+            'professionalReference_link': professionalReference_link,
+            'confirmationLetter_link': confirmationLetter_link,
+            'custody_accounts_link': custody_accounts_link,
+            'source_of_funds_link': source_of_funds_link,
+            'payslips_link': payslips_link,
+            'due_diligence_link': due_diligence_link,
+            'financial_statements_link': financial_statements_link,
+            'proof_of_ownership_link': proof_of_ownership_link,
+            'lease_agreement_link': lease_agreement_link,
+            'documentary_evidence_link': documentary_evidence_link,
+            'bank_statement_proceeds_link': bank_statement_proceeds_link,
+            'bank_statement_link': bank_statement_link,
+            'cdd_documents_link': cdd_documents_link,
+            'bank_statements_link': bank_statements_link,
+            'bank_statements_proceeds_link': bank_statements_proceeds_link,
+            'notarised_documents_link': notarised_documents_link,
+            'letter_from_donor_link': letter_from_donor_link,
+            'donor_source_of_wealth_link': donor_source_of_wealth_link,
+            'donor_bank_statement_link': donor_bank_statement_link,
+            'letter_from_relevant_org_link': letter_from_relevant_org_link,
+            'lottery_bank_statement_link': lottery_bank_statement_link,
+            'creditor_agreement_link': creditor_agreement_link,
+            'creditor_cdd_link': creditor_cdd_link,
+            'creditor_bank_statement_link': creditor_bank_statement_link,
+            'legal_document_link': legal_document_link,
+            'notary_letter_link': notary_letter_link,
+            'executor_letter_link': executor_letter_link,
+            'loan_agreement_link': loan_agreement_link,
+            'loan_bank_statement_link': loan_bank_statement_link,
+            'related_third_party_loan_agreement_link': related_third_party_loan_agreement_link,
+            'related_third_party_cdd_link': related_third_party_cdd_link,
+            'related_third_party_bank_statement_link': related_third_party_bank_statement_link,
+            'unrelated_third_party_loan_agreement_link': unrelated_third_party_loan_agreement_link,
+            'unrelated_third_party_cdd_link': unrelated_third_party_cdd_link,
+            'unrelated_third_party_bank_statement_link': unrelated_third_party_bank_statement_link,
+            'signed_letter_from_notary_link': signed_letter_from_notary_link,
+            'property_contract_link': property_contract_link,
+            'insurance_pay_out_link': insurance_pay_out_link,
+            'retirement_annuity_fund_statement_link': retirement_annuity_fund_statement_link,
+            'passport_link': passport_link,
+            'utility_link': utility_link,
+            'wealth_link': wealth_link,
+            'cv_link': cv_link,
+            'funds_link': funds_link,
+            'source_of_wealth_link': source_of_wealth_link,
+            'principals_identification_link': principals_identification_link,
+            'shareholders_link': shareholders_link,
+            'declaration_of_trust_link': declaration_of_trust_link,
+            'certificate_of_registration_link': certificate_of_registration_link,
+            'deed_of_retirement_link': deed_of_retirement_link,
+            'business_plan_link': business_plan_link,
+            'registered_office_link': registered_office_link,
+            'register_of_trustee_link': register_of_trustee_link,
+            'proof_of_source_of_funds_link': proof_of_source_of_funds_link,
+            'proof_of_source_of_wealth_link': proof_of_source_of_wealth_link,
+            'latest_accounts_or_bank_statements_link': latest_accounts_or_bank_statements_link,
+            'licence_link': licence_link,
+            'certificate_of_incumbency_link': certificate_of_incumbency_link,
+            'charter_link': charter_link,
+            'latest_accounts_link': latest_accounts_link,
+            'principals_foundation_link': identification_documents_of_the_principals_of_the_foundation_link
             })
 
+        try:
+            # Set the registrar information
+            request_data['registrarID'] = user.UserID
+            request_data['registrarEmail'] = user.email
+            request_data['registrarFirstName'] = user.FirstName
+
+            # Create the serializer
             serializer = ClientSerializer(data=request_data)
 
             if serializer.is_valid():
+                # Save the client with the associated user and registrar
                 client = serializer.save()
+
                 return Response({'message': 'Client registration successful', 'client_id': client.id})
             else:
-                for file_link in uploaded_files.values():
-                    delete_firebase_file(file_link)
-                return JsonResponse({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
+                return Response({'message': 'Client registration failed', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except IntegrityError as e:
-            for file_link in uploaded_files.values():
-                    delete_firebase_file(file_link)
             print(f"IntegrityError: {e}")
-            return JsonResponse({'message': 'Client registration failed. Duplicate client.'}, status=400)
+            return Response({'message': 'Client registration failed. Duplicate client.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # def handle_file_upload(self, request, file_key, file_name):
+    #     file = request.FILES.get(file_key)
+    #     file_link = None
+
+    #     if file:
+    #         folder = f"client_files/{request.data['firstName']}_{request.data['lastName']}"
+    #         file_content = file.read()
+    #         # file_checksum = request.data.get(f'{file_key}_checksum')
+
+    #         if isinstance(file, InMemoryUploadedFile):
+    #             file_link = upload_to_firebase_storage(folder, file_name, file_content)
+    #         else:
+    #             local_file_path = file.temporary_file_path()
+    #             file_link = upload_to_firebase_storage(folder, file_name, local_file_path)
+
+    #         # print(f"{file_name.capitalize()} Link Before Saving:", file_link)
+
+    #     return file_link
     
     def handle_file_upload(self, request, file_key, file_name):
         file = request.FILES.get(file_key)
