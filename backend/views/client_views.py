@@ -229,7 +229,7 @@ class UncompletedClientRegistrationView(APIView):
                 'registrarFirstName': user.FirstName
             })
 
-            serializer = ClientSerializer(data=request_data)
+            serializer = UncompletedClientSerializer(data=request_data)
 
             if serializer.is_valid():
                 client = serializer.save()
@@ -241,8 +241,8 @@ class UncompletedClientRegistrationView(APIView):
         except IntegrityError as e:
             for file_link in uploaded_files.values():
                     delete_firebase_file(file_link)
-            print(f"IntegrityError: {e}")
-            return JsonResponse({'message': 'Client registration failed. Duplicate client.'}, status=400)
+            # print(f"IntegrityError: {e}")
+            return JsonResponse({f'message': 'Client registration failed.'}, status=400)
 
     def put(self, request, pk=None):
         """Handle PUT requests for updating client registration."""
@@ -400,11 +400,41 @@ class AllIncompleteClientsView(generics.ListAPIView):
 
         # Serialize the results
         serializer = UncompletedClientSerializer(clients, many=True)
-        print("===>", serializer.data)
+        # print("===>", serializer.data)
 
         return Response(serializer.data)
 
 
+class UncompletedClientByid(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Get the list of client IDs from the query parameters
+        client_ids_str = self.request.query_params.get('ids', '')
+        client_ids = [int(client_id) for client_id in client_ids_str.split(',') if client_id.isdigit()]
+
+        # Filter and retrieve clients based on the provided IDs
+        queryset = UncompletedClient.objects.filter(id__in=client_ids)
+        return queryset
+    
+    def get(self, request, *args, **kwargs):
+        """Handle GET requests to list all clients."""
+        # If a single client_id is provided as a URL parameter
+        client_id = kwargs.get('client_id', None)
+        if client_id is not None:
+            client_ids = [client_id]
+        else:
+            # Otherwise, get client IDs from query parameters
+            client_ids_str = self.request.query_params.get('ids', '')
+            client_ids = [int(client_id) for client_id in client_ids_str.split(',') if client_id.isdigit()]
+
+        # Filter and retrieve clients based on the provided IDs
+        clients = UncompletedClient.objects.filter(id__in=client_ids)
+
+        # Serialize the results
+        serializer = ClientSerializer(clients, many=True)
+
+        return Response(serializer.data)
 
 class ClientDeactivateView(generics.RetrieveUpdateAPIView):
     """

@@ -8,7 +8,7 @@ from django.urls import path
 
 from django.contrib import admin
 from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView, UserProfileView, UserProfileUpdateView, UserProfileDetailView
-from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView, UncompletedClientRegistrationView, UncompletedClientDisoplayView, AllIncompleteClientsView, ClientDeleteView
+from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView, UncompletedClientRegistrationView, UncompletedClientDisoplayView, AllIncompleteClientsView, ClientDeleteView, UncompletedClientByid
 from .views.services_views import InitiateServiceView, CloseServiceView, ServiceListView, ServiceListByIdView
 from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView, CustomPasswordResetDoneView
 from .views.permission_views import UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
@@ -52,6 +52,7 @@ urlpatterns = [
     path('api/incompleted-client/', UncompletedClientRegistrationView.as_view(), name='uncompleted-client'),
     path('api/incompleted-client-data/<int:client_id>/', UncompletedClientDisoplayView.as_view(), name='uncompleted-client-data'),
     path('api/all-incomplete-clients/', AllIncompleteClientsView.as_view(), name='all-incomplete-clients'),
+    path('api/incomplete-clients-list-by-id/<int:client_id>/', UncompletedClientByid.as_view(), name='uncompleted-client-list-by-id'),
 
 # services
     path('api/initiate-service/', InitiateServiceView.as_view(), name='initiate-service'),
