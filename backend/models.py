@@ -412,6 +412,9 @@ class Client(models.Model):
     charter_link = models.URLField(null=True, blank=True)
     latest_accounts_link = models.URLField(null=True, blank=True)
     principals_foundation_link = models.URLField(null=True, blank=True)
+
+    financialForecast = models.JSONField(null=True, blank=True)
+    expectedAccountActivity = models.JSONField(null=True, blank=True)
     def __str__(self):
         return f"{self.firstName} {self.lastName}"
 
@@ -434,7 +437,7 @@ class UncompletedClient(models.Model):
     sharePercent = models.CharField(max_length=255, null=True, blank=True)
     currentAddress = models.CharField(max_length=150, blank=True)
     clientContact = models.CharField(max_length=20, blank=True)
-    clientEmail = models.EmailField(unique=True)
+    clientEmail = models.EmailField(unique=True, blank=True, null=True)
     preferredLanguage = models.CharField(max_length=50, blank=True)
     registrarID = models.IntegerField(null=True, blank=True)
     registrarEmail = models.EmailField(null=True, blank=True)
@@ -667,6 +670,9 @@ class UncompletedClient(models.Model):
     charter_link = models.URLField(null=True, blank=True)
     latest_accounts_link = models.URLField(null=True, blank=True)
     principals_foundation_link = models.URLField(null=True, blank=True)
+
+    financialForecast = models.JSONField(null=True, blank=True)
+    expectedAccountActivity = models.JSONField(null=True, blank=True)
     def __str__(self):
         return f"{self.firstName} {self.lastName}"
 

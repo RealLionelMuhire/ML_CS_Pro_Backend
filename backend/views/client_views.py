@@ -1,10 +1,11 @@
 # views/client_views.py
 
+from django.forms import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from ..serializers import ClientSerializer, UncompletedClientSerializer
-from ..models import Client, UncompletedClient
+from ..models import Client, UncompletedClient, CustomUser
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
@@ -21,7 +22,7 @@ from urllib.parse import unquote, urlparse
 from io import BytesIO
 import requests
 from copy import deepcopy
-
+import logging
 
 
 class ClientRegistrationView(APIView):
@@ -182,10 +183,9 @@ class UncompletedClientRegistrationView(APIView):
     def post(self, request):
         """Handle POST requests for client registration."""
         user = request.user
-        # mutable_data = request.data.copy()
-        request_data = deepcopy(request.data)
+        request.data._mutable = True
+        request_data = request.data
         request_data['user'] = user.UserID
-
 
         uploaded_files = {}
 
@@ -247,7 +247,7 @@ class UncompletedClientRegistrationView(APIView):
     def put(self, request, pk=None):
         """Handle PUT requests for updating client registration."""
         user = request.user
-        request_data = request.data
+        request_data = request.data.copy()  # Make a mutable copy of the request data
         request_data['user'] = user.UserID
 
         try:
@@ -280,7 +280,7 @@ class UncompletedClientRegistrationView(APIView):
         ]
 
         for file_key in files_to_upload:
-            if request.FILES.get(file_key):
+            if file_key in request.FILES:
                 file_link_key = file_key.replace('_file', '_link')
                 file_link, msg = self.handle_file_upload(request, file_key, file_key + '.pdf')
                 if file_link:
@@ -299,11 +299,11 @@ class UncompletedClientRegistrationView(APIView):
             for file_link in uploaded_files.values():
                     delete_firebase_file(file_link)
             return JsonResponse({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
-
     
     def handle_file_upload(self, request, file_key, file_name):
         file = request.FILES.get(file_key)
         file_link = None
+        msg = None
 
         if file:
             folder = f"pending_registration_client_files/{request.data['firstName']}_{request.data['lastName']}"
@@ -320,8 +320,109 @@ class UncompletedClientRegistrationView(APIView):
             return file_link, msg
         else:
             return None, f"No file found for {file_name} uploaded to"
-        
 
+
+class UpdateUncompletedClientView(generics.UpdateAPIView):
+    queryset = UncompletedClient.objects.all()
+    serializer_class = UncompletedClientSerializer
+    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
+    lookup_field = 'id'
+
+    def perform_update(self, serializer):
+        request = self.request
+        
+        # Ensure request.data is mutable
+        request.data._mutable = True
+        request_data = request.data
+
+        
+        uploaded_files = {}
+        files_to_upload = [
+            'signature_file', 'bankStatement_file', 'professionalReference_file', 'confirmationLetter_file',
+            'custody_accounts_file', 'source_of_funds_file', 'payslips_file', 'due_diligence_file',
+            'financial_statements_file', 'proof_of_ownership_file', 'lease_agreement_file', 'documentary_evidence_file',
+            'bank_statement_proceeds_file', 'bank_statement_file', 'cdd_documents_file', 'bank_statements_file',
+            'bank_statements_proceeds_file', 'notarised_documents_file', 'letter_from_donor_file',
+            'donor_source_of_wealth_file', 'donor_bank_statement_file', 'letter_from_relevant_org_file',
+            'lottery_bank_statement_file', 'creditor_agreement_file', 'creditor_cdd_file', 'creditor_bank_statement_file',
+            'legal_document_file', 'notary_letter_file', 'executor_letter_file', 'loan_agreement_file',
+            'loan_bank_statement_file', 'related_third_party_loan_agreement_file', 'related_third_party_cdd_file',
+            'related_third_party_bank_statement_file', 'unrelated_third_party_loan_agreement_file',
+            'unrelated_third_party_cdd_file', 'unrelated_third_party_bank_statement_file', 'signed_letter_from_notary_file',
+            'property_contract_file', 'insurance_pay_out_file', 'retirement_annuity_fund_statement_file', 'passport_file',
+            'utility_file', 'wealth_file', 'cv_file', 'funds_file', 'source_of_wealth_file', 'principals_identification_file',
+            'shareholders_file', 'declaration_of_trust_file', 'certificate_of_registration_file', 'deed_of_retirement_file',
+            'business_plan_file', 'registered_office_file', 'register_of_trustee_file', 'proof_of_source_of_funds_file',
+            'proof_of_source_of_wealth_file', 'latest_accounts_or_bank_statements_file', 'licence_file',
+            'certificate_of_incumbency_file', 'charter_file', 'latest_accounts_file',
+            'identification_documents_of_the_principals_of_the_foundation_file'
+        ]
+
+        for file_key in files_to_upload:
+            if file_key in request.FILES:
+                file_link_key = file_key.replace('_file', '_link')
+                file_link, msg = self.handle_file_upload(request, file_key, file_key + '.pdf')
+                if file_link:
+                    request_data[file_link_key] = file_link
+                    uploaded_files[file_link_key] = file_link
+                else:
+                    for link in uploaded_files.values():
+                        delete_firebase_file(link)
+                    raise ValidationError({'message': msg})
+        
+        instance = serializer.instance
+        for field_name, value in request_data.items():
+            if value != "" and value is not None:  # Check if value is not empty or null
+                setattr(instance, field_name, value)
+
+        serializer.save()
+
+    def update(self, request, *args, **kwargs):
+        # logger.debug(f"Update request received for client_id: {kwargs.get('client_id')}")
+        partial = kwargs.pop('partial', True)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response({'message': 'Client registration updated successfully'})
+    
+    def handle_file_upload(self, request, file_key, file_name):
+        file = request.FILES.get(file_key)
+        file_link = None
+        msg = None  # Default value for msg
+
+        if file:
+            folder = f"pending_registration_client_files/{request.data['firstName']}_{request.data['lastName']}"
+            file_content = file.read()
+            # file_checksum = request.data.get(f'{file_key}_checksum')
+
+            if isinstance(file, InMemoryUploadedFile):
+                file_link = upload_to_firebase_storage(folder, file_name, file_content)
+            else:
+                local_file_path = file.temporary_file_path()
+                file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
+
+            # print(f"{file_name.capitalize()} Link Before Saving:", file_link)
+            return file_link, msg
+        else:
+            return None, f"No file found for {file_name} uploaded to"
+
+
+class UncompletedClientDeleteView(APIView):
+    """
+    API view for deleting a incomplete client associated with the authenticated user.
+    Requires authentication for access.
+    Endpoint: DELETE /client-registration/<int:client_id>/
+    """
+    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
+    def delete(self, request, client_id):
+        """Handle DELETE requests for client deletion."""
+        try:
+            client = UncompletedClient.objects.get(id=client_id)
+            client.delete()
+            return Response({'message': 'Client deletion successful'}, status=status.HTTP_204_NO_CONTENT)
+        except UncompletedClient.DoesNotExist:
+            return Response({'message': 'Client not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class UncompletedClientDisoplayView(generics.RetrieveAPIView):
