@@ -45,6 +45,19 @@ class UncompletedClientSerializer(serializers.ModelSerializer):
         model = UncompletedClient
         fields = '__all__'
 
+class UpdateUncompletedClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UncompletedClient
+        exclude = ['clientEmail']  # Exclude clientEmail or any other fields that shouldn't be updated
+
+    def update(self, instance, validated_data):
+        # Only update non-empty, non-null fields
+        for attr, value in validated_data.items():
+            if value not in ["", None]:
+                setattr(instance, attr, value)
+        instance.save()
+        return instance
+
 class ServiceSerializer(serializers.ModelSerializer):
 
     class Meta:

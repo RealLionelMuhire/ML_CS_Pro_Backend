@@ -4,12 +4,12 @@ from django.forms import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from ..serializers import ClientSerializer, UncompletedClientSerializer
+from ..serializers import ClientSerializer, UncompletedClientSerializer, UpdateUncompletedClientSerializer
 from ..models import Client, UncompletedClient, CustomUser
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from rest_framework import status
 from django.utils import timezone
 from ..helpers.firebase import upload_to_firebase_storage, delete_firebase_file
@@ -21,8 +21,6 @@ import os
 from urllib.parse import unquote, urlparse
 from io import BytesIO
 import requests
-from copy import deepcopy
-import logging
 
 
 class ClientRegistrationView(APIView):
@@ -183,11 +181,12 @@ class UncompletedClientRegistrationView(APIView):
     def post(self, request):
         """Handle POST requests for client registration."""
         user = request.user
-        request.data._mutable = True
-        request_data = request.data
+        request_data = request.data.copy()  # Create a mutable copy of request data
         request_data['user'] = user.UserID
 
         uploaded_files = {}
+
+        # print('====> request_data: ', request_data)
 
         # Handle file uploads to Firebase Storage
         files_to_upload = [
@@ -212,15 +211,17 @@ class UncompletedClientRegistrationView(APIView):
         ]
 
         for file_key in files_to_upload:
-            file_link, msg = self.handle_file_upload(request, file_key, file_key + '.pdf')
-            if file_link:
-                link_key = file_key.replace('_file', '_link')
-                # Update request data with the new key-value pair
-                request_data[link_key] = file_link
-                uploaded_files[link_key] = file_link
-            else:
-                pass
-                # return JsonResponse({'message': msg}, status=400)
+            file = request.FILES.get(file_key)
+            if file and file.size > 0:
+            
+                file_link, msg = self.handle_file_upload(request, file_key, file_key + '.pdf')
+                if file_link and isinstance(file_link, str) and file_link.startswith('https://storage.googleapis.'):
+                    link_key = file_key.replace('_file', '_link')
+                    # Update request data with the new key-value pair
+                    request_data[link_key] = file_link
+                    uploaded_files[link_key] = file_link
+                else:
+                    return JsonResponse({'message': msg}, status=400)
 
         try:
             request_data.update({
@@ -228,6 +229,7 @@ class UncompletedClientRegistrationView(APIView):
                 'registrarEmail': user.email,
                 'registrarFirstName': user.FirstName
             })
+            # print("\n\n\n<<<<<<<<request data: ", request_data)
 
             serializer = UncompletedClientSerializer(data=request_data)
 
@@ -243,62 +245,6 @@ class UncompletedClientRegistrationView(APIView):
                     delete_firebase_file(file_link)
             # print(f"IntegrityError: {e}")
             return JsonResponse({f'message': 'Client registration failed.'}, status=400)
-
-    def put(self, request, pk=None):
-        """Handle PUT requests for updating client registration."""
-        user = request.user
-        request_data = request.data.copy()  # Make a mutable copy of the request data
-        request_data['user'] = user.UserID
-
-        try:
-            client = UncompletedClient.objects.get(pk=pk, user=user)
-        except UncompletedClient.DoesNotExist:
-            return Response({'message': 'Client not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-        uploaded_files = {}
-
-        # Handle file uploads to Firebase Storage
-        files_to_upload = [
-            'signature_file', 'bankStatement_file', 'professionalReference_file', 'confirmationLetter_file',
-            'custody_accounts_file', 'source_of_funds_file', 'payslips_file', 'due_diligence_file',
-            'financial_statements_file', 'proof_of_ownership_file', 'lease_agreement_file', 'documentary_evidence_file',
-            'bank_statement_proceeds_file', 'bank_statement_file', 'cdd_documents_file', 'bank_statements_file',
-            'bank_statements_proceeds_file', 'notarised_documents_file', 'letter_from_donor_file',
-            'donor_source_of_wealth_file', 'donor_bank_statement_file', 'letter_from_relevant_org_file',
-            'lottery_bank_statement_file', 'creditor_agreement_file', 'creditor_cdd_file', 'creditor_bank_statement_file',
-            'legal_document_file', 'notary_letter_file', 'executor_letter_file', 'loan_agreement_file',
-            'loan_bank_statement_file', 'related_third_party_loan_agreement_file', 'related_third_party_cdd_file',
-            'related_third_party_bank_statement_file', 'unrelated_third_party_loan_agreement_file',
-            'unrelated_third_party_cdd_file', 'unrelated_third_party_bank_statement_file', 'signed_letter_from_notary_file',
-            'property_contract_file', 'insurance_pay_out_file', 'retirement_annuity_fund_statement_file', 'passport_file',
-            'utility_file', 'wealth_file', 'cv_file', 'funds_file', 'source_of_wealth_file', 'principals_identification_file',
-            'shareholders_file', 'declaration_of_trust_file', 'certificate_of_registration_file', 'deed_of_retirement_file',
-            'business_plan_file', 'registered_office_file', 'register_of_trustee_file', 'proof_of_source_of_funds_file',
-            'proof_of_source_of_wealth_file', 'latest_accounts_or_bank_statements_file', 'licence_file',
-            'certificate_of_incumbency_file', 'charter_file', 'latest_accounts_file',
-            'identification_documents_of_the_principals_of_the_foundation_file'
-        ]
-
-        for file_key in files_to_upload:
-            if file_key in request.FILES:
-                file_link_key = file_key.replace('_file', '_link')
-                file_link, msg = self.handle_file_upload(request, file_key, file_key + '.pdf')
-                if file_link:
-                    request_data[file_link_key] = file_link
-                    uploaded_files[file_link_key] = file_link
-                else:
-                    pass
-                    # return JsonResponse({'message': msg}, status=400)
-
-        serializer = ClientSerializer(client, data=request_data, partial=True)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Client registration updated successfully'})
-        else:
-            for file_link in uploaded_files.values():
-                    delete_firebase_file(file_link)
-            return JsonResponse({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
     
     def handle_file_upload(self, request, file_key, file_name):
         file = request.FILES.get(file_key)
@@ -308,33 +254,34 @@ class UncompletedClientRegistrationView(APIView):
         if file:
             folder = f"pending_registration_client_files/{request.data['firstName']}_{request.data['lastName']}"
             file_content = file.read()
-            # file_checksum = request.data.get(f'{file_key}_checksum')
 
             if isinstance(file, InMemoryUploadedFile):
-                file_link = upload_to_firebase_storage(folder, file_name, file_content)
+
+                file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
             else:
                 local_file_path = file.temporary_file_path()
                 file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
 
-            # print(f"{file_name.capitalize()} Link Before Saving:", file_link)
             return file_link, msg
         else:
             return None, f"No file found for {file_name} uploaded to"
 
 
 class UpdateUncompletedClientView(generics.UpdateAPIView):
+    """
+    API view for updating a client associated with the authenticated user.
+    Requires authentication for access.
+    Endpoint: PUT /client-registration/<int:client_id>/
+    """
+
     queryset = UncompletedClient.objects.all()
-    serializer_class = UncompletedClientSerializer
+    serializer_class = UpdateUncompletedClientSerializer
     permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
     lookup_field = 'id'
 
     def perform_update(self, serializer):
         request = self.request
-        
-        # Ensure request.data is mutable
-        request.data._mutable = True
-        request_data = request.data
-
+        request_data = request.data.copy()
         
         uploaded_files = {}
         files_to_upload = [
@@ -359,53 +306,64 @@ class UpdateUncompletedClientView(generics.UpdateAPIView):
         ]
 
         for file_key in files_to_upload:
-            if file_key in request.FILES:
-                file_link_key = file_key.replace('_file', '_link')
+            file = request.FILES.get(file_key)
+            if file and file.size > 0:
                 file_link, msg = self.handle_file_upload(request, file_key, file_key + '.pdf')
-                if file_link:
-                    request_data[file_link_key] = file_link
-                    uploaded_files[file_link_key] = file_link
+                if file_link and isinstance(file_link, str) and file_link.startswith('https://storage.googleapis.'):
+                    link_key = file_key.replace('_file', '_link')
+                    request_data[link_key] = file_link
+                    uploaded_files[link_key] = file_link
                 else:
-                    for link in uploaded_files.values():
-                        delete_firebase_file(link)
-                    raise ValidationError({'message': msg})
-        
+                    return JsonResponse({'message': msg}, status=400)
+
         instance = serializer.instance
+
+        # Check for unique constraints manually
+        new_client_email = request_data.get('clientEmail')
+        if new_client_email and new_client_email != instance.clientEmail:
+            if UncompletedClient.objects.filter(clientEmail=new_client_email).exclude(id=instance.id).exists():
+                return JsonResponse({'message': f'Client email {new_client_email} already exists.'}, status=400)
+
+        # Update only non-empty, non-null fields
         for field_name, value in request_data.items():
-            if value != "" and value is not None:  # Check if value is not empty or null
+            if value not in ["", None]:
                 setattr(instance, field_name, value)
 
         serializer.save()
 
     def update(self, request, *args, **kwargs):
-        # logger.debug(f"Update request received for client_id: {kwargs.get('client_id')}")
         partial = kwargs.pop('partial', True)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response({'message': 'Client registration updated successfully'})
+        
+        try:
+            with transaction.atomic():
+                self.perform_update(serializer)
+            return Response({'message': 'Client registration updated successfully'})
+        except IntegrityError as e:
+            return JsonResponse({'message': str(e)}, status=400)
+        except Exception as e:
+            return JsonResponse({'message': 'An error occurred during the update process.'}, status=400)
     
     def handle_file_upload(self, request, file_key, file_name):
         file = request.FILES.get(file_key)
         file_link = None
-        msg = None  # Default value for msg
+        msg = None
 
         if file:
             folder = f"pending_registration_client_files/{request.data['firstName']}_{request.data['lastName']}"
             file_content = file.read()
-            # file_checksum = request.data.get(f'{file_key}_checksum')
 
             if isinstance(file, InMemoryUploadedFile):
-                file_link = upload_to_firebase_storage(folder, file_name, file_content)
+                file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
             else:
                 local_file_path = file.temporary_file_path()
                 file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
 
-            # print(f"{file_name.capitalize()} Link Before Saving:", file_link)
             return file_link, msg
         else:
-            return None, f"No file found for {file_name} uploaded to"
+            return None, f"No file found for {file_name}"
 
 
 class UncompletedClientDeleteView(APIView):
@@ -507,35 +465,94 @@ class AllIncompleteClientsView(generics.ListAPIView):
 
 
 class UncompletedClientByid(generics.ListAPIView):
+
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # Get the list of client IDs from the query parameters
         client_ids_str = self.request.query_params.get('ids', '')
         client_ids = [int(client_id) for client_id in client_ids_str.split(',') if client_id.isdigit()]
-
         # Filter and retrieve clients based on the provided IDs
         queryset = UncompletedClient.objects.filter(id__in=client_ids)
         return queryset
-    
+
     def get(self, request, *args, **kwargs):
         """Handle GET requests to list all clients."""
-        # If a single client_id is provided as a URL parameter
         client_id = kwargs.get('client_id', None)
         if client_id is not None:
             client_ids = [client_id]
         else:
-            # Otherwise, get client IDs from query parameters
-            client_ids_str = self.request.query_params.get('ids', '')
+            client_ids_str = request.query_params.get('ids', '')
             client_ids = [int(client_id) for client_id in client_ids_str.split(',') if client_id.isdigit()]
 
-        # Filter and retrieve clients based on the provided IDs
         clients = UncompletedClient.objects.filter(id__in=client_ids)
 
         # Serialize the results
         serializer = ClientSerializer(clients, many=True)
+        serialized_data = serializer.data
 
-        return Response(serializer.data)
+        # Initialize files data dictionary
+        files_data = {}
+
+        for client in clients:
+            # Check and download the files for each client
+            file_fields =[
+            'cv_link', 'national_id_link', 'signature_link', 'bankStatement_link', 
+            'professionalReference_link', 'confirmationLetter_link', 'custody_accounts_link', 
+            'source_of_funds_link', 'payslips_link', 'due_diligence_link', 'financial_statements_link', 
+            'proof_of_ownership_link', 'lease_agreement_link', 'documentary_evidence_link', 
+            'bank_statement_proceeds_link', 'bank_statement_link', 'cdd_documents_link', 
+            'bank_statements_link', 'bank_statements_proceeds_link', 'notarised_documents_link', 
+            'letter_from_donor_link', 'donor_source_of_wealth_link', 'donor_bank_statement_link', 
+            'letter_from_relevant_org_link', 'lottery_bank_statement_link', 'creditor_agreement_link', 
+            'creditor_cdd_link', 'creditor_bank_statement_link', 'legal_document_link', 'notary_letter_link', 
+            'executor_letter_link', 'loan_agreement_link', 'loan_bank_statement_link', 
+            'related_third_party_loan_agreement_link', 'related_third_party_cdd_link', 
+            'related_third_party_bank_statement_link', 'unrelated_third_party_loan_agreement_link', 
+            'unrelated_third_party_cdd_link', 'unrelated_third_party_bank_statement_link', 
+            'signed_letter_from_notary_link', 'property_contract_link', 'insurance_pay_out_link', 
+            'retirement_annuity_fund_statement_link', 'passport_link', 'utility_link', 'wealth_link', 
+            'cv_link', 'funds_link', 'source_of_wealth_link', 'principals_identification_link', 
+            'shareholders_link', 'declaration_of_trust_link', 'certificate_of_registration_link', 
+            'deed_of_retirement_link', 'business_plan_link', 'registered_office_link', 'register_of_trustee_link', 
+            'proof_of_source_of_funds_link', 'proof_of_source_of_wealth_link', 'latest_accounts_or_bank_statements_link', 
+            'licence_link', 'certificate_of_incumbency_link', 'charter_link', 'latest_accounts_link', 
+            'identification_documents_of_the_principals_of_the_foundation_link'
+        ]
+
+            for field in file_fields:
+                file_url = getattr(client, field, None)
+                if file_url:
+                    # print("file url in view is: ", file_url)
+                    file_name, file_content = self.download_file_from_url(file_url)
+                    if file_content:
+                        files_data[f'{field.replace("_link", "_file")}'] = {
+                            'file_name': file_name,
+                            'file_content': base64.b64encode(file_content.getvalue()).decode('utf-8')
+                        }
+
+        # Combine serialized data and files data
+        for client_data in serialized_data:
+            client_id = client_data['id']
+            for field in files_data:
+                client_data[field] = files_data[field]
+
+        return Response(serialized_data)
+
+    def download_file_from_url(self, file_url):
+        try:
+            # print("downloading file.....")
+            response = requests.get(file_url)
+            if response.status_code == 200:
+                file_name = unquote(os.path.basename(urlparse(file_url).path))
+                file_content = BytesIO(response.content)
+                # print("downloang file.....File name : ", file_name)
+                return file_name, file_content
+            else:
+                return None, None
+        except requests.RequestException as e:
+            # print(f"Error during download: {e}")
+            return None, None
 
 class ClientDeactivateView(generics.RetrieveUpdateAPIView):
     """

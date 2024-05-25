@@ -40,11 +40,15 @@ def upload_to_firebase_storage(folder, file_name, file_content):
         blob.make_public()
 
         public_url = blob.public_url
+        # print("\n\n In upload firebase,File uploaded successfully to Firebase Storage. filename is :", file_name)
+        # print("\n\nPublic URL:", public_url)
         return (public_url, f"File uploaded successfully to {public_url}")
 
     except FileNotFoundError as e:
+        # print(f"\nupload_firebase: =====> An: Error: {e.filename} not found.")
         return (None, f"Error: {e.filename} not found.")
     except Exception as e:
+        # print(f"\n in upload_firebase: =====> An unexpected error occurred: {e}")
         return (None, f"An unexpected error occurred: {e}")
 
 def delete_firebase_file(public_url):
