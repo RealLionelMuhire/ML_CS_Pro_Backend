@@ -21,6 +21,8 @@ import os
 from urllib.parse import unquote, urlparse
 from io import BytesIO
 import requests
+import logging
+import json
 
 
 class ClientRegistrationView(APIView):
@@ -267,6 +269,7 @@ class UncompletedClientRegistrationView(APIView):
             return None, f"No file found for {file_name} uploaded to"
 
 
+logger = logging.getLogger(__name__)
 class UpdateUncompletedClientView(generics.UpdateAPIView):
     """
     API view for updating a client associated with the authenticated user.
@@ -278,6 +281,47 @@ class UpdateUncompletedClientView(generics.UpdateAPIView):
     serializer_class = UpdateUncompletedClientSerializer
     permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
     lookup_field = 'id'
+
+    def merge_expected_account_activity(self, existing_data, incoming_data):
+        # Convert both existing and incoming data to dictionaries indexed by 'id' for easy comparison
+        existing_dict = {item['id']: item for item in existing_data}
+        incoming_dict = {item['id']: item for item in incoming_data}
+
+        # Iterate through the existing data and update with incoming non-empty fields
+        for key, existing_item in existing_dict.items():
+            incoming_item = incoming_dict.get(key, {})
+            for field in ['year1', 'year2', 'year3']:
+                if incoming_item.get(field) not in [None, '']:
+                    existing_item[field] = incoming_item[field]
+
+        merged_data = list(existing_dict.values())
+        # Print the merged data for debugging
+        # print("Merged data:", merged_data)
+        
+        return merged_data
+
+    def merge_financial_forecast(self, existing_data, incoming_data):
+        if isinstance(existing_data, str):
+            existing_data = json.loads(existing_data)
+        if isinstance(incoming_data, str):
+            incoming_data = json.loads(incoming_data)
+
+        # Convert both existing and incoming data to dictionaries indexed by 'id' for easy comparison
+        existing_dict = {item['id']: item for item in existing_data}
+        incoming_dict = {item['id']: item for item in incoming_data}
+
+        # Iterate through the existing data and update with incoming non-empty fields
+        for key, existing_item in existing_dict.items():
+            incoming_item = incoming_dict.get(key, {})
+            for field in ['year1', 'year2', 'year3']:
+                if incoming_item.get(field) not in [None, '']:
+                    existing_item[field] = incoming_item[field]
+
+        merged_data = list(existing_dict.values())
+        # Print the merged data for debugging
+        # print("Merged financial forecast data:", merged_data)
+        
+        return merged_data
 
     def perform_update(self, serializer):
         request = self.request
@@ -314,22 +358,55 @@ class UpdateUncompletedClientView(generics.UpdateAPIView):
                     request_data[link_key] = file_link
                     uploaded_files[link_key] = file_link
                 else:
+                    logger.error(f"File upload error: {msg}")
                     return JsonResponse({'message': msg}, status=400)
 
         instance = serializer.instance
 
-        # Check for unique constraints manually
-        new_client_email = request_data.get('clientEmail')
-        if new_client_email and new_client_email != instance.clientEmail:
-            if UncompletedClient.objects.filter(clientEmail=new_client_email).exclude(id=instance.id).exists():
-                return JsonResponse({'message': f'Client email {new_client_email} already exists.'}, status=400)
+        # Merge expectedAccountActivity
+        existing_expected_account_activity = instance.expectedAccountActivity or []
+        incoming_expected_account_activity = request_data.get('expectedAccountActivity', [])
+        if isinstance(incoming_expected_account_activity, str):
+            incoming_expected_account_activity = json.loads(incoming_expected_account_activity)
+        merged_expected_account_activity = self.merge_expected_account_activity(
+            existing_expected_account_activity, incoming_expected_account_activity
+        )
+        # Update the request data with the merged expectedAccountActivity
+        request_data['expectedAccountActivity'] = merged_expected_account_activity
+
+        # Merge financialForecast
+        existing_financial_forecast = instance.financialForecast or []
+        incoming_financial_forecast = request_data.get('financialForecast', [])
+        if isinstance(incoming_financial_forecast, str):
+            incoming_financial_forecast = json.loads(incoming_financial_forecast)
+        merged_financial_forecast = self.merge_financial_forecast(
+            existing_financial_forecast, incoming_financial_forecast
+        )
+        # Update the request data with the merged financialForecast
+        request_data['financialForecast'] = merged_financial_forecast
+
+        # Print the request data after merging for debugging
+        # print("Request data after merging:", request_data)
 
         # Update only non-empty, non-null fields
         for field_name, value in request_data.items():
-            if value not in ["", None]:
+            if field_name == 'expectedAccountActivity':
+                setattr(instance, field_name, merged_expected_account_activity)  # Set the merged data directly
+            elif field_name == 'financialForecast':
+                setattr(instance, field_name, merged_financial_forecast)  # Set the merged data directly
+            elif value not in ["", None]:
                 setattr(instance, field_name, value)
 
-        serializer.save()
+        # # Print the instance data before saving for debugging
+        # print("Instance data before saving (expectedAccountActivity):", instance.expectedAccountActivity)
+        # print("Instance data before saving (financialForecast):", instance.financialForecast)
+
+        # Save the instance
+        instance.save()
+
+        # # Print the instance data after saving for debugging
+        # print("Instance data after saving (expectedAccountActivity):", instance.expectedAccountActivity)
+        # print("Instance data after saving (financialForecast):", instance.financialForecast)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', True)
@@ -342,8 +419,10 @@ class UpdateUncompletedClientView(generics.UpdateAPIView):
                 self.perform_update(serializer)
             return Response({'message': 'Client registration updated successfully'})
         except IntegrityError as e:
+            logger.error(f"Database integrity error: {str(e)}")
             return JsonResponse({'message': str(e)}, status=400)
         except Exception as e:
+            logger.error(f"Error during the update process: {str(e)}")
             return JsonResponse({'message': 'An error occurred during the update process.'}, status=400)
     
     def handle_file_upload(self, request, file_key, file_name):

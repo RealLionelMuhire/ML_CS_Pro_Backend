@@ -4,14 +4,13 @@ from .models import CustomUser, Client, Service, Reports, Event, Alert, Reservat
 from django.contrib.auth.models import Permission
 
 class UserSerializer(serializers.ModelSerializer):
-    # Your existing serializer fields
-
     can_create_user = serializers.BooleanField(write_only=True, required=False)
     can_activate_user = serializers.BooleanField(write_only=True, required=False)
     can_deactivate_user = serializers.BooleanField(write_only=True, required=False)
     can_grant_permissions = serializers.BooleanField(write_only=True, required=False)
     registrarID = serializers.IntegerField(required=False)
     registrarName = serializers.CharField(max_length=255, required=False)
+    # UserID = serializers.IntegerField(required=False, read_only=True)
 
     class Meta:
         model = CustomUser
@@ -23,7 +22,6 @@ class UserSerializer(serializers.ModelSerializer):
 
         user = CustomUser.objects.create_user(**validated_data)
 
-        # Handle custom permissions
         if validated_data.get('can_create_user'):
             user.user_permissions.add(Permission.objects.get(codename='can_create_user'))
         if validated_data.get('can_activate_user'):
@@ -34,6 +32,24 @@ class UserSerializer(serializers.ModelSerializer):
             user.user_permissions.add(Permission.objects.get(codename='can_grant_permissions'))
 
         return user
+
+    def validate_UserID(self, value):
+        if not isinstance(value, int):
+            raise serializers.ValidationError("UserID must be an integer.")
+        return value
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        for field_name, value in representation.items():
+            try:
+                if field_name == 'UserID':
+                    if not value or not str(value).isdigit():
+                        representation['UserID'] = '0'  # Default valid value
+                    else:
+                        representation['UserID'] = int(value)  # Ensure UserID is an integer
+            except Exception as e:
+                return (f"Error processing field {field_name}: {e}")
+        return representation
 
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -48,7 +64,7 @@ class UncompletedClientSerializer(serializers.ModelSerializer):
 class UpdateUncompletedClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = UncompletedClient
-        exclude = ['clientEmail']  # Exclude clientEmail or any other fields that shouldn't be updated
+        exclude = ['clientEmail']
 
     def update(self, instance, validated_data):
         # Only update non-empty, non-null fields

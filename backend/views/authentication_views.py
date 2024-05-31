@@ -38,36 +38,41 @@ User = get_user_model()
 @permission_classes([AllowAny])
 def login_view(request):
     """Handle user login."""
-    # Extract username (email) and password from the request data
-    # print("testing login")
-    email = request.data.get('email').strip()
-    password = request.data.get('password').strip()
+    email = request.data.get('email', '').strip()
+    password = request.data.get('password', '').strip()
     
-    # Perform authentication using the email
-    # user = authenticate(request, email=email, password=password)
     user, messages = CustomUserBackend().authenticate(request, username=email, password=password)
 
     if user is not None:
-        # Log in the user
-        print("User is: ",user)
-        print("User Id: ", user.UserID)
-        if user.accessLevel in ['admin', 'manager', 'user', '']:
+        if user.is_superuser or user.accessLevel in ['admin', 'manager', 'user', '']:
             login(request, user)
             
-            # Generate a new token
             token, created = Token.objects.get_or_create(user=user)
             token.created = timezone.now()
             token.save()
 
-            # Serialize the user data
+            # print("all user data are __dict__ :", user.__dict__)
+
             serializer = UserSerializer(user)
             user_data = serializer.data
 
-            return Response({'message': 'Login successful', 'user_id': user_data['UserID'], 'token': token.key, 'first_name': user_data['FirstName'], 'last_name': user_data['LastName'], 'userType':user_data['accessLevel']}, status=status.HTTP_200_OK)
+            # Ensure user_id is valid and not empty
+            user_id = user_data.get('UserID')
+            if not user_id or not str(user_id).isdigit():
+                return Response({'message': 'Login failed, invalid user ID'}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({
+                'message': 'Login successful', 
+                'user_id': int(user_id), 
+                'token': token.key, 
+                'first_name': user_data['FirstName'], 
+                'last_name': user_data['LastName'], 
+                'userType': user_data['accessLevel']
+            }, status=status.HTTP_200_OK)
         else:
             return Response({'message': 'Login failed, Unauthorized'}, status=status.HTTP_400_BAD_REQUEST)
     else:
-        failure_messages = ', '.join(messages)  # Join messages list into a string
+        failure_messages = ', '.join(messages)
         return Response({'message': f'Login failed: {failure_messages}'}, status=status.HTTP_400_BAD_REQUEST)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

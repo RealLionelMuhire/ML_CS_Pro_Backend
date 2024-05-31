@@ -15,6 +15,8 @@ class CustomUserManager(BaseUserManager):
     def create_user(self, email, FirstName, password=None, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
+
+        extra_fields.setdefault('is_active', True)
         
         # Extract custom fields
         can_create_user = extra_fields.pop('can_create_user', False)
@@ -44,8 +46,17 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('NationalID', f'superuser_{get_random_string(length=10)}')
 
-        return self.create_user(email, FirstName, password, **extra_fields)
+        # Create the user first
+        user = self.create_user(email, FirstName, password, **extra_fields)
 
+        # Set registrarID to be the same as UserID
+        user.registrarID = user.UserID
+        user.save(using=self._db)
+
+        # Debugging: Print user ID and registrar ID for confirmation
+        print(f"Superuser created with UserID: {user.UserID}, registrarID: {user.registrarID}")
+
+        return user
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     UserID = models.AutoField(primary_key=True)
