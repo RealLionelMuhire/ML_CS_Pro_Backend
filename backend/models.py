@@ -221,6 +221,12 @@ class Client(models.Model):
     authorisedCurrentAddress = models.CharField(max_length=255, null=True, blank=True)
     authorisedRelationship = models.CharField(max_length=255, null=True, blank=True)
 
+    CathegoryOfEntity = models.CharField(max_length=255, null=True, blank=True)
+    SPVType = models.CharField(max_length=255, null=True, blank=True)
+    SectorOfEntity = models.CharField(max_length=255, null=True, blank=True)
+    OtherSectorOfEntity = models.CharField(max_length=255, null=True, blank=True)
+
+
     isPep = models.CharField(max_length=5, null=True, blank=True)
 
     registration_certificate_link = models.URLField(blank=True, null=True)
@@ -465,6 +471,11 @@ class UncompletedClient(models.Model):
     deactivationDate = models.DateField(null=True, blank=True)
     designation = models.CharField(max_length=255, null=True, blank=True)
     NationalID = models.CharField(max_length=255, null=True, blank=True)
+
+    CathegoryOfEntity = models.CharField(max_length=255, null=True, blank=True)
+    SPVType = models.CharField(max_length=255, null=True, blank=True)
+    SectorOfEntity = models.CharField(max_length=255, null=True, blank=True)
+    OtherSectorOfEntity = models.CharField(max_length=255, null=True, blank=True)
     
     introducerName = models.CharField(max_length=255, null=True, blank=True)
     introducerEmail = models.EmailField(null=True, blank=True)
