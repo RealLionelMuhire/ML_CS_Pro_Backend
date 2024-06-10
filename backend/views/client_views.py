@@ -101,7 +101,7 @@ class ClientRegistrationView(APIView):
             # Make request.data immutable again
             request.data._mutable = False
             
-            print(f"IntegrityError: {e}")
+            # print(f"IntegrityError: {e}")
             return Response({'message': 'Client registration failed. Duplicate client.'}, status=status.HTTP_400_BAD_REQUEST)
 
     def handle_file_upload(self, request, file_key, file_name):

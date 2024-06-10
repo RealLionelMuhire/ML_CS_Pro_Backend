@@ -2,6 +2,7 @@ import dj_database_url
 from pathlib import Path
 import os
 from decouple import AutoConfig
+from celery.schedules import crontab
 
 config = AutoConfig()
 
@@ -37,6 +38,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
+    'django_celery_beat',
     # 'debug_toolbar',
 ]
 
@@ -63,6 +65,22 @@ CSRF_TRUSTED_ORIGINS = ['https://*.mydomain.com','http://localhost:3000']
 ROOT_URLCONF = 'backend.urls'
 
 AUTH_USER_MODEL = 'backend.CustomUser'
+
+# Celery settings
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+
+CELERY_BEAT_SCHEDULE = {
+    'send-reminder-emails-every-5-minutes': {
+        'task': 'backend.tasks.send_reminder_emails',
+        'schedule': crontab(minute='*/5'),
+    },
+}
 
 TEMPLATES = [
     {
@@ -179,3 +197,33 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 INTERNAL_IPS = [
     '127.0.0.1',
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'WARNING',
+            'filters': ['require_debug_false'],
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': True,
+        },
+        'django.db.backends': {
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+    },
+}
+

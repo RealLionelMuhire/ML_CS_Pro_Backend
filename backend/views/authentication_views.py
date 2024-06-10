@@ -84,7 +84,7 @@ def logout_view(request):
     # Close all active actions initiated by the user
     active_services = Service.objects.filter(provider_id=user.UserID, is_active=True)
     for service in active_services:
-        print("Closing service done: ", service.title)
+        # print("Closing service done: ", service.title)
         service.is_active = False
         service.end_time = timezone.now()
         service.description = "Auto Close By Log Out"

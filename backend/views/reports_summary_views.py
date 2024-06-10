@@ -31,7 +31,7 @@ class ReportsCreateView(APIView):
         user = request.user
         request_data = request.data
         # request_data['user'] = user.UserID
-        print("request data are", request.data)
+        # print("request data are", request.data)
         report_link = self.handle_file_upload(request, 'report_file', 'report.pdf')
 
         # Check if client_id is present and not empty in the request data

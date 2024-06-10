@@ -151,7 +151,7 @@ class UserProfileDetailView(generics.RetrieveAPIView):
 
         # Download the CV file if the link exists
         if user.cv_link:
-            print("Downloading CV")
+            # print("Downloading CV")
             cv_file_name, cv_file_content = self.download_file_from_url(user.cv_link)
             if cv_file_content:
                 files_data['cv_file'] = {
@@ -161,7 +161,7 @@ class UserProfileDetailView(generics.RetrieveAPIView):
 
         # Download the National ID file if the link exists
         if user.national_id_link:
-            print("Downloading National ID")
+            # print("Downloading National ID")
             national_id_file_name, national_id_file_content = self.download_file_from_url(user.national_id_link)
             if national_id_file_content:
                 files_data['national_id_file'] = {
@@ -181,15 +181,16 @@ class UserProfileDetailView(generics.RetrieveAPIView):
             if response.status_code == 200:
                 file_name = unquote(os.path.basename(urlparse(file_url).path))
                 file_content = BytesIO(response.content)
-                print(f"downloading file.....")
+                # print(f"downloading file.....")
                 if file_name:
-                    print(f"File name: {file_name} download complete")
+                    pass
+                    # print(f"File name: {file_name} download complete")
                 return file_name, file_content
             else:
-                print(f"Download failed. Status code: {response.status_code}")
+                # print(f"Download failed. Status code: {response.status_code}")
                 return None, None
         except requests.RequestException as e:
-            print(f"Error during download: {e}")
+            # print(f"Error during download: {e}")
             return None, None
 class UserDeactivateView(generics.UpdateAPIView, BaseUserAdmin):
     """
