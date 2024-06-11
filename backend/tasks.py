@@ -5,6 +5,9 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
 from .models import Alert
+from decouple import AutoConfig
+
+config = AutoConfig()
 
 @shared_task
 def send_reminder_emails():
@@ -25,8 +28,8 @@ def send_reminder_emails():
             send_mail(
                 'Reminder Alert',
                 f'Your reminder for {alert.title} is approaching!',
-                'from@example.com',  # Replace with your "from" email address
-                [alert.client_email],
+                config("EMAIL_HOST_USER"),
+                [alert.scheduler_email],
                 fail_silently=False,
             )
             alert.action_taken = True

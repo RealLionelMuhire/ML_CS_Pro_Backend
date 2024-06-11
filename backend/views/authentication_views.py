@@ -22,7 +22,7 @@ from ..serializers import UserSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from decimal import Decimal
-from decouple import AutoConfig, config
+from decouple import AutoConfig
 from django.contrib.auth.views import PasswordResetCompleteView
 from ..backends import CustomUserBackend
 
