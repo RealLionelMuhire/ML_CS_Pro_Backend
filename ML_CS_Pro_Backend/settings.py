@@ -3,13 +3,12 @@ from pathlib import Path
 import os
 from decouple import AutoConfig
 from celery.schedules import crontab
+import git
 
 config = AutoConfig()
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -18,11 +17,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = config('DEBUG', default=False, cast=bool)
 DEBUG = config('DEBUG', default=False, cast=bool)
-# ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=lambda v: [s.strip() for s in v.split(',')])
 ALLOWED_HOSTS = ['*']
 
+# Function to get the current branch name
+def get_current_branch():
+    repo = git.Repo(search_parent_directories=True)
+    return repo.active_branch.name
+
+current_branch = get_current_branch()
+
+if current_branch == 'main':
+    DATABASE_URL = config('DATABASE_URL')
+else:
+    DATABASE_URL = config('DEV_DATABASE_URL')
 
 # Application definition
 
@@ -43,7 +51,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    
     'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -57,10 +64,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
-CSRF_TRUSTED_ORIGINS = ['https://*.mydomain.com','http://localhost:3000']
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",
-# ]
+CSRF_TRUSTED_ORIGINS = ['https://*.mydomain.com', 'http://localhost:3000']
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -74,7 +78,6 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
-
 CELERY_BEAT_SCHEDULE = {
     'send-reminder-emails-every-5-minutes': {
         'task': 'backend.tasks.send_reminder_emails',
@@ -85,7 +88,7 @@ CELERY_BEAT_SCHEDULE = {
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        'DIRS': [os.path.join(BASE_DIR, 'templates')], 
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -106,24 +109,8 @@ AUTHENTICATION_BACKENDS = ['backend.backends.CustomUserBackend']
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ML_DEMO_DB',
-        'USER': 'm',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
+    'default': dj_database_url.parse(DATABASE_URL)
 }
-
-# DATABASES['default'] = dj_database_url.parse(config('TESTING_DATABASE_URL'))
-
-
-DATABASES['default'] = dj_database_url.parse(config('DATABASE_URL'))
-# DATABASES = {
-#     'default': dj_database_url.parse(config('DATABASE_URL'))
-# }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -160,7 +147,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
@@ -168,7 +154,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -186,6 +171,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST')
@@ -226,4 +212,3 @@ LOGGING = {
         },
     },
 }
-
