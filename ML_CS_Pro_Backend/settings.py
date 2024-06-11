@@ -22,15 +22,23 @@ ALLOWED_HOSTS = ['*']
 
 # Function to get the current branch name
 def get_current_branch():
-    repo = git.Repo(search_parent_directories=True)
-    return repo.active_branch.name
+    try:
+        repo = git.Repo(search_parent_directories=True)
+        branch = repo.active_branch
+        return branch.name
+    except TypeError:  # Handle detached HEAD
+        return None
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return None
+
 
 current_branch = get_current_branch()
 
 if current_branch == 'main':
     DATABASE_URL = config('DATABASE_URL')
 else:
-    DATABASE_URL = config('DEV_DATABASE_URL')
+    DATABASE_URL = config('DEV_DATABASE_URL', default=config('DATABASE_URL'))
 
 # Application definition
 
