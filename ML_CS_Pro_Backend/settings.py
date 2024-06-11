@@ -60,7 +60,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    # 'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'backend.middlewares.SaveRequest',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -183,32 +183,3 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 INTERNAL_IPS = [
     '127.0.0.1',
 ]
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'WARNING',
-            'filters': ['require_debug_false'],
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'WARNING',
-            'propagate': True,
-        },
-        'django.db.backends': {
-            'level': 'ERROR',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-    },
-}
