@@ -26,7 +26,7 @@ def get_current_branch():
         repo = git.Repo(search_parent_directories=True)
         branch = repo.active_branch
         return branch.name
-    except TypeError:  # Handle detached HEAD
+    except TypeError:
         return None
     except Exception as e:
         print(f"Unexpected error: {e}")

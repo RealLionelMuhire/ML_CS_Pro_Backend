@@ -3,18 +3,22 @@ version: '3.8'
 services:
   web:
     build: .
-    command: gunicorn ML_CS_Pro_Backend.wsgi:application --bind 0.0.0.0:8000
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
     ports:
       - "8000:8000"
     depends_on:
       - db
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - DEV_DATABASE_URL=${DEV_DATABASE_URL}
+      - DEBUG=True
 
   db:
     image: postgres:latest
     environment:
-      POSTGRES_DB: your_db_name
+      POSTGRES_DB: mlcs_database
       POSTGRES_USER: your_db_user
       POSTGRES_PASSWORD: your_db_password
     volumes:
@@ -33,6 +37,9 @@ services:
     depends_on:
       - db
       - redis
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - DEV_DATABASE_URL=${DEV_DATABASE_URL}
 
   celery-beat:
     build: .
@@ -43,6 +50,9 @@ services:
       - db
       - redis
       - celery
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - DEV_DATABASE_URL=${DEV_DATABASE_URL}
 
 volumes:
   postgres_data:
