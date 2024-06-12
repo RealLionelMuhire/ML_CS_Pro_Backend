@@ -32,163 +32,23 @@ class ClientRegistrationView(APIView):
     Endpoint: POST /client-registration/
     """
 
-    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
-
-    def post(self, request):
-        """Handle POST requests for client registration."""
-        user = request.user
-
-        # Make request.data mutable
-        request.data._mutable = True
-
-        # Combine the user data with the client data
-        request.data['user'] = user.UserID
-
-        # Handle file uploads to Firebase Storage
-        file_keys = [
-            'signature_file', 'bankStatement_file', 'professionalReference_file', 
-            'confirmationLetter_file', 'custody_accounts_file', 'source_of_funds_file', 
-            'payslips_file', 'due_diligence_file', 'financial_statements_file', 
-            'proof_of_ownership_file', 'lease_agreement_file', 'documentary_evidence_file', 
-            'bank_statement_proceeds_file', 'bank_statement_file', 'cdd_documents_file', 
-            'bank_statements_file', 'bank_statements_proceeds_file', 'notarised_documents_file', 
-            'letter_from_donor_file', 'donor_source_of_wealth_file', 'donor_bank_statement_file', 
-            'letter_from_relevant_org_file', 'lottery_bank_statement_file', 'creditor_agreement_file', 
-            'creditor_cdd_file', 'creditor_bank_statement_file', 'legal_document_file', 
-            'notary_letter_file', 'executor_letter_file', 'loan_agreement_file', 
-            'loan_bank_statement_file', 'related_third_party_loan_agreement_file', 
-            'related_third_party_cdd_file', 'related_third_party_bank_statement_file', 
-            'unrelated_third_party_loan_agreement_file', 'unrelated_third_party_cdd_file', 
-            'unrelated_third_party_bank_statement_file', 'signed_letter_from_notary_file', 
-            'property_contract_file', 'insurance_pay_out_file', 'retirement_annuity_fund_statement_file', 
-            'passport_file', 'utility_file', 'wealth_file', 'cv_file', 'funds_file', 
-            'source_of_wealth_file', 'principals_identification_file', 'shareholders_file', 
-            'declaration_of_trust_file', 'certificate_of_registration_file', 'deed_of_retirement_file', 
-            'business_plan_file', 'registered_office_file', 'register_of_trustee_file', 
-            'proof_of_source_of_funds_file', 'proof_of_source_of_wealth_file', 
-            'latest_accounts_or_bank_statements_file', 'licence_file', 'certificate_of_incumbency_file', 
-            'charter_file', 'latest_accounts_file', 'identification_documents_of_the_principals_of_the_foundation_file'
-        ]
-        
-        for file_key in file_keys:
-            file_name = file_key.replace('_file', '') + '.pdf'
-            file_link, msg = self.handle_file_upload(request, file_key, file_name)
-            request.data[file_key.replace('_file', '_link')] = file_link
-
-        try:
-            # Set the registrar information
-            request.data['registrarID'] = user.UserID
-            request.data['registrarEmail'] = user.email
-            request.data['registrarFirstName'] = user.FirstName
-
-            # Create the serializer
-            serializer = ClientSerializer(data=request.data)
-
-            if serializer.is_valid():
-                # Save the client with the associated user and registrar
-                client = serializer.save()
-
-                # Make request.data immutable again
-                request.data._mutable = False
-
-                return Response({'message': 'Client registration successful', 'client_id': client.id})
-            else:
-                # Make request.data immutable again
-                request.data._mutable = False
-
-                return Response({'message': 'Client registration failed', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        except IntegrityError as e:
-            # Make request.data immutable again
-            request.data._mutable = False
-            
-            # print(f"IntegrityError: {e}")
-            return Response({'message': 'Client registration failed. Duplicate client.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    def handle_file_upload(self, request, file_key, file_name):
-        file = request.FILES.get(file_key)
-        file_link = None
-
-        if file:
-            folder = f"client_files/{request.data['firstName']}_{request.data['lastName']}"
-            file_content = file.read()
-            # file_checksum = request.data.get(f'{file_key}_checksum')
-
-            if isinstance(file, InMemoryUploadedFile):
-                file_link = upload_to_firebase_storage(folder, file_name, file_content)
-            else:
-                local_file_path = file.temporary_file_path()
-                file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
-
-            # print(f"{file_name.capitalize()} Link Before Saving:", file_link)
-            return file_link, msg
-        else:
-            return None, f"No file found for {file_name} uploaded to"
-    
-    def handle_file_upload(self, request, file_key, file_name):
-        file = request.FILES.get(file_key)
-        file_link = None
-
-        if file:
-            folder = f"client_files/{request.data['firstName']}_{request.data['lastName']}"
-            file_content = file.read()
-            # file_checksum = request.data.get(f'{file_key}_checksum')
-
-            if isinstance(file, InMemoryUploadedFile):
-                file_link = upload_to_firebase_storage(folder, file_name, file_content)
-            else:
-                local_file_path = file.temporary_file_path()
-                file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
-
-            # print(f"{file_name.capitalize()} Link Before Saving:", file_link)
-            return file_link, msg
-        else:
-            return None, f"No file found for {file_name} uploaded to"
-
-class ClientDeleteView(APIView):
-    """
-    API view for deleting a client associated with the authenticated user.
-    Requires authentication for access.
-    Endpoint: DELETE /client-registration/<int:client_id>/
-    """
-    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
-    def delete(self, request, client_id):
-        """Handle DELETE requests for client deletion."""
-        try:
-            client = Client.objects.get(id=client_id)
-            client.delete()
-            return Response({'message': 'Client deletion successful'}, status=status.HTTP_204_NO_CONTENT)
-        except Client.DoesNotExist:
-            return Response({'message': 'Client not found'}, status=status.HTTP_404_NOT_FOUND)
-        
-
-
-
-
-class UncompletedClientRegistrationView(APIView):
-    """
-    API view for registering a client associated with the authenticated user.
-    Requires authentication for access.
-    Endpoint: POST, PUT, GET /client-registration/
-    """
-
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         """Handle GET requests to retrieve data."""
         user = request.user
-        clients = UncompletedClient.objects.filter(user=user)
-        serializer = UncompletedClientSerializer(clients, many=True)
+        clients = Client.objects.filter(user=user)
+        serializer = ClientSerializer(clients, many=True)
         return Response(serializer.data)
 
     def post(self, request):
         """Handle POST requests for client registration."""
         user = request.user
-        request_data = request.data.copy()  # Create a mutable copy of request data
+        request_data = request.data.copy()
         request_data['user'] = user.UserID
 
         uploaded_files = {}
 
-        # print('====> request_data: ', request_data)
 
         # Handle file uploads to Firebase Storage
         files_to_upload = [
@@ -231,7 +91,130 @@ class UncompletedClientRegistrationView(APIView):
                 'registrarEmail': user.email,
                 'registrarFirstName': user.FirstName
             })
-            # print("\n\n\n<<<<<<<<request data: ", request_data)
+
+            serializer = ClientSerializer(data=request_data)
+
+            if serializer.is_valid():
+                client = serializer.save()
+                return Response({'message': 'Client registration successful', 'client_id': client.id})
+            else:
+                for file_link in uploaded_files.values():
+                    delete_firebase_file(file_link)
+                return JsonResponse({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
+        except IntegrityError as e:
+            for file_link in uploaded_files.values():
+                    delete_firebase_file(file_link)
+            # print(f"IntegrityError: {e}")
+            return JsonResponse({f'message': 'Client registration failed.'}, status=400)
+    
+    def handle_file_upload(self, request, file_key, file_name):
+        file = request.FILES.get(file_key)
+        file_link = None
+        msg = None
+
+        if file:
+            folder = f"client_files/{request.data['firstName']}_{request.data['lastName']}"
+            file_content = file.read()
+
+            if isinstance(file, InMemoryUploadedFile):
+
+                file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
+            else:
+                local_file_path = file.temporary_file_path()
+                file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
+
+            return file_link, msg
+        else:
+            return None, f"No file found for {file_name} uploaded to"
+
+
+
+class ClientDeleteView(APIView):
+    """
+    API view for deleting a client associated with the authenticated user.
+    Requires authentication for access.
+    Endpoint: DELETE /client-registration/<int:client_id>/
+    """
+    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
+    def delete(self, request, client_id):
+        """Handle DELETE requests for client deletion."""
+        try:
+            client = Client.objects.get(id=client_id)
+            client.delete()
+            return Response({'message': 'Client deletion successful'}, status=status.HTTP_204_NO_CONTENT)
+        except Client.DoesNotExist:
+            return Response({'message': 'Client not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+
+
+
+class UncompletedClientRegistrationView(APIView):
+    """
+    API view for registering a client associated with the authenticated user.
+    Requires authentication for access.
+    Endpoint: POST, PUT, GET /client-registration/
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Handle GET requests to retrieve data."""
+        user = request.user
+        clients = UncompletedClient.objects.filter(user=user)
+        serializer = UncompletedClientSerializer(clients, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        """Handle POST requests for client registration."""
+        user = request.user
+        request_data = request.data.copy()
+        request_data['user'] = user.UserID
+
+        uploaded_files = {}
+
+
+        # Handle file uploads to Firebase Storage
+        files_to_upload = [
+            'signature_file', 'bankStatement_file', 'professionalReference_file', 'confirmationLetter_file',
+            'custody_accounts_file', 'source_of_funds_file', 'payslips_file', 'due_diligence_file',
+            'financial_statements_file', 'proof_of_ownership_file', 'lease_agreement_file', 'documentary_evidence_file',
+            'bank_statement_proceeds_file', 'bank_statement_file', 'cdd_documents_file', 'bank_statements_file',
+            'bank_statements_proceeds_file', 'notarised_documents_file', 'letter_from_donor_file',
+            'donor_source_of_wealth_file', 'donor_bank_statement_file', 'letter_from_relevant_org_file',
+            'lottery_bank_statement_file', 'creditor_agreement_file', 'creditor_cdd_file', 'creditor_bank_statement_file',
+            'legal_document_file', 'notary_letter_file', 'executor_letter_file', 'loan_agreement_file',
+            'loan_bank_statement_file', 'related_third_party_loan_agreement_file', 'related_third_party_cdd_file',
+            'related_third_party_bank_statement_file', 'unrelated_third_party_loan_agreement_file',
+            'unrelated_third_party_cdd_file', 'unrelated_third_party_bank_statement_file', 'signed_letter_from_notary_file',
+            'property_contract_file', 'insurance_pay_out_file', 'retirement_annuity_fund_statement_file', 'passport_file',
+            'utility_file', 'wealth_file', 'cv_file', 'funds_file', 'source_of_wealth_file', 'principals_identification_file',
+            'shareholders_file', 'declaration_of_trust_file', 'certificate_of_registration_file', 'deed_of_retirement_file',
+            'business_plan_file', 'registered_office_file', 'register_of_trustee_file', 'proof_of_source_of_funds_file',
+            'proof_of_source_of_wealth_file', 'latest_accounts_or_bank_statements_file', 'licence_file',
+            'certificate_of_incumbency_file', 'charter_file', 'latest_accounts_file',
+            'identification_documents_of_the_principals_of_the_foundation_file'
+        ]
+
+        for file_key in files_to_upload:
+            file = request.FILES.get(file_key)
+            if file and file.size > 0:
+            
+                file_link, msg = self.handle_file_upload(request, file_key, file_key + '.pdf')
+                if file_link and isinstance(file_link, str) and file_link.startswith('https://storage.googleapis.'):
+                    link_key = file_key.replace('_file', '_link')
+                    # Update request data with the new key-value pair
+                    request_data[link_key] = file_link
+                    uploaded_files[link_key] = file_link
+                else:
+                    return JsonResponse({'message': msg}, status=400)
+
+        try:
+            request_data.update({
+                'registrarID': user.UserID,
+                'registrarEmail': user.email,
+                'registrarFirstName': user.FirstName
+            })
 
             serializer = UncompletedClientSerializer(data=request_data)
 
