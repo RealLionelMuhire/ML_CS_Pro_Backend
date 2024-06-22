@@ -12,7 +12,7 @@ from rest_framework.decorators import api_view, permission_classes
 from django.db import IntegrityError, transaction
 from rest_framework import status
 from django.utils import timezone
-from ..helpers.firebase import upload_to_firebase_storage, delete_firebase_file
+from ..helpers.firebase import upload_to_firebase_storage, delete_firebase_file, download_file_from_url
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from ..user_permissions import IsSuperuserOrManagerAdmin
 from django.http import JsonResponse
@@ -487,7 +487,7 @@ class UncompletedClientDisoplayView(generics.RetrieveAPIView):
         for field in file_fields:
             link = getattr(client, field, None)
             if link:
-                file_name, file_content = self.download_file_from_url(link)
+                file_name, file_content = download_file_from_url(link)
                 if file_content:
                     files_data[f'{field}_file'] = {
                         'file_name': file_name,
@@ -500,17 +500,6 @@ class UncompletedClientDisoplayView(generics.RetrieveAPIView):
 
         return Response(response_data)
 
-    def download_file_from_url(self, file_url):
-        try:
-            response = requests.get(file_url)
-            if response.status_code == 200:
-                file_name = unquote(os.path.basename(urlparse(file_url).path))
-                file_content = BytesIO(response.content)
-                return file_name, file_content
-            else:
-                return None, None
-        except requests.RequestException as e:
-            return None, None
 
 class AllIncompleteClientsView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
@@ -586,7 +575,7 @@ class UncompletedClientByid(generics.ListAPIView):
                 file_url = getattr(client, field, None)
                 if file_url:
                     # print("file url in view is: ", file_url)
-                    file_name, file_content = self.download_file_from_url(file_url)
+                    file_name, file_content = download_file_from_url(file_url)
                     if file_content:
                         files_data[f'{field.replace("_link", "_file")}'] = {
                             'file_name': file_name,
@@ -601,20 +590,6 @@ class UncompletedClientByid(generics.ListAPIView):
 
         return Response(serialized_data)
 
-    def download_file_from_url(self, file_url):
-        try:
-            # print("downloading file.....")
-            response = requests.get(file_url)
-            if response.status_code == 200:
-                file_name = unquote(os.path.basename(urlparse(file_url).path))
-                file_content = BytesIO(response.content)
-                # print("downloang file.....File name : ", file_name)
-                return file_name, file_content
-            else:
-                return None, None
-        except requests.RequestException as e:
-            # print(f"Error during download: {e}")
-            return None, None
 
 class ClientDeactivateView(generics.RetrieveUpdateAPIView):
     """

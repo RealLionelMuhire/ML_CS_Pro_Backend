@@ -100,7 +100,7 @@ urlpatterns = [
     path('api/events/<int:pk>/', EventDetailView.as_view(), name='event-detail'),
     path('api/all-events/', AllEventsListView.as_view(), name='all-events-list'),
 # alerts
-    path('api/alert-initiate/<int:client_id>/', AlertInitiationView.as_view(), name='alert-initiate'),
+    path('api/alert-initiate/', AlertInitiationView.as_view(), name='alert-initiate'),
     path('api/list-alerts/', AlertListView.as_view(), name='list-alert'),
     path('api/alert-action/<int:alert_id>/', AlertActionView.as_view(), name='alert-action'),
     path('api/alert-detail/',AlertDetailView.as_view(), name='alert-detail'),

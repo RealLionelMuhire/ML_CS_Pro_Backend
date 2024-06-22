@@ -91,30 +91,13 @@ def delete_firebase_file(public_url):
         return (None, f"An unexpected error occurred: {e}")
 
 def download_file_from_url(file_url):
-    print("file url: ", file_url)
     try:
-        # Make a GET request to the file URL
         response = requests.get(file_url)
-        print("file url: ", file_url)
-
-        # Check if the request was successful (status code 200)
         if response.status_code == 200:
-            # Extract the file name from the URL
             file_name = unquote(os.path.basename(urlparse(file_url).path))
-
-            # Debugging message
-            print(f"Download successful. File name: {file_name}")
-
-            # Create a BytesIO object to handle binary content
             file_content = BytesIO(response.content)
-            print("===> about to return ===>")
-
-            # Return the file content and file name
             return file_name, file_content
         else:
-            print(f"Download failed. Status code: {response.status_code}")
             return None, None
-
     except requests.RequestException as e:
-        print(f"Error during download: {e}")
         return None, None

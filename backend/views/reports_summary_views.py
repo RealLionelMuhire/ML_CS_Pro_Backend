@@ -2,7 +2,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from rest_framework.decorators import permission_classes, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from django.http import Http404
@@ -14,77 +13,18 @@ from ..serializers import ReportsSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from django.db import IntegrityError
+from django.db import transaction
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ReportsCreateView(APIView):
     """
     API view for Creating a report
-    requires authentication for access
-    endpoint: POST /create-report/
+    Requires authentication for access.
+    Endpoint: POST /api/create-report/
     """
     permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        """
-        Handle POST requests to create a report.
-        Returns success or error message.
-        """
-        user = request.user
-        request_data = request.data
-        # request_data['user'] = user.UserID
-        # print("request data are", request.data)
-        report_link = self.handle_file_upload(request, 'report_file', 'report.pdf')
-
-        # Check if client_id is present and not empty in the request data
-        client_id = request_data.get('client_id')
-        if client_id:
-            client = self.get_client_or_404(client_id)
-            request.data.update({
-                'client_reportee_id': client.id,
-                'client_reportee_email': client.email,
-                'client_reportee_name': client.name
-            })
-
-        request.data.update({
-            'report_link': report_link,
-            'created_at': timezone.now(),
-            'updated_at': timezone.now(),
-            'reporter_id': user.UserID,
-            'reporter_email': user.email,
-            'reporter_name': f"{user.FirstName} {user.LastName}",
-        })
-        print(request.data)
-
-        try:
-            serializer = ReportsSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({'message': 'Report created successfully'}, status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except IntegrityError as e:
-            return Response({'message': str(e)}, status=status.HTTP_409_CONFLICT)
-
-        # return Response({'message': 'Report created successfully'}, status=status.HTTP_201_CREATED)
-
-    def handle_file_upload(self, request, file_key, file_name):
-        file = request.FILES.get(file_key)
-        file_link = None
-
-        if file:
-            print("the file is present now!")
-            folder = f"reports_files/{request.data['FirstName']}_{request.data['LastName']}"
-            file_content = file.read()
-            file_checksum = request.data.get(f'{file_key}_checksum')
-
-            if isinstance(file, InMemoryUploadedFile):
-                file_link = upload_to_firebase_storage(folder, file_name, file_content, file_checksum)
-                print("there is the file in memory, file link in handle file uplaod:", file_link)
-            else:
-                local_file_path = file.temporary_file_path()
-                file_link = upload_to_firebase_storage(folder, file_name, local_file_path, file_checksum)
-                print("there is the file in temporary path, file link in handle file uplaod:", file_link)
-
-        return file_link
 
     def get_client_or_404(self, client_id):
         try:
@@ -92,6 +32,97 @@ class ReportsCreateView(APIView):
         except Client.DoesNotExist:
             raise Http404("Client does not exist or is not registered")
 
+    def handle_file_upload(self, folder, file, file_name):
+        logger.info("Handling file upload")
+        file_link = None
+        msg = None
+
+        if file:
+            logger.info(f"File found: {file.name} of size {file.size}")
+            file_content = file.read()
+
+            if isinstance(file, InMemoryUploadedFile):
+                file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
+            else:
+                local_file_path = file.temporary_file_path()
+                file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
+        else:
+            logger.error("No file found")
+
+        return file_link, msg
+
+    def post(self, request):
+        logger.info("Entered ReportsCreateView POST method")
+        """
+        Handle POST requests to create a report.
+        Returns success or error message.
+        """
+        user = request.user
+        request_data = {key: value for key, value in request.data.items()}  # Create a shallow copy of the request data
+        files_data = request.FILES  # Use files directly from the request
+        logger.info(f"Request data: {request_data}")
+
+        client_id = request_data.get('client_id')
+
+        # If client_id is provided, perform client-specific checks
+        if client_id:
+            client = self.get_client_or_404(client_id)
+            logger.info(f"Client: {client}")
+            # Check if the client is active
+            if not client.isActive:
+                return Response({'message': f'{client.firstName} {client.lastName} is not active.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Update request data with client-specific information
+            request_data['client_reportee_id'] = client_id
+            request_data['client_reportee_name'] = f"{client.firstName} {client.lastName}"
+            request_data['client_reportee_email'] = client.clientEmail
+        else:
+            # If client_id is not provided, ensure these fields are set to None or empty
+            request_data['client_reportee_id'] = None
+            request_data['client_reportee_name'] = None
+            request_data['client_reportee_email'] = None
+
+        # Update request data with common fields
+        request_data['created_at'] = timezone.now()
+        request_data['updated_at'] = timezone.now()
+        request_data['reporter_id'] = user.UserID
+        request_data['reporter_email'] = user.email
+        request_data['reporter_name'] = f"{user.FirstName} {user.LastName}"
+
+        logger.info(f"Updated request data: {request_data}")
+
+        try:
+            serializer = ReportsSerializer(data=request_data)
+            if serializer.is_valid():
+                with transaction.atomic():
+                    report = serializer.save()  # Save the report to get the report ID
+                logger.info("Report created successfully")
+
+                # Handle file upload after saving the report to get the report ID
+                report_file = files_data.get('report_file')
+                if report_file:
+                    folder = f"report_files/{user.FirstName}_{user.LastName}/{report.id}"
+                    report_link, msg = self.handle_file_upload(folder, report_file, 'report.pdf')
+                    logger.info(f"Report link: {report_link}, Message: {msg}")
+                    if not report_link:
+                        return Response({'message': msg}, status=status.HTTP_400_BAD_REQUEST)
+
+                    # Update the report with the file link
+                    report.report_link = report_link
+                    report.save()
+                    logger.info("Report file link updated successfully")
+
+                return Response({'message': 'Report created successfully'}, status=status.HTTP_201_CREATED)
+            else:
+                logger.error(f"Serializer errors: {serializer.errors}")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError as e:
+            logger.error(f"Database integrity error: {str(e)}")
+            return Response({'message': str(e)}, status=status.HTTP_409_CONFLICT)
+        except Exception as e:
+            logger.error(f"Error during the report creation process: {str(e)}")
+            return Response({'message': 'An error occurred during the report creation process.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 class ReportListView(APIView):
     """
     API view for listing reports
