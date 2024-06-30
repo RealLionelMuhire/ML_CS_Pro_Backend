@@ -772,8 +772,8 @@ class Alert(models.Model):
 
     
 class Reports(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField()
+    title = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
     reporter_id = models.IntegerField()
     reporter_email = models.EmailField()
     reporter_name = models.CharField(max_length=255)
@@ -783,6 +783,10 @@ class Reports(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     report_link = models.URLField(blank=True, null=True)
+    last_updated_by_id = models.IntegerField(blank=True, null=True)
+    last_updated_by_name = models.CharField(max_length=255, blank=True, null=True)
+    last_updated_by_email = models.EmailField(blank=True, null=True)
+
 
     def __str__(self):
         return self.title

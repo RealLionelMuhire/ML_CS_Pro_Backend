@@ -16,7 +16,7 @@ from .views.events_view import EventDetailView, EventListView, AllEventsListView
 from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView, ActiveAlertsView
 from .views.customAdmin import CustomAdminLoginView
 from .views.reservations_view import RegisterReservationView, ListReservedPeriodsView, ListReservationsStartingTodayView, ListPastReservationsView, ListAllReservationsView, UserRegisterReservationView, ReservationDetailView
-from .views.reports_summary_views import ReportsCreateView, ReportListView, ReportDetailView
+from .views.reports_summary_views import ReportsCreateView, ReportListView, ReportDetailView, ReportUpdateView, ReportDeleteView, ReportListByIdView
 from .main_client_views.client_self_view import ClientSelfRegistrationView
 from .main_client_views.client_auth import client_login_view, client_logout_view, client_ForgotPasswordView, client_ResetPasswordView
 
@@ -89,7 +89,10 @@ urlpatterns = [
 #   reports
     path('api/create-report/', ReportsCreateView.as_view(), name='create-report'),
     path('api/list-reports/', ReportListView.as_view(), name='list-reports'),
-    path('api/report-detail/<int:pk>/', ReportDetailView.as_view(), name='report-detail'),
+    path('api/update-report/<int:report_id>/', ReportUpdateView.as_view(), name='update-report'),
+    path('api/report-detail/<int:id>/', ReportDetailView.as_view(), name='report-detail'),
+    path('api/delete-report/<int:report_id>/', ReportDeleteView.as_view(), name='delete-report'),
+    path('api/reports-list-by-id/', ReportListByIdView.as_view(), name='reports-list-by-id'),
 
 # permissions
     path('api/user-permissions/', UserPermissionsView.as_view(), name='user_permissions'),

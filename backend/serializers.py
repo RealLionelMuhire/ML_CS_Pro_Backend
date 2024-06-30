@@ -180,3 +180,18 @@ class ReportsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reports
         fields = '__all__'
+
+
+class ReportUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reports
+        fields = [
+            'title', 'description', 'report_link',
+            'client_reportee_id', 'client_reportee_email', 'client_reportee_name'
+        ]
+        read_only_fields = ['reporter_id', 'reporter_email', 'reporter_name', 'created_at']
+
+    def validate(self, data):
+        if not any(data.values()):
+            raise serializers.ValidationError("At least one field must be provided to update.")
+        return data
