@@ -12,13 +12,13 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics
 
 
-@permission_classes([IsAuthenticated])
 class AlertInitiationView(APIView):
     """
     API view for initiating an alert for a specific client associated with the authenticated user.
     Requires authentication for access.
-    Endpoint: POST /alert-initiate/<int:client_id>/
+    Endpoint: POST /alert-initiate/
     """
+    permission_classes = ([IsAuthenticated])
 
     def get_client_or_404(self, client_id):
         try:
@@ -26,17 +26,21 @@ class AlertInitiationView(APIView):
         except Client.DoesNotExist:
             raise Http404("Client does not exist or is not registered")
 
-    def post(self, request, client_id):
+    def post(self, request):
         """
         Handle POST requests to create an alert.
         Returns success or error message.
         """
         user = request.user
-        client = self.get_client_or_404(client_id)
+        client_id = request.data.get('client_id')
 
-        # Check if the client is active
-        if not client.isActive:
-            return Response({'message': f'{client.firstName} {client.lastName} is not active.'}, status=status.HTTP_400_BAD_REQUEST)
+        # If client_id is provided, perform client-specific checks
+        if client_id:
+            client = self.get_client_or_404(client_id)
+
+            # Check if the client is active
+            if not client.isActive:
+                return Response({'message': f'{client.firstName} {client.lastName} is not active.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             # Validate and process the data using a serializer
@@ -56,7 +60,7 @@ class AlertInitiationView(APIView):
 
                 # Save the alert to the database
                 alert = Alert.objects.create(
-                    client_id=client_id,
+                    client_id=client_id if client_id else None,
                     user=user,
                     title=serializer.validated_data.get('title'),
                     description=serializer.validated_data.get('description'),
@@ -64,8 +68,8 @@ class AlertInitiationView(APIView):
                     expiration_date=serializer.validated_data.get('expiration_date'),
                     setter_name=f"{user.FirstName} {user.LastName}",
                     setter_email=user.email,
-                    client_name=f"{client.firstName} {client.lastName}",
-                    client_email=client.clientEmail,
+                    client_name=f"{client.firstName} {client.lastName}" if client_id else None,
+                    client_email=client.clientEmail if client_id else None,
                     set_date=timezone.now().date(),
                 )
 
@@ -149,6 +153,8 @@ class AlertDetailView(generics.ListAPIView):
 
     serializer_class = AlertSerializer
     permission_classes = [IsAuthenticated]
+    print("\nprinting ................\n")
+
 
     def get_queryset(self):
         # Get the list of alert IDs from the query parameters

@@ -751,34 +751,42 @@ class Alert(models.Model):
 
     # Empty fields
     scheduler_name = models.CharField(max_length=255, blank=True)
-    scheduler_email = models.EmailField(blank=True)
-
-    client_name = models.CharField(max_length=255, blank=True)
-    client_email = models.EmailField(blank=True)
+    scheduler_email = models.EmailField(max_length=255, blank=True, null=True)
+    client_name = models.CharField(max_length=255, blank=True, null=True)
+    client_email = models.EmailField(max_length=255, blank=True, null=True)
     client_id = models.IntegerField(blank=True, null=True)
-
     setter_name = models.CharField(max_length=255, blank=True)
     setter_email = models.EmailField(blank=True)
-
     action_taker_name = models.CharField(max_length=255, blank=True)
     action_taker_email = models.EmailField(blank=True)
 
     # Relationships
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_alerts', blank=True, null=True)
 
+    # New fields to track reminder emails
+    reminder_email_count = models.IntegerField(default=0)
+    last_reminder_sent = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
     
 class Reports(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField()
+    title = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
     reporter_id = models.IntegerField()
     reporter_email = models.EmailField()
     reporter_name = models.CharField(max_length=255)
-    client_reportee_id = models.IntegerField()
-    client_reportee_email = models.EmailField()
-    client_reportee_name = models.CharField(max_length=255)
+    client_reportee_id = models.IntegerField(blank=True, null=True)
+    client_reportee_email = models.EmailField(blank=True, null=True)
+    client_reportee_name = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    report_link = models.URLField()
+    report_link = models.URLField(blank=True, null=True)
+    last_updated_by_id = models.IntegerField(blank=True, null=True)
+    last_updated_by_name = models.CharField(max_length=255, blank=True, null=True)
+    last_updated_by_email = models.EmailField(blank=True, null=True)
+
 
     def __str__(self):
         return self.title
