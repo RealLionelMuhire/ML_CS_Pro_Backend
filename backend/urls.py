@@ -72,7 +72,7 @@ urlpatterns = [
 
     path('reset_password/',
          auth_views.PasswordResetView.as_view(),
-         name='reset_password'),
+         name='reset_password_page'),
     path('reset_password_sent/',
          auth_views.PasswordResetDoneView.as_view(),
          name='password_reset_done'),
