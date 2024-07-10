@@ -278,6 +278,10 @@ class Client(models.Model):
     productService = models.CharField(max_length=55, null=True, blank=True)
     businessAddress = models.CharField(max_length=55, null=True, blank=True)
 
+    sharesType = models.CharField(max_length=55, null=True, blank=True)
+    sharesNumber = models.CharField(max_length=55, null=True, blank=True)
+    statedCapital = models.CharField(max_length=55, null=True, blank=True)
+
     sourceOfFunds = models.CharField(max_length=155, null=True, blank=True)
     otherSourceOfFunds = models.CharField(max_length=55, null=True, blank=True)
     countrySourceFunds = models.CharField(max_length=55, null=True, blank=True)
@@ -540,6 +544,11 @@ class UncompletedClient(models.Model):
     secretary = models.CharField(max_length=55, null=True, blank=True)
     productService = models.CharField(max_length=55, null=True, blank=True)
     businessAddress = models.CharField(max_length=55, null=True, blank=True)
+
+    sharesType = models.CharField(max_length=55, null=True, blank=True)
+    sharesNumber = models.CharField(max_length=55, null=True, blank=True)
+    statedCapital = models.CharField(max_length=55, null=True, blank=True)
+
 
     sourceOfFunds = models.CharField(max_length=155, null=True, blank=True)
     otherSourceOfFunds = models.CharField(max_length=55, null=True, blank=True)
