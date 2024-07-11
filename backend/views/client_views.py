@@ -49,42 +49,6 @@ class ClientRegistrationView(APIView):
 
         uploaded_files = {}
 
-
-        # Handle file uploads to Firebase Storage
-        files_to_upload = [
-            'signature_file', 'bankStatement_file', 'professionalReference_file', 'confirmationLetter_file',
-            'custody_accounts_file', 'source_of_funds_file', 'payslips_file', 'due_diligence_file',
-            'financial_statements_file', 'proof_of_ownership_file', 'lease_agreement_file', 'documentary_evidence_file',
-            'bank_statement_proceeds_file', 'bank_statement_file', 'cdd_documents_file', 'bank_statements_file',
-            'bank_statements_proceeds_file', 'notarised_documents_file', 'letter_from_donor_file',
-            'donor_source_of_wealth_file', 'donor_bank_statement_file', 'letter_from_relevant_org_file',
-            'lottery_bank_statement_file', 'creditor_agreement_file', 'creditor_cdd_file', 'creditor_bank_statement_file',
-            'legal_document_file', 'notary_letter_file', 'executor_letter_file', 'loan_agreement_file',
-            'loan_bank_statement_file', 'related_third_party_loan_agreement_file', 'related_third_party_cdd_file',
-            'related_third_party_bank_statement_file', 'unrelated_third_party_loan_agreement_file',
-            'unrelated_third_party_cdd_file', 'unrelated_third_party_bank_statement_file', 'signed_letter_from_notary_file',
-            'property_contract_file', 'insurance_pay_out_file', 'retirement_annuity_fund_statement_file', 'passport_file',
-            'utility_file', 'wealth_file', 'cv_file', 'funds_file', 'source_of_wealth_file', 'principals_identification_file',
-            'shareholders_file', 'declaration_of_trust_file', 'certificate_of_registration_file', 'deed_of_retirement_file',
-            'business_plan_file', 'registered_office_file', 'register_of_trustee_file', 'proof_of_source_of_funds_file',
-            'proof_of_source_of_wealth_file', 'latest_accounts_or_bank_statements_file', 'licence_file',
-            'certificate_of_incumbency_file', 'charter_file', 'latest_accounts_file',
-            'identification_documents_of_the_principals_of_the_foundation_file'
-        ]
-
-        for file_key in files_to_upload:
-            file = request.FILES.get(file_key)
-            if file and file.size > 0:
-            
-                file_link, msg = self.handle_file_upload(request, file_key, file_key + '.pdf')
-                if file_link and isinstance(file_link, str) and file_link.startswith('https://storage.googleapis.'):
-                    link_key = file_key.replace('_file', '_link')
-                    # Update request data with the new key-value pair
-                    request_data[link_key] = file_link
-                    uploaded_files[link_key] = file_link
-                else:
-                    return JsonResponse({'message': msg}, status=400)
-
         try:
             request_data.update({
                 'registrarID': user.UserID,
@@ -96,6 +60,49 @@ class ClientRegistrationView(APIView):
 
             if serializer.is_valid():
                 client = serializer.save()
+
+                # Handle file uploads to Firebase Storage
+                files_to_upload = [
+                    'signature_file', 'bankStatement_file', 'professionalReference_file', 'confirmationLetter_file',
+                    'custody_accounts_file', 'source_of_funds_file', 'payslips_file', 'due_diligence_file',
+                    'financial_statements_file', 'proof_of_ownership_file', 'lease_agreement_file', 'documentary_evidence_file',
+                    'bank_statement_proceeds_file', 'bank_statement_file', 'cdd_documents_file', 'bank_statements_file',
+                    'bank_statements_proceeds_file', 'notarised_documents_file', 'letter_from_donor_file',
+                    'donor_source_of_wealth_file', 'donor_bank_statement_file', 'letter_from_relevant_org_file',
+                    'lottery_bank_statement_file', 'creditor_agreement_file', 'creditor_cdd_file', 'creditor_bank_statement_file',
+                    'legal_document_file', 'notary_letter_file', 'executor_letter_file', 'loan_agreement_file',
+                    'loan_bank_statement_file', 'related_third_party_loan_agreement_file', 'related_third_party_cdd_file',
+                    'related_third_party_bank_statement_file', 'unrelated_third_party_loan_agreement_file',
+                    'unrelated_third_party_cdd_file', 'unrelated_third_party_bank_statement_file', 'signed_letter_from_notary_file',
+                    'property_contract_file', 'insurance_pay_out_file', 'retirement_annuity_fund_statement_file', 'passport_file',
+                    'utility_file', 'wealth_file', 'cv_file', 'funds_file', 'source_of_wealth_file', 'principals_identification_file',
+                    'shareholders_file', 'declaration_of_trust_file', 'certificate_of_registration_file', 'deed_of_retirement_file',
+                    'business_plan_file', 'registered_office_file', 'register_of_trustee_file', 'proof_of_source_of_funds_file',
+                    'proof_of_source_of_wealth_file', 'latest_accounts_or_bank_statements_file', 'licence_file',
+                    'certificate_of_incumbency_file', 'charter_file', 'latest_accounts_file',
+                    'identification_documents_of_the_principals_of_the_foundation_file'
+                ]
+
+                for file_key in files_to_upload:
+                    file = request.FILES.get(file_key)
+                    if file and file.size > 0:
+                        file_link, msg = self.handle_file_upload(request, file_key, f"{client.id}-{file_key}.pdf")
+                        if file_link and isinstance(file_link, str) and file_link.startswith('https://storage.googleapis.'):
+                            link_key = file_key.replace('_file', '_link')
+                            # Update request data with the new key-value pair
+                            request_data[link_key] = file_link
+                            uploaded_files[link_key] = file_link
+                        else:
+                            return JsonResponse({'message': msg}, status=400)
+
+                # Update the client record with the new file links
+                for link_key, file_link in uploaded_files.items():
+                    setattr(client, link_key, file_link)
+                client.save()
+
+                # Delete the client with the same email from UncompletedClient if it exists
+                self.delete_uncompleted_client(client.clientEmail)
+
                 return Response({'message': 'Client registration successful', 'client_id': client.id})
             else:
                 for file_link in uploaded_files.values():
@@ -103,10 +110,9 @@ class ClientRegistrationView(APIView):
                 return JsonResponse({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
         except IntegrityError as e:
             for file_link in uploaded_files.values():
-                    delete_firebase_file(file_link)
-            # print(f"IntegrityError: {e}")
-            return JsonResponse({f'message': 'Client registration failed.'}, status=400)
-    
+                delete_firebase_file(file_link)
+            return JsonResponse({'message': 'Client registration failed.'}, status=400)
+
     def handle_file_upload(self, request, file_key, file_name):
         file = request.FILES.get(file_key)
         file_link = None
@@ -117,7 +123,6 @@ class ClientRegistrationView(APIView):
             file_content = file.read()
 
             if isinstance(file, InMemoryUploadedFile):
-
                 file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
             else:
                 local_file_path = file.temporary_file_path()
@@ -127,6 +132,13 @@ class ClientRegistrationView(APIView):
         else:
             return None, f"No file found for {file_name} uploaded to"
 
+    def delete_uncompleted_client(self, client_email):
+        """Delete an uncompleted client with the same email if it exists."""
+        try:
+            uncompleted_client = UncompletedClient.objects.get(clientEmail=client_email)
+            uncompleted_client.delete()
+        except UncompletedClient.DoesNotExist:
+            pass
 
 
 class ClientDeleteView(APIView):
@@ -368,28 +380,17 @@ class UpdateUncompletedClientView(generics.UpdateAPIView):
         # Update the request data with the merged financialForecast
         request_data['financialForecast'] = merged_financial_forecast
 
-        # Print the request data after merging for debugging
-        # print("Request data after merging:", request_data)
-
         # Update only non-empty, non-null fields
         for field_name, value in request_data.items():
             if field_name == 'expectedAccountActivity':
-                setattr(instance, field_name, merged_expected_account_activity)  # Set the merged data directly
+                setattr(instance, field_name, merged_expected_account_activity)
             elif field_name == 'financialForecast':
-                setattr(instance, field_name, merged_financial_forecast)  # Set the merged data directly
+                setattr(instance, field_name, merged_financial_forecast)
             elif value not in ["", None]:
                 setattr(instance, field_name, value)
 
-        # # Print the instance data before saving for debugging
-        # print("Instance data before saving (expectedAccountActivity):", instance.expectedAccountActivity)
-        # print("Instance data before saving (financialForecast):", instance.financialForecast)
-
         # Save the instance
         instance.save()
-
-        # # Print the instance data after saving for debugging
-        # print("Instance data after saving (expectedAccountActivity):", instance.expectedAccountActivity)
-        # print("Instance data after saving (financialForecast):", instance.financialForecast)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', True)
@@ -793,10 +794,6 @@ class ClientListByIdView(generics.ListAPIView):
         'SectorOfEntity': 'Sector of Entity',
         'OtherSectorOfEntity': 'Other Sector of Entity',
         'isPep': 'Is PEP(Policy Exposed Person)',
-        'registration_certificate_link': 'Registration Certificate Link',
-        'signature_link': 'Signature Link',
-        'bankStatement_link': 'Bank Statement Link',
-        'professionalReference_link': 'Professional Reference Link',
         'incorporationDate': 'Incorporation Date',
         'countryOfIncorporation': 'Country of Incorporation',
         'registeredOfficeAddress': 'Registered Office Address',
@@ -977,5 +974,7 @@ class ClientListByIdView(generics.ListAPIView):
                             }
 
             serialized_clients.append(renamed_data)
+        
+        print("===>", serialized_clients)
 
         return Response(serialized_clients)
