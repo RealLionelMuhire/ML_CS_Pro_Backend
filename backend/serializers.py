@@ -55,6 +55,19 @@ class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
         fields = '__all__'
+
+class UpdateClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Client
+        exclude = ['clientEmail']
+
+    def update(self, instance, validated_data):
+        # Only update non-empty, non-null fields
+        for attr, value in validated_data.items():
+            if value not in ["", None]:
+                setattr(instance, attr, value)
+        instance.save()
+        return instance
     
 class UncompletedClientSerializer(serializers.ModelSerializer):
     class Meta:

@@ -140,6 +140,170 @@ class ClientRegistrationView(APIView):
         except UncompletedClient.DoesNotExist:
             pass
 
+class UpdateClientView(generics.UpdateAPIView):
+    """
+    API view for updating a client associated with the authenticated user.
+    Requires authentication for access.
+    Endpoint: PUT /client-registration/<int:client_id>/
+    """
+
+    queryset = Client.objects.all()
+    serializer_class = ClientSerializer
+    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
+    lookup_field = 'id'
+
+    def merge_expected_account_activity(self, existing_data, incoming_data):
+        # Convert both existing and incoming data to dictionaries indexed by 'id' for easy comparison
+        existing_dict = {item['id']: item for item in existing_data}
+        incoming_dict = {item['id']: item for item in incoming_data}
+
+        # Iterate through the existing data and update with incoming non-empty fields
+        for key, existing_item in existing_dict.items():
+            incoming_item = incoming_dict.get(key, {})
+            for field in ['year1', 'year2', 'year3']:
+                if incoming_item.get(field) not in [None, '']:
+                    existing_item[field] = incoming_item[field]
+
+        merged_data = list(existing_dict.values())
+        # Print the merged data for debugging
+        # print("Merged data:", merged_data)
+        
+        return merged_data
+
+    def merge_financial_forecast(self, existing_data, incoming_data):
+        if isinstance(existing_data, str):
+            existing_data = json.loads(existing_data)
+        if isinstance(incoming_data, str):
+            incoming_data = json.loads(incoming_data)
+
+        # Convert both existing and incoming data to dictionaries indexed by 'id' for easy comparison
+        existing_dict = {item['id']: item for item in existing_data}
+        incoming_dict = {item['id']: item for item in incoming_data}
+
+        # Iterate through the existing data and update with incoming non-empty fields
+        for key, existing_item in existing_dict.items():
+            incoming_item = incoming_dict.get(key, {})
+            for field in ['year1', 'year2', 'year3']:
+                if incoming_item.get(field) not in [None, '']:
+                    existing_item[field] = incoming_item[field]
+
+        merged_data = list(existing_dict.values())
+        # Print the merged data for debugging
+        # print("Merged financial forecast data:", merged_data)
+        
+        return merged_data
+
+    def perform_update(self, serializer):
+        request = self.request
+        request_data = request.data.copy()
+        
+        uploaded_files = {}
+        instance = serializer.instance
+        client_id = instance.id
+        
+        files_to_upload = [
+            'signature_file', 'bankStatement_file', 'professionalReference_file', 'confirmationLetter_file',
+            'custody_accounts_file', 'source_of_funds_file', 'payslips_file', 'due_diligence_file',
+            'financial_statements_file', 'proof_of_ownership_file', 'lease_agreement_file', 'documentary_evidence_file',
+            'bank_statement_proceeds_file', 'bank_statement_file', 'cdd_documents_file', 'bank_statements_file',
+            'bank_statements_proceeds_file', 'notarised_documents_file', 'letter_from_donor_file',
+            'donor_source_of_wealth_file', 'donor_bank_statement_file', 'letter_from_relevant_org_file',
+            'lottery_bank_statement_file', 'creditor_agreement_file', 'creditor_cdd_file', 'creditor_bank_statement_file',
+            'legal_document_file', 'notary_letter_file', 'executor_letter_file', 'loan_agreement_file',
+            'loan_bank_statement_file', 'related_third_party_loan_agreement_file', 'related_third_party_cdd_file',
+            'related_third_party_bank_statement_file', 'unrelated_third_party_loan_agreement_file',
+            'unrelated_third_party_cdd_file', 'unrelated_third_party_bank_statement_file', 'signed_letter_from_notary_file',
+            'property_contract_file', 'insurance_pay_out_file', 'retirement_annuity_fund_statement_file', 'passport_file',
+            'utility_file', 'wealth_file', 'cv_file', 'funds_file', 'source_of_wealth_file', 'principals_identification_file',
+            'shareholders_file', 'declaration_of_trust_file', 'certificate_of_registration_file', 'deed_of_retirement_file',
+            'business_plan_file', 'registered_office_file', 'register_of_trustee_file', 'proof_of_source_of_funds_file',
+            'proof_of_source_of_wealth_file', 'latest_accounts_or_bank_statements_file', 'licence_file',
+            'certificate_of_incumbency_file', 'charter_file', 'latest_accounts_file',
+            'identification_documents_of_the_principals_of_the_foundation_file'
+        ]
+
+        for file_key in files_to_upload:
+            file = request.FILES.get(file_key)
+            if file and file.size > 0:
+                file_link, msg = self.handle_file_upload(request, file_key, f"{client_id}-{file_key}.pdf")
+                if file_link and isinstance(file_link, str) and file_link.startswith('https://storage.googleapis.'):
+                    link_key = file_key.replace('_file', '_link')
+                    request_data[link_key] = file_link
+                    uploaded_files[link_key] = file_link
+                else:
+                    logger.error(f"File upload error: {msg}")
+                    return JsonResponse({'message': msg}, status=400)
+                
+        # Merge expectedAccountActivity
+        existing_expected_account_activity = instance.expectedAccountActivity or []
+        incoming_expected_account_activity = request_data.get('expectedAccountActivity', [])
+        if isinstance(incoming_expected_account_activity, str):
+            incoming_expected_account_activity = json.loads(incoming_expected_account_activity)
+        merged_expected_account_activity = self.merge_expected_account_activity(
+            existing_expected_account_activity, incoming_expected_account_activity
+        )
+        # Update the request data with the merged expectedAccountActivity
+        request_data['expectedAccountActivity'] = merged_expected_account_activity
+
+        # Merge financialForecast
+        existing_financial_forecast = instance.financialForecast or []
+        incoming_financial_forecast = request_data.get('financialForecast', [])
+        if isinstance(incoming_financial_forecast, str):
+            incoming_financial_forecast = json.loads(incoming_financial_forecast)
+        merged_financial_forecast = self.merge_financial_forecast(
+            existing_financial_forecast, incoming_financial_forecast
+        )
+        # Update the request data with the merged financialForecast
+        request_data['financialForecast'] = merged_financial_forecast
+
+        # Update only non-empty, non-null fields
+        for field_name, value in request_data.items():
+            if field_name == 'expectedAccountActivity':
+                setattr(instance, field_name, merged_expected_account_activity)
+            elif field_name == 'financialForecast':
+                setattr(instance, field_name, merged_financial_forecast)
+            elif value not in ["", None]:
+                setattr(instance, field_name, value)
+
+        # Save the instance
+        instance.save()
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', True)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        
+        try:
+            with transaction.atomic():
+                self.perform_update(serializer)
+            return Response({'message': 'Client registration updated successfully'})
+        except IntegrityError as e:
+            logger.error(f"Database integrity error: {str(e)}")
+            return JsonResponse({'message': str(e)}, status=400)
+        except Exception as e:
+            logger.error(f"Error during the update process: {str(e)}")
+            return JsonResponse({'message': 'An error occurred during the update process.'}, status=400)
+        
+    def handle_file_upload(self, request, file_key, file_name):
+        file = request.FILES.get(file_key)
+        file_link = None
+        msg = None
+
+        if file:
+            folder = f"client_files/{request.data['firstName']}_{request.data['lastName']}"
+            file_content = file.read()
+
+            if isinstance(file, InMemoryUploadedFile):
+                file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
+            else:
+                local_file_path = file.temporary_file_path()
+                file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
+
+            return file_link, msg
+        else:
+            return None, f"No file found for {file_name}"
+
 
 class ClientDeleteView(APIView):
     """
@@ -975,6 +1139,81 @@ class ClientListByIdView(generics.ListAPIView):
 
             serialized_clients.append(renamed_data)
         
-        print("===>", serialized_clients)
+        # print("===>", serialized_clients)
 
         return Response(serialized_clients)
+
+class ClientByIdListModificationView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Get the list of client IDs from the query parameters
+        client_ids_str = self.request.query_params.get('ids', '')
+        client_ids = [int(client_id) for client_id in client_ids_str.split(',') if client_id.isdigit()]
+        # Filter and retrieve clients based on the provided IDs
+        queryset = Client.objects.filter(id__in=client_ids)
+        return queryset
+
+    def get(self, request, *args, **kwargs):
+        """Handle GET requests to list all clients."""
+        client_id = kwargs.get('client_id', None)
+        if client_id is not None:
+            client_ids = [client_id]
+        else:
+            client_ids_str = request.query_params.get('ids', '')
+            client_ids = [int(client_id) for client_id in client_ids_str.split(',') if client_id.isdigit()]
+
+        clients = Client.objects.filter(id__in=client_ids)
+
+        # Serialize the results
+        serializer = ClientSerializer(clients, many=True)
+        serialized_data = serializer.data
+
+        # Initialize files data dictionary
+        files_data = {}
+
+        for client in clients:
+            # Check and download the files for each client
+            file_fields =[
+            'cv_link', 'national_id_link', 'signature_link', 'bankStatement_link', 
+            'professionalReference_link', 'confirmationLetter_link', 'custody_accounts_link', 
+            'source_of_funds_link', 'payslips_link', 'due_diligence_link', 'financial_statements_link', 
+            'proof_of_ownership_link', 'lease_agreement_link', 'documentary_evidence_link', 
+            'bank_statement_proceeds_link', 'bank_statement_link', 'cdd_documents_link', 
+            'bank_statements_link', 'bank_statements_proceeds_link', 'notarised_documents_link', 
+            'letter_from_donor_link', 'donor_source_of_wealth_link', 'donor_bank_statement_link', 
+            'letter_from_relevant_org_link', 'lottery_bank_statement_link', 'creditor_agreement_link', 
+            'creditor_cdd_link', 'creditor_bank_statement_link', 'legal_document_link', 'notary_letter_link', 
+            'executor_letter_link', 'loan_agreement_link', 'loan_bank_statement_link', 
+            'related_third_party_loan_agreement_link', 'related_third_party_cdd_link', 
+            'related_third_party_bank_statement_link', 'unrelated_third_party_loan_agreement_link', 
+            'unrelated_third_party_cdd_link', 'unrelated_third_party_bank_statement_link', 
+            'signed_letter_from_notary_link', 'property_contract_link', 'insurance_pay_out_link', 
+            'retirement_annuity_fund_statement_link', 'passport_link', 'utility_link', 'wealth_link', 
+            'cv_link', 'funds_link', 'source_of_wealth_link', 'principals_identification_link', 
+            'shareholders_link', 'declaration_of_trust_link', 'certificate_of_registration_link', 
+            'deed_of_retirement_link', 'business_plan_link', 'registered_office_link', 'register_of_trustee_link', 
+            'proof_of_source_of_funds_link', 'proof_of_source_of_wealth_link', 'latest_accounts_or_bank_statements_link', 
+            'licence_link', 'certificate_of_incumbency_link', 'charter_link', 'latest_accounts_link', 
+            'identification_documents_of_the_principals_of_the_foundation_link'
+        ]
+
+            for field in file_fields:
+                file_url = getattr(client, field, None)
+                if file_url:
+                    # print("file url in view is: ", file_url)
+                    file_name, file_content = download_file_from_url(file_url)
+                    if file_content:
+                        files_data[f'{field.replace("_link", "_file")}'] = {
+                            'file_name': file_name,
+                            'file_content': base64.b64encode(file_content.getvalue()).decode('utf-8')
+                        }
+
+        # Combine serialized data and files data
+        for client_data in serialized_data:
+            client_id = client_data['id']
+            for field in files_data:
+                client_data[field] = files_data[field]
+
+        return Response(serialized_data)
