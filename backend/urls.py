@@ -8,7 +8,7 @@ from django.urls import path
 
 from django.contrib import admin
 from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView, UserProfileView, UserProfileUpdateView, UserProfileDetailView
-from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView, UncompletedClientRegistrationView, UncompletedClientDisoplayView, AllIncompleteClientsView, ClientDeleteView, UncompletedClientByid, UpdateUncompletedClientView, UncompletedClientDeleteView
+from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView, UncompletedClientRegistrationView, UncompletedClientDisoplayView, AllIncompleteClientsView, ClientDeleteView, UncompletedClientByid, UpdateUncompletedClientView, UncompletedClientDeleteView, UpdateClientView, ClientByIdListModificationView
 from .views.services_views import InitiateServiceView, CloseServiceView, ServiceListView, ServiceListByIdView
 from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView, CustomPasswordResetDoneView
 from .views.permission_views import UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
@@ -42,6 +42,8 @@ urlpatterns = [
 
 # clients
     path('api/register-client/', ClientRegistrationView.as_view(), name='register-client'),
+    path('api/update-client/<int:id>/', UpdateClientView.as_view(), name='update-client'),
+    path('api/clients-list-by-id/<int:client_id>/', ClientByIdListModificationView.as_view(), name='client-by-id'),
     path('api/register-client/<int:client_id>/', ClientDeleteView.as_view(), name='delete-client'),
     path('api/deactivate-client/<int:pk>/', ClientDeactivateView.as_view(), name='deactivate-client'),
     path('api/activate-client/<int:pk>/', ClientActivateView.as_view(), name='activate-client'),
