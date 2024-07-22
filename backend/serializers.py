@@ -2,6 +2,8 @@
 from rest_framework import serializers
 from .models import CustomUser, Client, Service, Reports, Event, Alert, Reservation, UncompletedClient
 from django.contrib.auth.models import Permission
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 class UserSerializer(serializers.ModelSerializer):
     can_create_user = serializers.BooleanField(write_only=True, required=False)
@@ -208,3 +210,20 @@ class ReportUpdateSerializer(serializers.ModelSerializer):
         if not any(data.values()):
             raise serializers.ValidationError("At least one field must be provided to update.")
         return data
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        # Add custom claims
+        data.update({
+            'user_id': self.user.UserID,
+            'first_name': self.user.FirstName,
+            'last_name': self.user.LastName,
+            'user_roles': self.user.UserRoles,
+        })
+
+        return data
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer

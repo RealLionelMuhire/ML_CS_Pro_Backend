@@ -4,6 +4,7 @@ import os
 from decouple import AutoConfig
 from celery.schedules import crontab
 import git
+from datetime import timedelta
 
 config = AutoConfig()
 
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
     'django_celery_beat',
+    'rest_framework_simplejwt',
     # 'debug_toolbar',
 ]
 
@@ -69,6 +71,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     'backend.middlewares.SaveRequest',
+    'backend.middlewares.SessionExpiryMiddleware',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -111,7 +114,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "ML_CS_Pro_Backend.wsgi.application"
 
-AUTHENTICATION_BACKENDS = ['backend.backends.CustomUserBackend']
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    ]
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -168,16 +173,23 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+AUTH_USER_MODEL = 'backend.CustomUser'
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

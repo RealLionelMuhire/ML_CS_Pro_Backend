@@ -1,8 +1,14 @@
 # backend/middlewares.py
 
 import time
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, logout
 from .models import Request
+from django.utils import timezone
+from django.contrib.sessions.models import Session
+from rest_framework.authtoken.models import Token
+import logging
+
+logger = logging.getLogger(__name__)
 
 class SaveRequest:
     def __init__(self, get_response):
@@ -52,3 +58,25 @@ class SaveRequest:
         else:
             return request.META.get('REMOTE_ADDR')
 
+class SessionExpiryMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        session_key = request.session.session_key
+        if session_key:
+            try:
+                session = Session.objects.get(session_key=session_key)
+                expiry_date = session.expire_date
+                if expiry_date < timezone.now():
+                    # Session has expired
+                    user = request.user
+                    if user.is_authenticated:
+                        # Log out the user and delete the token
+                        Token.objects.filter(user=user).delete()
+                        logout(request)
+            except Session.DoesNotExist:
+                pass  # No session found, nothing to do
+
+        response = self.get_response(request)
+        return response

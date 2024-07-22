@@ -19,6 +19,7 @@ from .views.reservations_view import RegisterReservationView, ListReservedPeriod
 from .views.reports_summary_views import ReportsCreateView, ReportListView, ReportDetailView, ReportUpdateView, ReportDeleteView, ReportListByIdView
 from .main_client_views.client_self_view import ClientSelfRegistrationView
 from .main_client_views.client_auth import client_login_view, client_logout_view, client_ForgotPasswordView, client_ResetPasswordView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 
@@ -65,6 +66,8 @@ urlpatterns = [
     path('api/services/<int:pk>/', ServiceListByIdView.as_view(), name='service-list-by-id'),
 
 # authentication
+    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/logout/', logout_view, name='api_logout'),
     path('api/login/', login_view, name='login'),
     path('api/forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),

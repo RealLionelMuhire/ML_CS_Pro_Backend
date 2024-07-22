@@ -2,8 +2,8 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from django.utils import timezone
-from unittest.mock import patch
 from django.conf import settings
+from time import sleep
 
 class SessionExpiryMiddlewareTest(TestCase):
     def setUp(self):
@@ -26,17 +26,17 @@ class SessionExpiryMiddlewareTest(TestCase):
         response = self.client.get('/api/some_protected_view/')
         self.assertEqual(response.status_code, 200)
 
-        # Mock timezone.now() to simulate session expiry
-        future_time = timezone.now() + timezone.timedelta(seconds=61)
-        with patch('django.utils.timezone.now', return_value=future_time):
-            # Make another request which should fail due to expired session
-            response = self.client.get('/api/some_protected_view/')
-            self.assertEqual(response.status_code, 401)
+        # Sleep for 61 seconds to expire the session
+        sleep(61)
 
-            # Check if the token is deleted
-            with self.assertRaises(Token.DoesNotExist):
-                Token.objects.get(key=self.token.key)
+        # Make another request which should fail due to expired session
+        response = self.client.get('/api/some_protected_view/')
+        self.assertEqual(response.status_code, 401)
 
-            # Check if the user is logged out
-            response = self.client.get('/api/some_protected_view/')
-            self.assertEqual(response.status_code, 401)
+        # Check if the token is deleted
+        with self.assertRaises(Token.DoesNotExist):
+            Token.objects.get(key=self.token.key)
+
+        # Check if the user is logged out
+        response = self.client.get('/api/some_protected_view/')
+        self.assertEqual(response.status_code, 401)

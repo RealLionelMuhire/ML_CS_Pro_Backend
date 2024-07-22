@@ -18,13 +18,17 @@ from datetime import timedelta
 from ..models import PasswordResetToken, Service, CustomUser
 from rest_framework import status
 from django.contrib.auth.hashers import make_password
-from ..serializers import UserSerializer
+from ..serializers import UserSerializer, CustomTokenObtainPairSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from decimal import Decimal
 from decouple import AutoConfig
 from django.contrib.auth.views import PasswordResetCompleteView
 from ..backends import CustomUserBackend
+import logging
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.shortcuts import render
 
@@ -33,72 +37,86 @@ config = AutoConfig()
 
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
+# @api_view(['POST'])
+# @permission_classes([AllowAny])
+# def login_view(request):
+#     """Handle user login."""
+#     email = request.data.get('email', '').strip()
+#     password = request.data.get('password', '').strip()
 
+#     user, messages = CustomUserBackend().authenticate(request, username=email, password=password)
+
+#     if user is not None:
+#         if user.is_superuser or user.accessLevel in ['admin', 'manager', 'user', '']:
+#             login(request, user)
+            
+#             # Set session expiry to 30 minutes of inactivity
+#             request.session.set_expiry(60)  # 1800 seconds = 30 minutes
+
+#             # Get CSRF token for subsequent requests
+#             csrf_token = get_token(request)
+
+#             # Generate or get auth token
+#             token, created = Token.objects.get_or_create(user=user)
+#             token.created = timezone.now()
+#             token.save()
+
+#             serializer = UserSerializer(user)
+#             user_data = serializer.data
+
+#             user_id = user_data.get('UserID')
+#             if not user_id or not str(user_id).isdigit():
+#                 logger.warning(f"Invalid user ID for user {email}")
+#                 return Response({'message': 'Login failed, invalid user ID'}, status=status.HTTP_400_BAD_REQUEST)
+
+#             return Response({
+#                 'message': 'Login successful', 
+#                 'user_id': int(user_id), 
+#                 'token': token.key, 
+#                 'first_name': user_data['FirstName'], 
+#                 'last_name': user_data['LastName'], 
+#                 'userType': user_data['accessLevel'],
+#                 'csrf_token': csrf_token
+#             }, status=status.HTTP_200_OK)
+#         else:
+#             logger.warning(f"Unauthorized access attempt by {email}")
+#             return Response({'message': 'Login failed, Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+#     else:
+#         failure_messages = ', '.join(messages)
+#         logger.warning(f"Failed login attempt for {email}: {failure_messages}")
+#         return Response({'message': f'Login failed: {failure_messages}'}, status=status.HTTP_400_BAD_REQUEST)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
-    """Handle user login."""
-    email = request.data.get('email', '').strip()
-    password = request.data.get('password', '').strip()
+    serializer = CustomTokenObtainPairSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    return Response(serializer.validated_data)
+
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def logout_view(request):
+#     """Handle user logout."""
+#     # Log out the user and invalidate the token
+#     user = request.user
+
+#     # Close all active actions initiated by the user
     
-    user, messages = CustomUserBackend().authenticate(request, username=email, password=password)
+#     logout(request)
+#     request.auth.delete()
 
-    if user is not None:
-        if user.is_superuser or user.accessLevel in ['admin', 'manager', 'user', '']:
-            login(request, user)
-            
-            token, created = Token.objects.get_or_create(user=user)
-            token.created = timezone.now()
-            token.save()
-
-            # print("all user data are __dict__ :", user.__dict__)
-
-            serializer = UserSerializer(user)
-            user_data = serializer.data
-
-            # Ensure user_id is valid and not empty
-            user_id = user_data.get('UserID')
-            if not user_id or not str(user_id).isdigit():
-                return Response({'message': 'Login failed, invalid user ID'}, status=status.HTTP_400_BAD_REQUEST)
-
-            return Response({
-                'message': 'Login successful', 
-                'user_id': int(user_id), 
-                'token': token.key, 
-                'first_name': user_data['FirstName'], 
-                'last_name': user_data['LastName'], 
-                'userType': user_data['accessLevel']
-            }, status=status.HTTP_200_OK)
-        else:
-            return Response({'message': 'Login failed, Unauthorized'}, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        failure_messages = ', '.join(messages)
-        return Response({'message': f'Login failed: {failure_messages}'}, status=status.HTTP_400_BAD_REQUEST)
+#     return Response({'message': 'Logout successful'})
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_view(request):
-    """Handle user logout."""
-    # Log out the user and invalidate the token
-    user = request.user
+    try:
+        refresh_token = request.data["refresh_token"]
+        token = RefreshToken(refresh_token)
+        token.blacklist()
 
-    # Close all active actions initiated by the user
-    active_services = Service.objects.filter(provider_id=user.UserID, is_active=True)
-    for service in active_services:
-        # print("Closing service done: ", service.title)
-        service.is_active = False
-        service.end_time = timezone.now()
-        service.description = "Auto Close By Log Out"
-        elapsed_time_seconds = (service.end_time - service.start_time).total_seconds()
-        elapsed_time_hours = Decimal(elapsed_time_seconds) / Decimal(3600)
-
-        service.total_elapsed_time = elapsed_time_hours
-        service.total_cost = service.service_cost_per_hour * elapsed_time_hours
-        
-        service.save()
-    logout(request)
-    request.auth.delete()
-
-    return Response({'message': 'Logout successful'})
+        return Response({"message": "Logout successful"})
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
 
 def send_password_reset_email(user_email, reset_link):
     subject = 'Password Reset'
