@@ -10,7 +10,7 @@ from django.contrib import admin
 from .views.custom_user_views import HelloWorldView, RegistrationView, dashboard_data_view, UserListView, UserProfileView, UserProfileUpdateView, UserProfileDetailView
 from .views.client_views import ListClientsView, AddFieldToClientView, ListClientsView, ClientListByIdView, search_clients, ClientRegistrationView, ClientDeactivateView, ClientActivateView, UncompletedClientRegistrationView, UncompletedClientDisoplayView, AllIncompleteClientsView, ClientDeleteView, UncompletedClientByid, UpdateUncompletedClientView, UncompletedClientDeleteView, UpdateClientView, ClientByIdListModificationView
 from .views.services_views import InitiateServiceView, CloseServiceView, ServiceListView, ServiceListByIdView
-from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView, CustomPasswordResetDoneView
+from .views.authentication_views import login_view, logout_view,ForgotPasswordView, ResetPasswordView, CustomPasswordResetDoneView, CustomTokenObtainPairView
 from .views.permission_views import UserPermissionsView, AllPermissionsView,ActivateUserView, DeactivateUserView, GrantPermissionsView
 from .views.events_view import EventDetailView, EventListView, AllEventsListView
 from .views.alerts_view import AlertInitiationView, AlertListView, AlertActionView, AlertDetailView, ActiveAlertsView
@@ -68,7 +68,8 @@ urlpatterns = [
 # authentication
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/logout/', logout_view, name='api_logout'),
+    path('api/logout/', logout_view, name='logout'),
+    # path('api/logout/', logout_view, name='api_logout'),
     path('api/login/', login_view, name='login'),
     path('api/forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
     path('api/reset-password/<str:uidb64>/<str:token>/', ResetPasswordView.as_view(), name='reset-password'),

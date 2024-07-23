@@ -29,6 +29,8 @@ import logging
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.exceptions import APIException
+from rest_framework_simplejwt.exceptions import TokenError
 
 from django.shortcuts import render
 
@@ -110,13 +112,23 @@ def login_view(request):
 @permission_classes([IsAuthenticated])
 def logout_view(request):
     try:
-        refresh_token = request.data["refresh_token"]
-        token = RefreshToken(refresh_token)
-        token.blacklist()
+        refresh_token = request.data.get("refresh_token")
+        if not refresh_token:
+            raise APIException("Refresh token is required")
+
+        try:
+            token = RefreshToken(refresh_token)
+            # Invalidate the token manually by adding it to the blacklist
+            token.blacklist()
+        except TokenError as e:
+            raise APIException(str(e))
 
         return Response({"message": "Logout successful"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 def send_password_reset_email(user_email, reset_link):
     subject = 'Password Reset'
