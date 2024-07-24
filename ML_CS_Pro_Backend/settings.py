@@ -35,7 +35,7 @@ def get_current_branch():
 
 
 current_branch = get_current_branch()
-
+DEBUG = False
 if current_branch == 'main':
     DATABASE_URL = config('DATABASE_URL')
     DEBUG = False
