@@ -32,7 +32,7 @@ urlpatterns = [
     path('admin/login/', CustomAdminLoginView.as_view(), name='admin_login'),
     path('api/dashboard-data/', dashboard_data_view, name='dashboard_data'),
 # users
-    path('api/hello/', HelloWorldView.as_view(), name='hello_world'),
+    path('home/', HelloWorldView.as_view(), name='hello_world'),
     path('api/register/', RegistrationView.as_view(), name='registration'),
     path('api/users/', UserListView.as_view(), name='user-list'),
     path('api/deactivate-user/<int:pk>/', DeactivateUserView.as_view(), name='deactivate_user'),

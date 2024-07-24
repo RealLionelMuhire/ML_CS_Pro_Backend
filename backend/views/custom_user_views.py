@@ -2,7 +2,7 @@
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.http import JsonResponse
 from rest_framework import status
 from ..serializers import UserSerializer, CustomUserSerializer, UserProfileUpdateSerializer, Reservation
@@ -126,7 +126,7 @@ class HelloWorldView(APIView):
     Endpoint: GET /hello-world/
     """
 
-    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         """Handle GET requests and return a JSON response with a 'Hello, World!' message."""
