@@ -72,6 +72,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     'backend.middlewares.SaveRequest',
     'backend.middlewares.SessionExpiryMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
