@@ -38,12 +38,8 @@ current_branch = get_current_branch()
 DEBUG = False
 if current_branch == 'main':
     DATABASE_URL = config('DATABASE_URL')
-    DEBUG = False
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 else:
     DATABASE_URL = config('DEV_DATABASE_URL', default=config('DATABASE_URL'))
-    DEBUG = True
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Application definition
 
@@ -173,6 +169,8 @@ USE_TZ = False
 #     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 # else:
 #     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
