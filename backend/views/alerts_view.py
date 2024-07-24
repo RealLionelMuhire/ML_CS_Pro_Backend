@@ -153,7 +153,6 @@ class AlertDetailView(generics.ListAPIView):
 
     serializer_class = AlertSerializer
     permission_classes = [IsAuthenticated]
-    print("\nprinting ................\n")
 
 
     def get_queryset(self):

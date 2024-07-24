@@ -38,8 +38,10 @@ current_branch = get_current_branch()
 
 if current_branch == 'main':
     DATABASE_URL = config('DATABASE_URL')
+    DEBUG = False
 else:
     DATABASE_URL = config('DEV_DATABASE_URL', default=config('DATABASE_URL'))
+    DEBUG = True
 
 # Application definition
 
@@ -165,7 +167,10 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 # Static files (CSS, JavaScript, images)
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if DEBUG:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
