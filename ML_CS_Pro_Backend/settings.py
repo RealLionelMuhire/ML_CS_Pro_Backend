@@ -72,7 +72,6 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     'backend.middlewares.SaveRequest',
     'backend.middlewares.SessionExpiryMiddleware',
-    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -165,6 +164,8 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 # Static files (CSS, JavaScript, images)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
