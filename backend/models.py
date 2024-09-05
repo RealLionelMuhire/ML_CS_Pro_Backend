@@ -830,4 +830,15 @@ class Request(models.Model):
     exec_time = models.IntegerField(null=True) # Time taken to create the response
     date = models.DateTimeField(auto_now=True) # Date and time of request
     body_response = models.TextField() # Response data
-    body_request = models.TextField() # Request data
+    body_request = models.TextField() 
+
+class WeeklyReport(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, blank=True)
+    report = models.TextField()
+    date = models.DateTimeField(auto_now_add=True)
+    published = models.BooleanField(default=False)
+    public_date = models.DateTimeField(null=True, blank=True)
+    reporter_name = models.CharField(max_length=255, blank=True, null=True)
+    reporter_email = models.EmailField(blank=True, null=True)
+    reporter_id = models.IntegerField(blank=True, null=True)
+    report_table = models.JSONField(blank=True, null=True)

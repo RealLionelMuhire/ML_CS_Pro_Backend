@@ -1,6 +1,6 @@
 # backend/serializers.py
 from rest_framework import serializers
-from .models import CustomUser, Client, Service, Reports, Event, Alert, Reservation, UncompletedClient
+from .models import CustomUser, Client, Service, Reports, Event, Alert, Reservation, UncompletedClient, WeeklyReport
 from django.contrib.auth.models import Permission
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -223,4 +223,27 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'user_roles': self.user.UserRoles,
         })
 
+        return data
+
+class WeeklyReportSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the WeeklyReport model.
+    """
+
+    class Meta:
+        model = WeeklyReport
+        fields = '__all__'
+
+class WeeklyReportUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WeeklyReport
+        fields = [
+            'title', 'description', 'report_link',
+            'client_reportee_id', 'client_reportee_email', 'client_reportee_name'
+        ]
+        read_only_fields = ['reporter_id', 'reporter_email', 'reporter_name', 'created_at']
+
+    def validate(self, data):
+        if not any(data.values()):
+            raise serializers.ValidationError("At least one field must be provided to update.")
         return data

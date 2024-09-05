@@ -20,6 +20,7 @@ from .views.reports_summary_views import ReportsCreateView, ReportListView, Repo
 from .main_client_views.client_self_view import ClientSelfRegistrationView
 from .main_client_views.client_auth import client_login_view, client_logout_view, client_ForgotPasswordView, client_ResetPasswordView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from .views.weekly_report_view import WeeklyReportDeleteView, WeeklyReportDetailView, WeeklyReportListView, WeeklyReportUpdateView, WeeklyReportRegisterView
 
 
 
@@ -124,6 +125,13 @@ urlpatterns = [
     path('api/reservations/', ReservationDetailView.as_view(), name='reservation_list'),
     path('api/reservations/<int:pk>/', ReservationDetailView.as_view(), name='reservation_detail'),
     path('api/reservations/<int:pk>/update/', ReservationDetailView.as_view(), name='reservation_update'),
+
+# weekly reports
+    path('api/weekly_report-delete/<int:id>/', WeeklyReportDeleteView.as_view(), name='weekly_report-delete'),
+    path('api/weekly_report-list/', WeeklyReportListView.as_view(), name='weekly_report-list'),
+    path('api/weekly_report-detail/<int:id>/', WeeklyReportDetailView.as_view(), name='weekly_report-detail'),
+    path('api/weekly_report-update/<int:id>/', WeeklyReportUpdateView.as_view(), name='weekly_report-update'),
+    path('api/weekly_report-register/', WeeklyReportRegisterView.as_view(), name='weekly_report-register'),
 
 # clients self views
     path('api/client/register/', ClientSelfRegistrationView.as_view(), name='self-register-client'),
