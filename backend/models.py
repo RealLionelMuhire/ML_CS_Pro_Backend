@@ -176,11 +176,11 @@ class Client(models.Model):
     firstName = models.CharField(max_length=255, blank=True, null=True)
     lastName = models.CharField(max_length=255, blank=True, null=True)
     taxResidency = models.CharField(max_length=255, blank=True, null=True)
-    tinNumber = models.CharField(max_length=50, blank=True, null=True)
+    tinNumber = models.CharField(max_length=50, unique=True)
     citizenship = models.CharField(max_length=50, blank=True, null=True)
     birthDate = models.DateField(null=True, blank=True)
     countryOfResidence = models.CharField(max_length=50, null=True, blank=True)
-    passportIdNumber = models.CharField(max_length=50, unique=True)
+    passportIdNumber = models.CharField(max_length=50, null=True, blank=True)
     countryOfIssue = models.CharField(max_length=50, null=True, blank=True)
     passportIdNumber = models.CharField(max_length=50, null=True, blank=True)
     NameOfEntity = models.CharField(max_length=100, null=True, blank=True)
@@ -190,7 +190,7 @@ class Client(models.Model):
     sharePercent = models.CharField(max_length=255, null=True, blank=True)
     currentAddress = models.CharField(max_length=150, blank=True)
     clientContact = models.CharField(max_length=20, blank=True, null=True)
-    clientEmail = models.EmailField(unique=True, blank=True, null=True)
+    clientEmail = models.EmailField(blank=True, null=True)
     preferredLanguage = models.CharField(max_length=50, blank=True, null=True)
     registrarID = models.IntegerField(null=True, blank=True)
     registrarEmail = models.EmailField(null=True, blank=True)
@@ -830,4 +830,15 @@ class Request(models.Model):
     exec_time = models.IntegerField(null=True) # Time taken to create the response
     date = models.DateTimeField(auto_now=True) # Date and time of request
     body_response = models.TextField() # Response data
-    body_request = models.TextField() # Request data
+    body_request = models.TextField() 
+
+class WeeklyReport(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, blank=True)
+    report = models.TextField()
+    date = models.DateTimeField(auto_now_add=True)
+    published = models.BooleanField(default=False)
+    public_date = models.DateTimeField(null=True, blank=True)
+    reporter_name = models.CharField(max_length=255, blank=True, null=True)
+    reporter_email = models.EmailField(blank=True, null=True)
+    reporter_id = models.IntegerField(blank=True, null=True)
+    report_table = models.JSONField(blank=True, null=True)
