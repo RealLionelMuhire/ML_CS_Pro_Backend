@@ -76,6 +76,7 @@ typing_extensions==4.9.0
 tzdata==2024.1
 uritemplate==4.1.1
 urllib3==2.2.0
+uuid==1.30
 vine==5.1.0
 wcwidth==0.2.13
 whitenoise==6.7.0
