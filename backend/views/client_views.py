@@ -4,7 +4,7 @@ from django.forms import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from ..serializers import ClientSerializer, UncompletedClientSerializer, UpdateUncompletedClientSerializer
+from ..serializers import ClientSerializer, UncompletedClientSerializer, UpdateUncompletedClientSerializer, UpdateClientSerializer
 from ..models import Client, UncompletedClient, CustomUser
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
@@ -105,13 +105,17 @@ class ClientRegistrationView(APIView):
 
                 return Response({'message': 'Client registration successful', 'client_id': client.id})
             else:
+                # Collect and format serializer error messages
+                error_messages = " | ".join(
+                    f"{field}: {', '.join(errors)}" for field, errors in serializer.errors.items()
+                )
                 for file_link in uploaded_files.values():
                     delete_firebase_file(file_link)
-                return JsonResponse({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
+                return JsonResponse({'message': f'Registration failed: {error_messages}'}, status=400)
         except IntegrityError as e:
             for file_link in uploaded_files.values():
                 delete_firebase_file(file_link)
-            return JsonResponse({'message': 'Client registration failed.'}, status=400)
+            return JsonResponse({'message': 'Client registration failed due to an integrity error.'}, status=400)
 
     def handle_file_upload(self, request, file_key, file_name):
         file = request.FILES.get(file_key)
@@ -148,7 +152,7 @@ class UpdateClientView(generics.UpdateAPIView):
     """
 
     queryset = Client.objects.all()
-    serializer_class = ClientSerializer
+    serializer_class = UpdateClientSerializer
     permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin]
     lookup_field = 'id'
 
@@ -273,17 +277,19 @@ class UpdateClientView(generics.UpdateAPIView):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        
+
         try:
             with transaction.atomic():
                 self.perform_update(serializer)
             return Response({'message': 'Client registration updated successfully'})
         except IntegrityError as e:
-            logger.error(f"Database integrity error: {str(e)}")
-            return JsonResponse({'message': str(e)}, status=400)
+            error_message = f"Database integrity error: {str(e)}"
+            logger.error(error_message)
+            return JsonResponse({'message': error_message}, status=400)
         except Exception as e:
-            logger.error(f"Error during the update process: {str(e)}")
-            return JsonResponse({'message': 'An error occurred during the update process.'}, status=400)
+            error_message = f"An error occurred during the update process: {str(e)}"
+            logger.error(error_message)
+            return JsonResponse({'message': error_message}, status=400)
         
     def handle_file_upload(self, request, file_key, file_name):
         file = request.FILES.get(file_key)
@@ -560,18 +566,26 @@ class UpdateUncompletedClientView(generics.UpdateAPIView):
         partial = kwargs.pop('partial', True)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
         
-        try:
-            with transaction.atomic():
-                self.perform_update(serializer)
-            return Response({'message': 'Client registration updated successfully'})
-        except IntegrityError as e:
-            logger.error(f"Database integrity error: {str(e)}")
-            return JsonResponse({'message': str(e)}, status=400)
-        except Exception as e:
-            logger.error(f"Error during the update process: {str(e)}")
-            return JsonResponse({'message': 'An error occurred during the update process.'}, status=400)
+        if serializer.is_valid():
+            try:
+                with transaction.atomic():
+                    self.perform_update(serializer)
+                # Return success message in response
+                return JsonResponse({'message': 'Client registration updated successfully'}, status=200)
+            except IntegrityError as e:
+                logger.error(f"Database integrity error: {str(e)}")
+                # Return a failure message in "message" field
+                return JsonResponse({'message': 'Database integrity error occurred.'}, status=400)
+            except Exception as e:
+                logger.error(f"Error during the update process: {str(e)}")
+                # Return a failure message in "message" field
+                return JsonResponse({'message': 'An unexpected error occurred during the update process.'}, status=400)
+        else:
+            # If validation fails, include errors in "message" field
+            errors = serializer.errors
+            error_messages = "Validation failed: " + "; ".join([f"{field}: {', '.join(errors[field])}" for field in errors])
+            return JsonResponse({'message': error_messages}, status=400)
     
     def handle_file_upload(self, request, file_key, file_name):
         file = request.FILES.get(file_key)

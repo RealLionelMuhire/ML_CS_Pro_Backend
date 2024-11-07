@@ -58,10 +58,24 @@ class ClientSerializer(serializers.ModelSerializer):
         model = Client
         fields = '__all__'
 
+class ClientUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Client
+        fields = '__all__'
+
+    def validate(self, attrs):
+        # Skip validation for required fields on partial updates
+        if self.instance and self.partial:
+            attrs['tinNumber'] = attrs.get('tinNumber', self.instance.tinNumber)
+        else:
+            if not attrs.get('tinNumber'):
+                raise serializers.ValidationError({"tinNumber": "This field may not be blank."})
+        return attrs
+
 class UpdateClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        exclude = ['clientEmail']
+        exclude = ['tinNumber']
 
     def update(self, instance, validated_data):
         # Only update non-empty, non-null fields
