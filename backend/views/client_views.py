@@ -566,18 +566,26 @@ class UpdateUncompletedClientView(generics.UpdateAPIView):
         partial = kwargs.pop('partial', True)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
         
-        try:
-            with transaction.atomic():
-                self.perform_update(serializer)
-            return Response({'message': 'Client registration updated successfully'})
-        except IntegrityError as e:
-            logger.error(f"Database integrity error: {str(e)}")
-            return JsonResponse({'message': str(e)}, status=400)
-        except Exception as e:
-            logger.error(f"Error during the update process: {str(e)}")
-            return JsonResponse({'message': 'An error occurred during the update process.'}, status=400)
+        if serializer.is_valid():
+            try:
+                with transaction.atomic():
+                    self.perform_update(serializer)
+                # Return success message in response
+                return JsonResponse({'message': 'Client registration updated successfully'}, status=200)
+            except IntegrityError as e:
+                logger.error(f"Database integrity error: {str(e)}")
+                # Return a failure message in "message" field
+                return JsonResponse({'message': 'Database integrity error occurred.'}, status=400)
+            except Exception as e:
+                logger.error(f"Error during the update process: {str(e)}")
+                # Return a failure message in "message" field
+                return JsonResponse({'message': 'An unexpected error occurred during the update process.'}, status=400)
+        else:
+            # If validation fails, include errors in "message" field
+            errors = serializer.errors
+            error_messages = "Validation failed: " + "; ".join([f"{field}: {', '.join(errors[field])}" for field in errors])
+            return JsonResponse({'message': error_messages}, status=400)
     
     def handle_file_upload(self, request, file_key, file_name):
         file = request.FILES.get(file_key)
