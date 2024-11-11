@@ -44,31 +44,24 @@ class RegistrationView(APIView):
         """Handle POST requests for user registration."""
         # Make request.data mutable
         request.data._mutable = True
-        
+
         # Include additional information in the request data
         request.data['registrarID'] = request.user.UserID
         request.data['registrarName'] = f"{request.user.FirstName} {request.user.LastName}"
         request.data['isActive'] = True
-        
-        # Handle file uploads to Firebase Storage
-        cv_link, cv_msg = self.handle_file_upload(request, 'cv_file', 'cv.pdf')
-        contract_link, contract_msg = self.handle_file_upload(request, 'contract_file', 'contract.pdf')
-        national_id_link, national_id_msg = self.handle_file_upload(request, 'national_id_file', 'national_id.pdf')
 
-        # Check if any file upload failed
-        if any(link is None for link in [cv_link, contract_link, national_id_link]):
-            # Delete uploaded files (if any) to avoid clutter in storage
-            if cv_link:
-                delete_firebase_file(cv_link)
-            if contract_link:
-                delete_firebase_file(contract_link)
-            if national_id_link:
-                delete_firebase_file(national_id_link)
-            # Return failure message
-            return Response({'message': 'File upload failed. Please try again.', 'errors': [cv_msg, contract_msg, national_id_msg]}, status=400)
+        # Handle file uploads to Firebase Storage (files are optional)
+        cv_link, _ = self.handle_file_upload(request, 'cv_file', 'cv.pdf')
+        contract_link, _ = self.handle_file_upload(request, 'contract_file', 'contract.pdf')
+        national_id_link, _ = self.handle_file_upload(request, 'national_id_file', 'national_id.pdf')
 
-        # Update the request data with the obtained links
-        request.data.update({'cv_link': cv_link, 'contract_link': contract_link, 'national_id_link': national_id_link})
+        # Update the request data with the obtained links (only if files were uploaded)
+        if cv_link:
+            request.data['cv_link'] = cv_link
+        if contract_link:
+            request.data['contract_link'] = contract_link
+        if national_id_link:
+            request.data['national_id_link'] = national_id_link
 
         # Make request.data immutable again
         request.data._mutable = False
@@ -98,14 +91,19 @@ class RegistrationView(APIView):
                 delete_firebase_file(contract_link)
             if national_id_link:
                 delete_firebase_file(national_id_link)
-            return JsonResponse({'message': 'Registration failed', 'error': str(e)}, status=500)
+            error_messages = " | ".join(
+                f"{key}: {value[0]}" for key, value in serializer.errors.items()
+            )
 
+            return JsonResponse({'message': 'Registration failed: ' + error_messages}, status=400)
+    
     def handle_file_upload(self, request, file_key, file_name):
         file = request.FILES.get(file_key)
         file_link = None
+        msg = None
 
         if file:
-            folder = f"user_files/{request.data['FirstName']}"
+            folder = f"user_files/{request.data.get('FirstName')}_{request.data.get('LastName')}"
             file_content = file.read()
 
             if isinstance(file, InMemoryUploadedFile):
@@ -116,7 +114,7 @@ class RegistrationView(APIView):
 
             return file_link, msg
         else:
-            return None, f"No file found for {file_name} upload."
+            return None, f"No file found for {file_key} upload."
 
 
 class HelloWorldView(APIView):

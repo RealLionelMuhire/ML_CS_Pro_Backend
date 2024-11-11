@@ -134,7 +134,7 @@ class ClientRegistrationView(APIView):
 
             return file_link, msg
         else:
-            return None, f"No file found for {file_name} uploaded to"
+            return None, f"No file found for {file_name} upload."
 
     def delete_uncompleted_client(self, client_email):
         """Delete an uncompleted client with the same email if it exists."""
