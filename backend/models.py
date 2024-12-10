@@ -98,9 +98,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     deactivatorFirstName = models.CharField(max_length=255, null=True, blank=True)
     deactivationDate = models.DateTimeField(null=True, blank=True)
     
-    cv_link = models.URLField(blank=True, null=True)
-    contract_link = models.URLField(blank=True, null=True)
-    national_id_link = models.URLField(blank=True, null=True)
+    cv_link = models.JSONField(blank=True, null=True)
+    contract_link = models.JSONField(blank=True, null=True)
+    national_id_link = models.JSONField(blank=True, null=True)
     passport_link = models.URLField(blank=True, null=True)
     registration_certificate_link = models.URLField(blank=True, null=True)
 

@@ -12,7 +12,11 @@ class UserSerializer(serializers.ModelSerializer):
     can_grant_permissions = serializers.BooleanField(write_only=True, required=False)
     registrarID = serializers.IntegerField(required=False)
     registrarName = serializers.CharField(max_length=255, required=False)
-    # UserID = serializers.IntegerField(required=False, read_only=True)
+
+    # Explicitly define file link fields
+    cv_links = serializers.JSONField(required=False)
+    contract_links = serializers.JSONField(required=False)
+    national_id_links = serializers.JSONField(required=False)
 
     class Meta:
         model = CustomUser
@@ -22,7 +26,24 @@ class UserSerializer(serializers.ModelSerializer):
         groups_data = validated_data.pop('groups', None)
         user_permissions_data = validated_data.pop('user_permissions', None)
 
+        # Handle file links
+        cv_links = validated_data.pop('cv_links', None)
+        contract_links = validated_data.pop('contract_links', None)
+        national_id_links = validated_data.pop('national_id_links', None)
+
+        # Create user
         user = CustomUser.objects.create_user(**validated_data)
+
+        # Assign file links to the user
+        if cv_links:
+            user.cv_link = cv_links
+        if contract_links:
+            user.contract_link = contract_links
+        if national_id_links:
+            user.national_id_link = national_id_links
+
+        # Save user with links
+        user.save()
 
         if validated_data.get('can_create_user'):
             user.user_permissions.add(Permission.objects.get(codename='can_create_user'))
@@ -35,23 +56,6 @@ class UserSerializer(serializers.ModelSerializer):
 
         return user
 
-    def validate_UserID(self, value):
-        if not isinstance(value, int):
-            raise serializers.ValidationError("UserID must be an integer.")
-        return value
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        for field_name, value in representation.items():
-            try:
-                if field_name == 'UserID':
-                    if not value or not str(value).isdigit():
-                        representation['UserID'] = '0'  # Default valid value
-                    else:
-                        representation['UserID'] = int(value)  # Ensure UserID is an integer
-            except Exception as e:
-                return (f"Error processing field {field_name}: {e}")
-        return representation
 
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:

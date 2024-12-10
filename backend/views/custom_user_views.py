@@ -28,93 +28,94 @@ import base64
 import requests
 from io import BytesIO
 import os
+import json
 
 
 class RegistrationView(APIView):
     """
-    API view for user registration, requiring authentication and permission to create a user.
-    Endpoint: POST /register/
-    Request Payload: Requires 'auth.can_create_user' permission for access.
-    Additional information (registered_by_id and registered_by_fullname) is added to the request data.
+    API view for user registration.
     """
 
-    permission_classes = [IsAuthenticated, IsSuperuserOrManagerAdmin, IsSuperuserOrManagerAdminOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         """Handle POST requests for user registration."""
-        # Make request.data mutable
         request.data._mutable = True
 
-        # Include additional information in the request data
+        # Include additional information
         request.data['registrarID'] = request.user.UserID
         request.data['registrarName'] = f"{request.user.FirstName} {request.user.LastName}"
         request.data['isActive'] = True
 
-        # Handle file uploads to Firebase Storage (files are optional)
-        cv_link, _ = self.handle_file_upload(request, 'cv_file', 'cv.pdf')
-        contract_link, _ = self.handle_file_upload(request, 'contract_file', 'contract.pdf')
-        national_id_link, _ = self.handle_file_upload(request, 'national_id_file', 'national_id.pdf')
+        print("Request data before processing file uploads: ", request.data)
 
-        # Update the request data with the obtained links (only if files were uploaded)
-        if cv_link:
-            request.data['cv_link'] = cv_link
-        if contract_link:
-            request.data['contract_link'] = contract_link
-        if national_id_link:
-            request.data['national_id_link'] = national_id_link
+        # Handle multiple file uploads
+        cv_links = self.handle_multiple_file_upload(request, 'cv_file', 'cv')
+        contract_links = self.handle_multiple_file_upload(request, 'contract_file', 'contract')
+        national_id_links = self.handle_multiple_file_upload(request, 'national_id_file', 'national_id')
 
-        # Make request.data immutable again
-        request.data._mutable = False
+        # Add links to the request data with conditions
+        if cv_links:
+            request.data['cv_links'] = json.dumps(cv_links[0] if len(cv_links) == 1 else cv_links)
+        if contract_links:
+            request.data['contract_links'] = json.dumps(contract_links[0] if len(contract_links) == 1 else contract_links)
+        if national_id_links:
+            request.data['national_id_links'] = json.dumps(national_id_links[0] if len(national_id_links) == 1 else national_id_links)
 
-        # Create a user serializer
+
+        request.data._mutable = False  # Make immutable again
+
         serializer = UserSerializer(data=request.data)
 
         try:
             if serializer.is_valid():
-                # Save the user to the database
+                # Print data before saving
+                print("Validated data to be saved to DB: ", serializer.validated_data)
+
+                # Save user along with file links
                 user = serializer.save()
                 return JsonResponse({'message': 'Registration successful', 'user_id': user.UserID})
             else:
-                # Delete uploaded files (if any) to avoid clutter in storage
-                if cv_link:
-                    delete_firebase_file(cv_link)
-                if contract_link:
-                    delete_firebase_file(contract_link)
-                if national_id_link:
-                    delete_firebase_file(national_id_link)
+                # Handle errors and clean up uploaded files
+                self.cleanup_uploaded_files([cv_links, contract_links, national_id_links])
                 return JsonResponse({'message': 'Registration failed', 'errors': serializer.errors}, status=400)
         except Exception as e:
-            # Delete uploaded files (if any) to avoid clutter in storage
-            if cv_link:
-                delete_firebase_file(cv_link)
-            if contract_link:
-                delete_firebase_file(contract_link)
-            if national_id_link:
-                delete_firebase_file(national_id_link)
-            error_messages = " | ".join(
-                f"{key}: {value[0]}" for key, value in serializer.errors.items()
-            )
-
-            return JsonResponse({'message': 'Registration failed: ' + error_messages}, status=400)
+            # Clean up uploaded files in case of exception
+            self.cleanup_uploaded_files([cv_links, contract_links, national_id_links])
+            return JsonResponse({'message': f'Registration failed: {str(e)}'}, status=500)
     
-    def handle_file_upload(self, request, file_key, file_name):
-        file = request.FILES.get(file_key)
-        file_link = None
-        msg = None
+    def handle_multiple_file_upload(self, request, file_key, prefix):
+        """Handle multiple file uploads for a given key."""
+        files = request.FILES.getlist(file_key)
+        file_links = []
 
-        if file:
-            folder = f"user_files/{request.data.get('FirstName')}_{request.data.get('LastName')}"
-            file_content = file.read()
+        if not files:
+            print(f"No files found for {file_key} upload.")
 
-            if isinstance(file, InMemoryUploadedFile):
-                file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
-            else:
-                local_file_path = file.temporary_file_path()
-                file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
+        if files:
+            for idx, file in enumerate(files):
+                file_name = f"{prefix}_{idx + 1}.pdf"
+                folder = f"user_files/{request.data.get('FirstName')}_{request.data.get('LastName')}"
+                file_content = file.read()
 
-            return file_link, msg
-        else:
-            return None, f"No file found for {file_key} upload."
+                if isinstance(file, InMemoryUploadedFile):
+                    file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
+                    print(f"File link:  {file_link} and message is: {msg}  and index is: {idx}")
+                else:
+                    local_file_path = file.temporary_file_path()
+                    file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
+
+                if file_link:
+                    file_links.append(file_link)
+
+        return file_links if file_links else None
+
+    def cleanup_uploaded_files(self, file_links_groups):
+        """Delete uploaded files from Firebase storage."""
+        for file_links in file_links_groups:
+            if file_links:
+                for file_link in file_links:
+                    delete_firebase_file(file_link)
 
 
 class HelloWorldView(APIView):
