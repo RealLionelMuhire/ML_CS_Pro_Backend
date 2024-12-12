@@ -103,6 +103,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     national_id_link = models.JSONField(blank=True, null=True)
     passport_link = models.URLField(blank=True, null=True)
     registration_certificate_link = models.URLField(blank=True, null=True)
+    other_docs_link = models.JSONField(blank=True, null=True)
 
     financialForecast = models.JSONField(null=True, blank=True)
     

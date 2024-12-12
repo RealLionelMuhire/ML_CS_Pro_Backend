@@ -17,6 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
     cv_links = serializers.JSONField(required=False)
     contract_links = serializers.JSONField(required=False)
     national_id_links = serializers.JSONField(required=False)
+    other_docs_links = serializers.JSONField(required=False)
 
     class Meta:
         model = CustomUser
@@ -30,6 +31,7 @@ class UserSerializer(serializers.ModelSerializer):
         cv_links = validated_data.pop('cv_links', None)
         contract_links = validated_data.pop('contract_links', None)
         national_id_links = validated_data.pop('national_id_links', None)
+        other_docs_links = validated_data.pop('other_docs_links', None)
 
         # Create user
         user = CustomUser.objects.create_user(**validated_data)
@@ -41,6 +43,8 @@ class UserSerializer(serializers.ModelSerializer):
             user.contract_link = contract_links
         if national_id_links:
             user.national_id_link = national_id_links
+        if other_docs_links:
+            user.other_docs_link = other_docs_links
 
         # Save user with links
         user.save()

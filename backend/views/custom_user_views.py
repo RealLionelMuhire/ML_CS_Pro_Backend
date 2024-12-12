@@ -46,13 +46,17 @@ class RegistrationView(APIView):
         request.data['registrarID'] = request.user.UserID
         request.data['registrarName'] = f"{request.user.FirstName} {request.user.LastName}"
         request.data['isActive'] = True
+        print("\n\n")
 
-        print("Request data before processing file uploads: ", request.data)
+        print("====>Request data before processing file uploads: ", request.data)
+
+        print("\n\n")
 
         # Handle multiple file uploads
         cv_links = self.handle_multiple_file_upload(request, 'cv_file', 'cv')
         contract_links = self.handle_multiple_file_upload(request, 'contract_file', 'contract')
         national_id_links = self.handle_multiple_file_upload(request, 'national_id_file', 'national_id')
+        other_docs_links = self.handle_multiple_file_upload(request, 'other_docs', 'other_docs')
 
         # Add links to the request data with conditions
         if cv_links:
@@ -61,6 +65,8 @@ class RegistrationView(APIView):
             request.data['contract_links'] = json.dumps(contract_links[0] if len(contract_links) == 1 else contract_links)
         if national_id_links:
             request.data['national_id_links'] = json.dumps(national_id_links[0] if len(national_id_links) == 1 else national_id_links)
+        if other_docs_links:
+            request.data['other_docs_links'] = json.dumps(other_docs_links[0] if len(other_docs_links) == 1 else other_docs_links)
 
 
         request.data._mutable = False  # Make immutable again
@@ -70,7 +76,8 @@ class RegistrationView(APIView):
         try:
             if serializer.is_valid():
                 # Print data before saving
-                print("Validated data to be saved to DB: ", serializer.validated_data)
+                print("\n\n====>Validated data to be saved to DB: ", serializer.validated_data)
+                print()
 
                 # Save user along with file links
                 user = serializer.save()
@@ -90,17 +97,21 @@ class RegistrationView(APIView):
         file_links = []
 
         if not files:
-            print(f"No files found for {file_key} upload.")
+            print(f"\n\n==>No files found for {file_key} upload.==>\n")
 
         if files:
             for idx, file in enumerate(files):
-                file_name = f"{prefix}_{idx + 1}.pdf"
+                # Extract file extension
+                original_extension = file.name.split('.')[-1]
+                file_name = f"{prefix}_{idx + 1}.{original_extension}"
+                
+                # Construct folder path dynamically
                 folder = f"user_files/{request.data.get('FirstName')}_{request.data.get('LastName')}"
                 file_content = file.read()
 
                 if isinstance(file, InMemoryUploadedFile):
                     file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
-                    print(f"File link:  {file_link} and message is: {msg}  and index is: {idx}")
+                    print(f"\n===>File link: {file_link} and message is: {msg} at index {idx}===>\n")
                 else:
                     local_file_path = file.temporary_file_path()
                     file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
