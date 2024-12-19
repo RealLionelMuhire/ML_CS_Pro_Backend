@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from ..serializers import ClientSerializer, UncompletedClientSerializer, UpdateUncompletedClientSerializer, UpdateClientSerializer
-from ..models import Client, UncompletedClient, CustomUser
+from ..models import Client, UncompletedClient
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
@@ -17,15 +17,17 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from ..user_permissions import IsSuperuserOrManagerAdmin
 from django.http import JsonResponse
 import base64
-import os
 from urllib.parse import unquote, urlparse
 from io import BytesIO
-import requests
 import logging
 import json
+from django.utils.datastructures import MultiValueDictKeyError
+from django.http import QueryDict
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 class ClientRegistrationView(APIView):
+
     """
     API view for registering a client associated with the authenticated user.
     Requires authentication for access.
@@ -33,6 +35,7 @@ class ClientRegistrationView(APIView):
     """
 
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
         """Handle GET requests to retrieve data."""
@@ -44,7 +47,7 @@ class ClientRegistrationView(APIView):
     def post(self, request):
         """Handle POST requests for client registration."""
         user = request.user
-        request_data = request.data.copy()
+        request_data = request.data
         request_data['user'] = user.UserID
 
         uploaded_files = {}
@@ -84,28 +87,33 @@ class ClientRegistrationView(APIView):
                 ]
 
                 for file_key in files_to_upload:
-                    file = request.FILES.get(file_key)
-                    if file and file.size > 0:
-                        file_link, msg = self.handle_file_upload(request, file_key, f"{client.id}-{file_key}.pdf")
-                        if file_link and isinstance(file_link, str) and file_link.startswith('https://storage.googleapis.'):
-                            link_key = file_key.replace('_file', '_link')
-                            # Update request data with the new key-value pair
-                            request_data[link_key] = file_link
-                            uploaded_files[link_key] = file_link
+                    files = request.FILES.getlist(file_key)
+                    if not files:  # Skip processing if no files are uploaded
+                        print(f"No files uploaded for key: {file_key}")
+                        continue
+                    
+                    file_links, msg = self.handle_multiple_file_upload(request, file_key, f"{client.id}-{file_key}")
+                    if file_links:
+                        link_key = file_key.replace('_file', '_link')
+                        if len(file_links) == 1:
+                            # Single file: add directly as a string
+                            setattr(client, link_key, file_links[0])
                         else:
-                            return JsonResponse({'message': msg}, status=400)
+                            # Multiple files: encode as JSON array
+                            setattr(client, link_key, json.dumps(file_links))
+                        uploaded_files[link_key] = getattr(client, link_key)
+                        print(f"File key: {file_key}, Uploaded files: {file_links}")
+                    elif msg:
+                        return JsonResponse({'message': f"Error processing file {file_key}: {msg}"}, status=400)
 
-                # Update the client record with the new file links
-                for link_key, file_link in uploaded_files.items():
-                    setattr(client, link_key, file_link)
+                # Save the client instance with updated file links
                 client.save()
 
-                # Delete the client with the same email from UncompletedClient if it exists
-                self.delete_uncompleted_client(client.clientEmail)
+                # Serialize response with updated fields
+                updated_serializer = ClientSerializer(client)
 
-                return Response({'message': 'Client registration successful', 'client_id': client.id})
+                return Response({'message': 'Client registration successful', 'client_id': client.id, 'data': updated_serializer.data, 'uploaded_files': uploaded_files})
             else:
-                # Collect and format serializer error messages
                 error_messages = " | ".join(
                     f"{field}: {', '.join(errors)}" for field, errors in serializer.errors.items()
                 )
@@ -113,36 +121,63 @@ class ClientRegistrationView(APIView):
                     delete_firebase_file(file_link)
                 return JsonResponse({'message': f'Registration failed: {error_messages}'}, status=400)
         except IntegrityError as e:
-            for file_link in uploaded_files.values():
-                delete_firebase_file(file_link)
-            return JsonResponse({'message': 'Client registration failed due to an integrity error.'}, status=400)
+            print("integrity error: ", str(e))
+            return JsonResponse({'message': 'Integrity Error', 'error': str(e)}, status=400)
 
-    def handle_file_upload(self, request, file_key, file_name):
-        file = request.FILES.get(file_key)
-        file_link = None
-        msg = None
+    def handle_multiple_file_upload(self, request, file_key, prefix):
+        """Handle multiple file uploads for a given key."""
+        files = request.FILES.getlist(file_key)
+        file_links = []
+        msg = None  # Default message in case of no files or errors
 
-        if file:
-            folder = f"client_files/{request.data['firstName']}_{request.data['lastName']}"
-            file_content = file.read()
+        if files:
+            for idx, file in enumerate(files):
+                # Extract file extension and create a dynamic file name
+                original_extension = file.name.split('.')[-1]
+                file_name = f"{prefix}_{idx + 1}.{original_extension}"
 
-            if isinstance(file, InMemoryUploadedFile):
-                file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
-            else:
-                local_file_path = file.temporary_file_path()
-                file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
+                # Construct folder path dynamically
+                folder = f"client_files/{request.data.get('firstName', 'Unknown')}_{request.data.get('lastName', 'Unknown')}_{request.data.get('tinNumber', 'Unknown_TinNumber')}"
 
-            return file_link, msg
+                try:
+                    # Handle file content
+                    if isinstance(file, InMemoryUploadedFile):
+                        file_content = file.read()
+                        file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
+                    else:
+                        local_file_path = file.temporary_file_path()
+                        with open(local_file_path, "rb") as temp_file:
+                            file_content = temp_file.read()
+                        file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
+
+                    # Append the link if upload succeeded
+                    if file_link:
+                        file_links.append(file_link)
+                    else:
+                        msg = f"Failed to upload file: {file.name}"
+                        break
+
+                except Exception as e:
+                    msg = str(e)
+                    break
+
+        # Log the results for debugging
+        print(f"File key: {file_key}, File links: {file_links}, Msg: {msg}")
+
+        # Ensure consistent return
+        if file_links:
+            return file_links, None
         else:
-            return None, f"No file found for {file_name} upload."
+            return None, msg or "No files uploaded."
 
     def delete_uncompleted_client(self, client_email):
         """Delete an uncompleted client with the same email if it exists."""
         try:
-            uncompleted_client = UncompletedClient.objects.get(clientEmail=client_email)
+            uncompleted_client = Client.objects.get(clientEmail=client_email)
             uncompleted_client.delete()
-        except UncompletedClient.DoesNotExist:
+        except Client.DoesNotExist:
             pass
+
 
 class UpdateClientView(generics.UpdateAPIView):
     """
@@ -1128,34 +1163,74 @@ class ClientListByIdView(generics.ListAPIView):
         queryset = self.get_queryset()
         serialized_clients = []
 
+        # Iterate through provided client IDs
         for client_id in [int(client_id) for client_id in self.request.query_params.get('ids', '').split(',')]:
             client = get_object_or_404(queryset, id=client_id)
             serializer = ClientSerializer(client)
             serialized_data = serializer.data
 
-            # Rename the keys based on display names map
-            renamed_data = {self.display_names_map.get(key, key): value for key, value in serialized_data.items() if key in self.display_names_map}
+            # Rename keys based on the display names map
+            renamed_data = {
+                self.display_names_map.get(key, key): value
+                for key, value in serialized_data.items()
+                if key in self.display_names_map
+            }
 
-            # Check and download the files for each client
+            # Check and handle files for each client
             for field in self.file_fields:
-                file_url = getattr(client, field, None)
-                if file_url:
-                    file_name, file_content = download_file_from_url(file_url)
-                    if file_content:
-                        if isinstance(file_content, BytesIO):
-                            file_content = file_content.read()
-                        if isinstance(file_content, bytes):
+                file_field_value = getattr(client, field, None)
+                if file_field_value:
+                    print(f"Processing field: {field}, Value: {file_field_value}")  # Debugging print
+                    # Handle single file link
+                    if isinstance(file_field_value, str) and not file_field_value.startswith('['):
+                        file_name, file_content = self.process_file_link(file_field_value)
+                        if file_content:
+                            print(f"Downloaded file: {file_name}")  # Debugging print
                             mapped_field = field.replace('_link', '_file').replace('_', ' ')
                             renamed_data[mapped_field] = {
                                 'file_name': file_name,
                                 'file_content': base64.b64encode(file_content).decode('utf-8')
                             }
 
+                    # Handle JSON array of file links
+                    elif isinstance(file_field_value, str) and file_field_value.startswith('['):
+                        try:
+                            file_links = json.loads(file_field_value)
+                            if isinstance(file_links, list):
+                                print(f"Found multiple links: {file_links}")  # Debugging print
+                                file_metadata_list = []
+                                for link in file_links:
+                                    file_name, file_content = self.process_file_link(link)
+                                    if file_content:
+                                        print(f"Downloaded file: {file_name}")  # Debugging print
+                                        file_metadata_list.append({
+                                            'file_name': file_name,
+                                            'file_content': base64.b64encode(file_content).decode('utf-8')
+                                        })
+                                mapped_field = field.replace('_link', '_files').replace('_', ' ')
+                                renamed_data[mapped_field] = file_metadata_list
+                        except json.JSONDecodeError:
+                            print(f"Invalid JSON for field: {field}, Value: {file_field_value}")  # Debugging print
+
             serialized_clients.append(renamed_data)
-        
-        # print("===>", serialized_clients)
 
         return Response(serialized_clients)
+
+
+    def process_file_link(self, file_url):
+        """
+        Download a file from the given URL and return its name and content.
+        """
+        try:
+            print(f"Attempting to download file from URL: {file_url}")  # Debugging print
+            file_name, file_content = download_file_from_url(file_url)
+            if isinstance(file_content, BytesIO):
+                file_content = file_content.read()
+            return file_name, file_content
+        except Exception as e:
+            # Log error if download fails
+            print(f"Error processing file URL {file_url}: {e}")
+            return None, None
 
 class ClientByIdListModificationView(generics.ListAPIView):
 

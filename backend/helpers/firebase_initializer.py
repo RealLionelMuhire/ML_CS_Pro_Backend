@@ -23,8 +23,9 @@ def initialize_firebase():
 
     # Initialize Firebase Admin SDK if not already initialized
     try:
-        print("Initializing Firebase Admin SDK...")
+        # print("Initializing Firebase Admin SDK...")
         initialize_app(cred)
     except ValueError:
-        print("Firebase Admin SDK already initialized.")
+        pass
+        # print("Firebase Admin SDK already initialized.")
 

@@ -9,6 +9,7 @@ from decouple import config
 
 def upload_to_firebase_storage(folder, file_name, file_content):
     initialize_firebase()
+    print("after firebase initialize, in upload_to_firebase_storage fx..")
 
     service_account_key = {
         "type": config("FIREBASE_TYPE"),
@@ -23,6 +24,10 @@ def upload_to_firebase_storage(folder, file_name, file_content):
         "client_x509_cert_url": config("FIREBASE_CLIENT_X509_CERT_URL"),
     }
     try:
+        print(f"Uploading file: {file_name}")
+        print(f"File content size: {len(file_content)} bytes")
+
+
         # Specify your Firebase Storage bucket name
         bucket_name = "mlcs-4f26e.appspot.com"
 
@@ -93,11 +98,14 @@ def delete_firebase_file(public_url):
 def download_file_from_url(file_url):
     try:
         response = requests.get(file_url)
+       
         if response.status_code == 200:
             file_name = unquote(os.path.basename(urlparse(file_url).path))
             file_content = BytesIO(response.content)
             return file_name, file_content
         else:
+            print(f"Failed to download file. Status code: {response.status_code}")
             return None, None
     except requests.RequestException as e:
+        print(f"RequestException: {e}")
         return None, None

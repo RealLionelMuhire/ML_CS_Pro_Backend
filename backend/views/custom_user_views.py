@@ -46,11 +46,6 @@ class RegistrationView(APIView):
         request.data['registrarID'] = request.user.UserID
         request.data['registrarName'] = f"{request.user.FirstName} {request.user.LastName}"
         request.data['isActive'] = True
-        print("\n\n")
-
-        print("====>Request data before processing file uploads: ", request.data)
-
-        print("\n\n")
 
         # Handle multiple file uploads
         cv_links = self.handle_multiple_file_upload(request, 'cv_file', 'cv')
@@ -75,9 +70,6 @@ class RegistrationView(APIView):
 
         try:
             if serializer.is_valid():
-                # Print data before saving
-                print("\n\n====>Validated data to be saved to DB: ", serializer.validated_data)
-                print()
 
                 # Save user along with file links
                 user = serializer.save()
@@ -95,31 +87,32 @@ class RegistrationView(APIView):
         """Handle multiple file uploads for a given key."""
         files = request.FILES.getlist(file_key)
         file_links = []
-
-        if not files:
-            print(f"\n\n==>No files found for {file_key} upload.==>\n")
-
         if files:
             for idx, file in enumerate(files):
-                # Extract file extension
+
+                # Extract file extension and create a dynamic file name
                 original_extension = file.name.split('.')[-1]
                 file_name = f"{prefix}_{idx + 1}.{original_extension}"
-                
-                # Construct folder path dynamically
-                folder = f"user_files/{request.data.get('FirstName')}_{request.data.get('LastName')}"
-                file_content = file.read()
 
+                # Construct folder path dynamically
+                folder = f"user_files/{request.data.get('FirstName', 'Unknown')}_{request.data.get('LastName', 'Unknown')}"
+
+                # Handle file content
                 if isinstance(file, InMemoryUploadedFile):
+                    file_content = file.read()
                     file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
-                    print(f"\n===>File link: {file_link} and message is: {msg} at index {idx}===>\n")
                 else:
                     local_file_path = file.temporary_file_path()
-                    file_link, msg = upload_to_firebase_storage(folder, file_name, local_file_path)
+                    with open(local_file_path, "rb") as temp_file:
+                        file_content = temp_file.read()
+                    file_link, msg = upload_to_firebase_storage(folder, file_name, file_content)
 
+                # Append the link if upload succeeded
                 if file_link:
                     file_links.append(file_link)
 
         return file_links if file_links else None
+
 
     def cleanup_uploaded_files(self, file_links_groups):
         """Delete uploaded files from Firebase storage."""
