@@ -171,3 +171,8 @@ backend/serviceAccountKey.json
 ML_CS_Pro_Backend/.env
 backend/.env
 .env
+backup_20241220_102539.log
+backup_data.sh backup_restore_20241220_111754.log
+backup.sql
+test_backup.sh
+backup_data.sh
