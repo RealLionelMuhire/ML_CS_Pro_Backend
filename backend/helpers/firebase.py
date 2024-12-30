@@ -24,8 +24,8 @@ def upload_to_firebase_storage(folder, file_name, file_content):
         "client_x509_cert_url": config("FIREBASE_CLIENT_X509_CERT_URL"),
     }
     try:
-        print(f"Uploading file: {file_name}")
-        print(f"File content size: {len(file_content)} bytes")
+        # print(f"Uploading file: {file_name}")
+        # print(f"File content size: {len(file_content)} bytes")
 
 
         # Specify your Firebase Storage bucket name
