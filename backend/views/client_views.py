@@ -357,7 +357,7 @@ class UpdateClientView(generics.UpdateAPIView):
 
             return Response({'message': 'Client updated successfully'})
 
-        except serializer.ValidationError as e:
+        except ValidationError as e:
             # Debug: Log validation errors
             print("Validation error:", e.detail)
             return JsonResponse({'message': 'Validation failed', 'errors': e.detail}, status=400)
